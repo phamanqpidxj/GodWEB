@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Lịch sử mua hàng - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-shopping-bag"></i> Lịch sử mua hàng</h1>
+        <p>Danh sách các sản phẩm bạn đã mua</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        {% if orders.items %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Thông tin tài khoản</th>
+                        <th>Ngày mua</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders.items %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>
+                            <a href="{{ url_for('store.detail', product_id=order.product.id) }}" style="color: var(--primary-color);">
+                                {{ order.product.name }}
+                            </a>
+                        </td>
+                        <td><span class="card-price"><i class="fas fa-coins"></i> {{ order.price }} GC</span></td>
+                        <td>
+                            <div style="background: var(--light-color); padding: 10px 15px; border-radius: 8px; font-family: monospace;">
+                                {{ order.account_info }}
+                            </div>
+                        </td>
+                        <td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if orders.pages > 1 %}
+        <div class="pagination">
+            {% if orders.has_prev %}
+            <a href="{{ url_for('profile.orders', page=orders.prev_num) }}"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+
+            {% for page_num in orders.iter_pages() %}
+                {% if page_num %}
+                    <a href="{{ url_for('profile.orders', page=page_num) }}" class="{% if page_num == orders.page %}active{% endif %}">{{ page_num }}</a>
+                {% else %}
+                    <span>...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if orders.has_next %}
+            <a href="{{ url_for('profile.orders', page=orders.next_num) }}"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-shopping-bag"></i>
+            <h3>Chưa có đơn hàng nào</h3>
+            <p>Bắt đầu mua sản phẩm đầu tiên của bạn!</p>
+            <a href="{{ url_for('store.index') }}" class="btn btn-primary" style="margin-top: 20px;">
+                <i class="fas fa-store"></i> Đến cửa hàng
+            </a>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 30px;">
+            <a href="{{ url_for('profile.index') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Quay lại trang cá nhân
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

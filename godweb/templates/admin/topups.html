@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Yêu cầu nạp tiền - GodWeb{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="color: var(--primary-color);"><i class="fas fa-cog"></i> Admin Panel</h3>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.users') }}"><i class="fas fa-users"></i> Người dùng</a>
+            <a href="{{ url_for('admin.categories') }}"><i class="fas fa-folder"></i> Danh mục</a>
+            <a href="{{ url_for('admin.posts') }}"><i class="fas fa-newspaper"></i> Bài viết</a>
+            <a href="{{ url_for('admin.products') }}"><i class="fas fa-box"></i> Sản phẩm</a>
+            <a href="{{ url_for('admin.topups') }}" class="active"><i class="fas fa-coins"></i> Yêu cầu nạp</a>
+            <a href="{{ url_for('admin.transactions') }}"><i class="fas fa-history"></i> Giao dịch</a>
+            <a href="{{ url_for('admin.orders') }}"><i class="fas fa-shopping-cart"></i> Đơn hàng</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Về trang chủ</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <h2 style="margin-bottom: 30px;"><i class="fas fa-coins"></i> Yêu cầu nạp tiền</h2>
+
+        <!-- Filter -->
+        <div class="filter-tags" style="margin-bottom: 20px;">
+            <a href="{{ url_for('admin.topups', status='pending') }}" class="filter-tag {% if current_status == 'pending' %}active{% endif %}">Chờ duyệt</a>
+            <a href="{{ url_for('admin.topups', status='approved') }}" class="filter-tag {% if current_status == 'approved' %}active{% endif %}">Đã duyệt</a>
+            <a href="{{ url_for('admin.topups', status='rejected') }}" class="filter-tag {% if current_status == 'rejected' %}active{% endif %}">Từ chối</a>
+            <a href="{{ url_for('admin.topups', status='') }}" class="filter-tag {% if not current_status %}active{% endif %}">Tất cả</a>
+        </div>
+
+        <div class="card" style="padding: 25px;">
+            {% if topups.items %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>User</th>
+                            <th>Số tiền</th>
+                            <th>GodCoin</th>
+                            <th>Phương thức</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for topup in topups.items %}
+                        <tr>
+                            <td><strong>#{{ topup.user.id }}</strong></td>
+                            <td>{{ topup.user.username }}</td>
+                            <td>{{ '{:,.0f}'.format(topup.amount) }} VNĐ</td>
+                            <td><span class="card-price"><i class="fas fa-coins"></i> {{ topup.godcoin_amount }}</span></td>
+                            <td>
+                                {% if topup.method == 'momo' %}
+                                <span style="color: #ae2070;"><i class="fas fa-mobile-alt"></i> MoMo</span>
+                                {% else %}
+                                <span style="color: var(--primary-color);"><i class="fas fa-university"></i> Bank</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if topup.status == 'pending' %}
+                                <span class="stock-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning-color);"><i class="fas fa-clock"></i> Chờ</span>
+                                {% elif topup.status == 'approved' %}
+                                <span class="stock-badge in-stock"><i class="fas fa-check"></i> Duyệt</span>
+                                {% else %}
+                                <span class="stock-badge out-of-stock"><i class="fas fa-times"></i> Từ chối</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ topup.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                {% if topup.status == 'pending' %}
+                                <form method="POST" action="{{ url_for('admin.approve_topup', topup_id=topup.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.reject_topup', topup_id=topup.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
+                                </form>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if topups.pages > 1 %}
+            <div class="pagination">
+                {% if topups.has_prev %}
+                <a href="{{ url_for('admin.topups', page=topups.prev_num, status=current_status) }}"><i class="fas fa-chevron-left"></i></a>
+                {% endif %}
+                {% for page_num in topups.iter_pages() %}
+                    {% if page_num %}
+                        <a href="{{ url_for('admin.topups', page=page_num, status=current_status) }}" class="{% if page_num == topups.page %}active{% endif %}">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if topups.has_next %}
+                <a href="{{ url_for('admin.topups', page=topups.next_num, status=current_status) }}"><i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-receipt"></i>
+                <p>Không có yêu cầu nào</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

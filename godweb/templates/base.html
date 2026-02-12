@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GodWeb{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('main.home') }}" class="navbar-brand">
+                <div class="logo">G</div>
+                <span class="brand-name">God<span>Web</span></span>
+            </a>
+
+            <!-- Hamburger Menu Button (Mobile) -->
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="navbar-menu">
+                <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Trang chủ</a>
+                <a href="{{ url_for('blog.index') }}"><i class="fas fa-blog"></i> Blog</a>
+                <a href="{{ url_for('store.index') }}"><i class="fas fa-store"></i> Cửa hàng</a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('wallet.topup') }}"><i class="fas fa-coins"></i> Nạp GodCoin</a>
+                {% endif %}
+                <button type="button" id="toggleSiteTheme" class="theme-toggle-btn" title="Đổi màu nền">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+
+            <div class="navbar-auth">
+                {% if current_user.is_authenticated %}
+                    <div class="godcoin-balance">
+                        <i class="fas fa-coins"></i>
+                        <span>{{ current_user.godcoin_balance }} GC</span>
+                    </div>
+                    <div class="dropdown" id="userDropdown">
+                        <a href="javascript:void(0);" class="btn btn-outline dropdown-toggle" style="color: white; border-color: white;">
+                            <i class="fas fa-user"></i> <span class="username-text">{{ current_user.username }}</span>
+                            <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 5px;"></i>
+                        </a>
+                        <div class="dropdown-menu">
+                            <a href="{{ url_for('profile.index') }}"><i class="fas fa-user-circle"></i> Trang cá nhân</a>
+                            <a href="{{ url_for('wallet.index') }}"><i class="fas fa-wallet"></i> Ví GodCoin</a>
+                            <a href="{{ url_for('profile.orders') }}"><i class="fas fa-shopping-bag"></i> Lịch sử mua</a>
+                            {% if current_user.is_admin() %}
+                            <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-cog"></i> Quản trị</a>
+                            {% endif %}
+                            <div class="dropdown-divider"></div>
+                            <a href="{{ url_for('auth.logout') }}" class="logout-link"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-login-mobile" style="color: white; border-color: white;">
+                        <i class="fas fa-sign-in-alt"></i> <span class="btn-text">Đăng nhập</span>
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-secondary btn-register-mobile">
+                        <i class="fas fa-user-plus"></i> <span class="btn-text">Đăng ký</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="toggleMobileMenu()"></div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-menu-header">
+                <span class="brand-name">God<span>Web</span></span>
+                <button class="mobile-menu-close" onclick="toggleMobileMenu()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mobile-menu-links">
+                <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Trang chủ</a>
+                <a href="{{ url_for('blog.index') }}"><i class="fas fa-blog"></i> Blog</a>
+                <a href="{{ url_for('store.index') }}"><i class="fas fa-store"></i> Cửa hàng</a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('wallet.topup') }}"><i class="fas fa-coins"></i> Nạp GodCoin</a>
+                <a href="{{ url_for('profile.index') }}"><i class="fas fa-user-circle"></i> Trang cá nhân</a>
+                <a href="{{ url_for('wallet.index') }}"><i class="fas fa-wallet"></i> Ví GodCoin</a>
+                <a href="{{ url_for('profile.orders') }}"><i class="fas fa-shopping-bag"></i> Lịch sử mua</a>
+                {% if current_user.is_admin() %}
+                <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-cog"></i> Quản trị</a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="logout-link"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
+                <a href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> Đăng ký</a>
+                {% endif %}
+                <a href="#" onclick="toggleSiteThemeFromMobile(); return false;" id="mobileThemeToggle"><i class="fas fa-moon"></i> Chế độ tối</a>
+            </div>
+            <div class="mobile-menu-contact">
+                <a href="https://t.me/+THBiUkl2JmRmMzM1" target="_blank"><i class="fab fa-telegram"></i> Telegram</a>
+                <a href="https://www.tiktok.com/@godexvn" target="_blank"><i class="fab fa-tiktok"></i> TikTok</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container" style="margin-top: 20px;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>GodWeb</h4>
+                    <p>Nền tảng chia sẻ kiến thức và mua bán tài khoản số hàng đầu Việt Nam.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Liên kết</h4>
+                    <a href="{{ url_for('main.home') }}">Trang chủ</a>
+                    <a href="{{ url_for('blog.index') }}">Blog</a>
+                    <a href="{{ url_for('store.index') }}">Cửa hàng</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Hỗ trợ</h4>
+                    <a href="{{ url_for('main.contact') }}">Liên hệ</a>
+                    <a href="{{ url_for('main.terms') }}">Điều khoản</a>
+                    <a href="{{ url_for('main.about') }}">Về chúng tôi</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Liên hệ</h4>
+                    <a href="https://t.me/+THBiUkl2JmRmMzM1" target="_blank"><i class="fab fa-telegram"></i> Telegram</a>
+                    <a href="https://www.tiktok.com/@godexvn" target="_blank"><i class="fab fa-tiktok"></i> TikTok @godexvn</a>
+                    <p><i class="fas fa-envelope"></i> support@godweb.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 GodWeb. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

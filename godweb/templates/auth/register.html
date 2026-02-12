@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Đăng ký - GodWeb{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div class="logo" style="width: 60px; height: 60px; margin: 0 auto 15px; font-size: 24px; background: var(--gradient-gold); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white;">G</div>
+            <h2 style="margin-bottom: 5px;">Tạo tài khoản</h2>
+            <p style="color: var(--text-light);">Đăng ký để trải nghiệm GodWeb!</p>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-user"></i> Tên người dùng</label>
+                <input type="text" name="username" class="form-control" placeholder="Nhập tên người dùng" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" name="email" class="form-control" placeholder="Nhập email của bạn" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-lock"></i> Mật khẩu</label>
+                <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu (ít nhất 6 ký tự)" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-lock"></i> Xác nhận mật khẩu</label>
+                <input type="password" name="confirm_password" class="form-control" placeholder="Nhập lại mật khẩu" required>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" required style="margin-top: 4px;">
+                    <span>Tôi đồng ý với <a href="{{ url_for('main.terms') }}" style="color: var(--primary-color);">Điều khoản sử dụng</a> và <a href="#" style="color: var(--primary-color);">Chính sách bảo mật</a></span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">
+                <i class="fas fa-user-plus"></i> Đăng ký
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--border-color);">
+            <p>Đã có tài khoản? <a href="{{ url_for('auth.login') }}" style="color: var(--primary-color); font-weight: 600;">Đăng nhập</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

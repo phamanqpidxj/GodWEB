@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - GodWeb{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 40px;">
+    <div class="container" style="max-width: 1000px;">
+        <a href="{{ url_for('store.index') }}" class="btn btn-outline btn-sm" style="margin-bottom: 30px;">
+            <i class="fas fa-arrow-left"></i> Quay lại cửa hàng
+        </a>
+
+        <div class="product-detail">
+            <!-- Product Image -->
+            <div>
+                {% if product.image %}
+                <img src="{{ product.image|image_url }}" alt="{{ product.name }}" class="product-image">
+                {% else %}
+                <div class="product-image placeholder">
+                    <i class="fas fa-box"></i>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Product Info -->
+            <div>
+                <h1 style="font-size: 32px; margin-bottom: 15px;">{{ product.name }}</h1>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                    {% if product.stock > 0 %}
+                    <span class="stock-badge in-stock" style="padding: 8px 16px;"><i class="fas fa-check"></i> Còn {{ product.stock }} sản phẩm</span>
+                    {% else %}
+                    <span class="stock-badge out-of-stock" style="padding: 8px 16px;"><i class="fas fa-times"></i> Hết hàng</span>
+                    {% endif %}
+                </div>
+
+                <div class="product-price-card">
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 28px; color: var(--secondary-color); font-weight: 700;">
+                        <i class="fas fa-coins"></i>
+                        <span>{{ product.price }} GodCoin</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px;"><i class="fas fa-info-circle"></i> Mô tả sản phẩm</h3>
+                    <p style="color: var(--text-light); line-height: 1.8;">{{ product.description or 'Không có mô tả chi tiết.' }}</p>
+                </div>
+
+                <div class="product-actions">
+                    {% if product.stock > 0 %}
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.godcoin_balance >= product.price %}
+                            <form method="POST" action="{{ url_for('store.buy', product_id=product.id) }}">
+                                <button type="submit" class="btn btn-secondary" style="width: 100%; padding: 15px; font-size: 18px;">
+                                    <i class="fas fa-shopping-cart"></i> Mua ngay
+                                </button>
+                            </form>
+                            <p style="text-align: center; margin-top: 10px; color: var(--text-light);">
+                                Số dư hiện tại: <strong>{{ current_user.godcoin_balance }} GC</strong>
+                            </p>
+                            {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Số dư không đủ! Bạn cần {{ product.price - current_user.godcoin_balance }} GC nữa.
+                            </div>
+                            <a href="{{ url_for('wallet.topup') }}" class="btn btn-primary" style="width: 100%; padding: 15px;">
+                                <i class="fas fa-coins"></i> Nạp GodCoin ngay
+                            </a>
+                            {% endif %}
+                        {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 18px;">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập để mua
+                        </a>
+                        {% endif %}
+                    {% else %}
+                    <button class="btn btn-outline" style="width: 100%; padding: 15px; font-size: 18px; opacity: 0.5;" disabled>
+                        <i class="fas fa-times"></i> Hết hàng
+                    </button>
+                    {% endif %}
+                </div>
+
+                <div class="product-feature-card" style="margin-top: 30px;">
+                    <h4 style="margin-bottom: 15px;"><i class="fas fa-shield-alt"></i> Cam kết</h4>
+                    <ul class="product-feature-list">
+                        <li><i class="fas fa-check" style="color: var(--success-color);"></i> Tài khoản chính hãng 100%</li>
+                        <li><i class="fas fa-check" style="color: var(--success-color);"></i> Giao hàng tự động ngay sau khi thanh toán</li>
+                        <li><i class="fas fa-check" style="color: var(--success-color);"></i> Hỗ trợ 24/7</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

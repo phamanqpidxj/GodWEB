@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-blog"></i> Blog Kiến Thức</h1>
+        <p>Khám phá các tips & trick hữu ích cho cuộc sống và công việc</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <!-- Search and Filter -->
+        <form method="GET" class="search-bar">
+            <input type="text" name="search" placeholder="Tìm kiếm bài viết..." value="{{ search }}">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Tìm kiếm</button>
+        </form>
+
+        <!-- Categories -->
+        <div class="filter-tags">
+            <a href="{{ url_for('blog.index') }}" class="filter-tag {% if not current_category %}active{% endif %}">Tất cả</a>
+            {% for cat in categories %}
+            <a href="{{ url_for('blog.index', category=cat.id) }}" class="filter-tag {% if current_category == cat.id %}active{% endif %}">{{ cat.name }}</a>
+            {% endfor %}
+        </div>
+
+        <!-- Posts Grid -->
+        {% if posts.items %}
+        <div class="grid grid-3">
+            {% for post in posts.items %}
+            <div class="card" {% if post.pin_priority > 0 %}style="border: 2px solid {% if post.pin_priority == 2 %}var(--danger-color){% else %}var(--primary-color){% endif %};"{% endif %}>
+                {% if post.pin_priority > 0 %}
+                <div class="pin-badge" style="background: {% if post.pin_priority == 2 %}var(--danger-color){% else %}var(--primary-color){% endif %};">
+                    <i class="fas fa-thumbtack"></i> {% if post.pin_priority == 2 %}Admin Pin{% else %}Ghim{% endif %}
+                </div>
+                {% endif %}
+                {% if post.thumbnail %}
+                <img src="{{ post.thumbnail|image_url }}" alt="{{ post.title }}" class="card-image">
+                {% else %}
+                <div class="card-image" style="display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="flex-between mb-20">
+                        {% if post.category %}
+                        <span class="filter-tag" style="padding: 4px 10px; font-size: 12px;">{{ post.category.name }}</span>
+                        {% else %}
+                        <span></span>
+                        {% endif %}
+                        {% if post.is_premium %}
+                        <span class="premium-badge"><i class="fas fa-crown"></i> Premium</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="card-title">{{ post.title }}</h3>
+                    <p class="card-text">{{ post.content[:100] }}...</p>
+                    <div class="card-meta">
+                        <span><i class="fas fa-eye"></i> {{ post.views }} | <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%d/%m/%Y') }}</span>
+                        {% if post.is_premium %}
+                        <span class="card-price"><i class="fas fa-coins"></i> {{ post.premium_price }} GC</span>
+                        {% else %}
+                        <span style="color: var(--success-color);"><i class="fas fa-unlock"></i> Free</span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('blog.detail', post_id=post.id) }}" class="btn btn-outline btn-sm" style="width: 100%; margin-top: 15px;">
+                        Đọc bài viết <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if posts.pages > 1 %}
+        <div class="pagination">
+            {% if posts.has_prev %}
+            <a href="{{ url_for('blog.index', page=posts.prev_num, category=current_category, search=search) }}"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+
+            {% for page_num in posts.iter_pages() %}
+                {% if page_num %}
+                    <a href="{{ url_for('blog.index', page=page_num, category=current_category, search=search) }}" class="{% if page_num == posts.page %}active{% endif %}">{{ page_num }}</a>
+                {% else %}
+                    <span>...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if posts.has_next %}
+            <a href="{{ url_for('blog.index', page=posts.next_num, category=current_category, search=search) }}"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>Không tìm thấy bài viết</h3>
+            <p>Hãy thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Nạp GodCoin - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-coins"></i> Nạp GodCoin</h1>
+        <p>Chọn phương thức thanh toán và nạp GodCoin</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container" style="max-width: 900px;">
+        <div class="card" style="padding: 40px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <p style="color: var(--text-light);">Số dư hiện tại: <strong style="color: var(--secondary-color); font-size: 24px;">{{ current_user.godcoin_balance }} GC</strong></p>
+                <p style="color: var(--text-light); font-size: 14px;">ID của bạn: <strong style="color: var(--primary-color);">#{{ current_user.id }}</strong></p>
+            </div>
+
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-money-bill"></i> Số tiền nạp (VNĐ)</label>
+                    <select name="amount" class="form-control" id="amount-select">
+                        <option value="10000">10,000 VNĐ = 10 GodCoin</option>
+                        <option value="20000">20,000 VNĐ = 20 GodCoin</option>
+                        <option value="50000">50,000 VNĐ = 50 GodCoin</option>
+                        <option value="100000" selected>100,000 VNĐ = 100 GodCoin</option>
+                        <option value="200000">200,000 VNĐ = 200 GodCoin</option>
+                        <option value="500000">500,000 VNĐ = 500 GodCoin</option>
+                        <option value="1000000">1,000,000 VNĐ = 1000 GodCoin</option>
+                    </select>
+                    <p style="font-size: 14px; color: var(--text-light); margin-top: 10px;">
+                        <i class="fas fa-info-circle"></i> Tỷ lệ: 1,000 VNĐ = 1 GodCoin
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-credit-card"></i> Phương thức thanh toán</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="method" value="momo" required style="display: none;" class="payment-radio">
+                            <div class="payment-option" style="border: 2px solid var(--border-color); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s;">
+                                <div style="width: 60px; height: 60px; background: #ae2070; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: white; font-weight: bold;">
+                                    MOMO
+                                </div>
+                                <h4>Ví MoMo</h4>
+                                <p style="font-size: 14px; color: var(--text-light);">Chuyển khoản nhanh</p>
+                            </div>
+                        </label>
+
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="method" value="bank" required style="display: none;" class="payment-radio">
+                            <div class="payment-option" style="border: 2px solid var(--border-color); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s;">
+                                <div style="width: 60px; height: 60px; background: #1e7e34; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: white;">
+                                    <i class="fas fa-university" style="font-size: 24px;"></i>
+                                </div>
+                                <h4>Vietcombank</h4>
+                                <p style="font-size: 14px; color: var(--text-light);">Chuyển khoản ngân hàng</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- QR Code Display -->
+                <div id="qr-section" style="display: none; margin-top: 30px;">
+                    <!-- MoMo QR -->
+                    <div id="momo-qr" style="display: none;">
+                        <div style="background: linear-gradient(135deg, #f8bbd9 0%, #f48fb1 100%); border-radius: 16px; padding: 30px; text-align: center;">
+                            <h3 style="margin-bottom: 5px; color: #880e4f;">PHẠM DĨ AN</h3>
+                            <p style="color: #880e4f; margin-bottom: 20px;">*******017</p>
+
+                            <div style="background: white; border-radius: 16px; padding: 20px; display: inline-block;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px;">
+                                    <span style="color: #ae2070; font-weight: bold; font-size: 20px;">momo</span>
+                                    <span style="color: #e53935; font-weight: bold;">VIETQR</span>
+                                    <span style="color: #0288d1; font-weight: bold;">napas247</span>
+                                </div>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=2|99|0867401017|PHAM DI AN||0|0|0||transfer_myqr"
+                                     alt="MoMo QR" style="width: 200px; height: 200px; border-radius: 10px;">
+                            </div>
+
+                            <div style="margin-top: 20px; background: white; border-radius: 12px; padding: 15px;">
+                                <p style="margin-bottom: 10px;"><i class="fas fa-phone" style="color: #ae2070;"></i> <strong>SDT:</strong> 0867401017</p>
+                                <p><i class="fas fa-user" style="color: #ae2070;"></i> <strong>Tên:</strong> PHAM DI AN</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank QR -->
+                    <div id="bank-qr" style="display: none;">
+                        <div style="background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); border-radius: 16px; padding: 30px; text-align: center;">
+                            <div style="background: white; border-radius: 16px; padding: 20px; display: inline-block;">
+                                <img src="https://img.vietqr.io/image/VCB-1040222867-compact.png"
+                                     alt="Bank QR" style="width: 250px; border-radius: 10px;">
+                            </div>
+
+                            <div style="margin-top: 20px; background: white; border-radius: 12px; padding: 15px;">
+                                <p style="margin-bottom: 10px;"><i class="fas fa-university" style="color: #1e7e34;"></i> <strong>Ngân hàng:</strong> Vietcombank (VCB)</p>
+                                <p style="margin-bottom: 10px;"><i class="fas fa-credit-card" style="color: #1e7e34;"></i> <strong>STK:</strong> 1040222867</p>
+                                <p><i class="fas fa-user" style="color: #1e7e34;"></i> <strong>Tên:</strong> PHAM DI AN</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nội dung chuyển khoản -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; margin-top: 20px; text-align: center;">
+                        <p style="color: white; margin-bottom: 10px;"><i class="fas fa-edit"></i> Nội dung chuyển khoản:</p>
+                        <div style="background: white; border-radius: 8px; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 15px;">
+                            <code id="transfer-content" style="font-size: 20px; font-weight: bold; color: #333;">GOD{{ current_user.id }}</code>
+                            <button type="button" onclick="copyContent()" class="btn btn-primary btn-sm">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <p style="color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 10px;">
+                            <i class="fas fa-exclamation-triangle"></i> Vui lòng ghi đúng nội dung để được duyệt nhanh!
+                        </p>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-secondary" style="width: 100%; padding: 15px; margin-top: 30px; font-size: 18px;">
+                    <i class="fas fa-check-circle"></i> Tôi đã thanh toán
+                </button>
+            </form>
+
+            <div class="alert alert-info" style="margin-top: 20px;">
+                <i class="fas fa-info-circle"></i>
+                Sau khi chuyển khoản, vui lòng bấm "Tôi đã thanh toán" và chờ Admin xác nhận (thường trong 5-15 phút).
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.payment-radio:checked + .payment-option {
+    border-color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.1);
+}
+</style>
+
+<script>
+document.querySelectorAll('.payment-radio').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.getElementById('qr-section').style.display = 'block';
+        document.getElementById('momo-qr').style.display = this.value === 'momo' ? 'block' : 'none';
+        document.getElementById('bank-qr').style.display = this.value === 'bank' ? 'block' : 'none';
+    });
+});
+
+function copyContent() {
+    const content = document.getElementById('transfer-content').innerText;
+    navigator.clipboard.writeText(content).then(function() {
+        alert('Đã copy: ' + content);
+    });
+}
+</script>
+{% endblock %}

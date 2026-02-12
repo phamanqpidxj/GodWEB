@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Chỉnh sửa hồ sơ - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-edit"></i> Chỉnh sửa hồ sơ</h1>
+        <p>Cập nhật thông tin cá nhân của bạn</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container" style="max-width: 700px;">
+        <!-- Thông tin cá nhân -->
+        <div class="card" style="padding: 40px; margin-bottom: 30px;">
+            <h3 style="margin-bottom: 25px; color: var(--primary-color);"><i class="fas fa-user-circle"></i> Thông tin cá nhân</h3>
+            <form method="POST" action="{{ url_for('profile.edit') }}">
+                <input type="hidden" name="form_type" value="profile">
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-id-card"></i> ID tài khoản</label>
+                    <input type="text" class="form-control" value="#{{ current_user.id }}" disabled style="background: var(--light-color); font-weight: bold; color: var(--secondary-color);">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-user"></i> Tên người dùng</label>
+                    <input type="text" name="username" class="form-control" value="{{ current_user.username }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
+                    <p style="font-size: 14px; color: var(--text-light); margin-top: 5px;">Email không thể thay đổi</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu thông tin
+                </button>
+            </form>
+        </div>
+
+        <!-- Đổi mật khẩu -->
+        <div class="card" style="padding: 40px;">
+            <h3 style="margin-bottom: 25px; color: var(--danger-color);"><i class="fas fa-lock"></i> Đổi mật khẩu</h3>
+            <form method="POST" action="{{ url_for('profile.edit') }}">
+                <input type="hidden" name="form_type" value="password">
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-lock"></i> Mật khẩu hiện tại</label>
+                    <input type="password" name="current_password" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-key"></i> Mật khẩu mới</label>
+                    <input type="password" name="new_password" class="form-control" required minlength="6">
+                    <p style="font-size: 14px; color: var(--text-light); margin-top: 5px;">Tối thiểu 6 ký tự</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-key"></i> Xác nhận mật khẩu mới</label>
+                    <input type="password" name="confirm_password" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-save"></i> Đổi mật khẩu
+                </button>
+            </form>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <a href="{{ url_for('profile.index') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Quay lại trang cá nhân
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

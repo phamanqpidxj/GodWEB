@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Bài viết đã mua - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-newspaper"></i> Bài viết đã mua</h1>
+        <p>Danh sách các bài viết premium bạn đã mua</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        {% if purchases.items %}
+        <div class="grid grid-3">
+            {% for purchase in purchases.items %}
+            <div class="card">
+                <div class="card-body">
+                    <span class="premium-badge" style="margin-bottom: 15px;"><i class="fas fa-crown"></i> Premium</span>
+                    <h3 class="card-title">{{ purchase.post.title }}</h3>
+                    <p class="card-text">{{ purchase.post.content[:100] }}...</p>
+                    <div class="card-meta">
+                        <span><i class="fas fa-coins"></i> {{ purchase.price }} GC</span>
+                        <span>{{ purchase.created_at.strftime('%d/%m/%Y') }}</span>
+                    </div>
+                    <a href="{{ url_for('blog.detail', post_id=purchase.post.id) }}" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 15px;">
+                        <i class="fas fa-book-open"></i> Đọc bài viết
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if purchases.pages > 1 %}
+        <div class="pagination">
+            {% if purchases.has_prev %}
+            <a href="{{ url_for('profile.purchases', page=purchases.prev_num) }}"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+
+            {% for page_num in purchases.iter_pages() %}
+                {% if page_num %}
+                    <a href="{{ url_for('profile.purchases', page=page_num) }}" class="{% if page_num == purchases.page %}active{% endif %}">{{ page_num }}</a>
+                {% else %}
+                    <span>...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if purchases.has_next %}
+            <a href="{{ url_for('profile.purchases', page=purchases.next_num) }}"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-newspaper"></i>
+            <h3>Chưa mua bài viết nào</h3>
+            <p>Khám phá các bài viết premium chất lượng!</p>
+            <a href="{{ url_for('blog.index') }}" class="btn btn-primary" style="margin-top: 20px;">
+                <i class="fas fa-blog"></i> Đến Blog
+            </a>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 30px;">
+            <a href="{{ url_for('profile.index') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Quay lại trang cá nhân
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

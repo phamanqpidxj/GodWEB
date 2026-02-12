@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Lịch sử nạp tiền - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-clock"></i> Lịch sử nạp tiền</h1>
+        <p>Theo dõi các yêu cầu nạp GodCoin của bạn</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        {% if topups %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Số tiền</th>
+                        <th>GodCoin</th>
+                        <th>Phương thức</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th>Ngày xử lý</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for topup in topups %}
+                    <tr>
+                        <td>{{ topup.id }}</td>
+                        <td>{{ '{:,.0f}'.format(topup.amount) }} VNĐ</td>
+                        <td><span class="card-price"><i class="fas fa-coins"></i> {{ topup.godcoin_amount }} GC</span></td>
+                        <td>
+                            {% if topup.method == 'momo' %}
+                            <span style="color: #ae2070;"><i class="fas fa-mobile-alt"></i> MoMo</span>
+                            {% else %}
+                            <span style="color: var(--primary-color);"><i class="fas fa-university"></i> Ngân hàng</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if topup.status == 'pending' %}
+                            <span class="stock-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning-color);"><i class="fas fa-clock"></i> Đang chờ</span>
+                            {% elif topup.status == 'approved' %}
+                            <span class="stock-badge in-stock"><i class="fas fa-check"></i> Đã duyệt</span>
+                            {% else %}
+                            <span class="stock-badge out-of-stock"><i class="fas fa-times"></i> Từ chối</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ topup.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ topup.processed_at.strftime('%d/%m/%Y %H:%M') if topup.processed_at else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-receipt"></i>
+            <h3>Chưa có yêu cầu nạp nào</h3>
+            <p>Hãy nạp GodCoin để bắt đầu!</p>
+            <a href="{{ url_for('wallet.topup') }}" class="btn btn-secondary" style="margin-top: 20px;">
+                <i class="fas fa-coins"></i> Nạp GodCoin
+            </a>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 30px;">
+            <a href="{{ url_for('wallet.index') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Quay lại ví
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

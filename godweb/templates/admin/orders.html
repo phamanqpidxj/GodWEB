@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Đơn hàng - GodWeb{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="color: var(--primary-color);"><i class="fas fa-cog"></i> Admin Panel</h3>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.users') }}"><i class="fas fa-users"></i> Người dùng</a>
+            <a href="{{ url_for('admin.categories') }}"><i class="fas fa-folder"></i> Danh mục</a>
+            <a href="{{ url_for('admin.posts') }}"><i class="fas fa-newspaper"></i> Bài viết</a>
+            <a href="{{ url_for('admin.products') }}"><i class="fas fa-box"></i> Sản phẩm</a>
+            <a href="{{ url_for('admin.topups') }}"><i class="fas fa-coins"></i> Yêu cầu nạp</a>
+            <a href="{{ url_for('admin.transactions') }}"><i class="fas fa-history"></i> Giao dịch</a>
+            <a href="{{ url_for('admin.orders') }}" class="active"><i class="fas fa-shopping-cart"></i> Đơn hàng</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Về trang chủ</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <h2 style="margin-bottom: 30px;"><i class="fas fa-shopping-cart"></i> Đơn hàng</h2>
+
+        <div class="card" style="padding: 25px;">
+            {% if orders.items %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Sản phẩm</th>
+                            <th>Giá</th>
+                            <th>Tài khoản đã bán</th>
+                            <th>Ngày mua</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders.items %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.user.username }}</td>
+                            <td>{{ order.product.name }}</td>
+                            <td><span class="card-price"><i class="fas fa-coins"></i> {{ order.price }} GC</span></td>
+                            <td><code style="background: var(--light-color); padding: 3px 8px; border-radius: 4px;">{{ order.account_info }}</code></td>
+                            <td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if orders.pages > 1 %}
+            <div class="pagination">
+                {% if orders.has_prev %}
+                <a href="{{ url_for('admin.orders', page=orders.prev_num) }}"><i class="fas fa-chevron-left"></i></a>
+                {% endif %}
+                {% for page_num in orders.iter_pages() %}
+                    {% if page_num %}
+                        <a href="{{ url_for('admin.orders', page=page_num) }}" class="{% if page_num == orders.page %}active{% endif %}">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if orders.has_next %}
+                <a href="{{ url_for('admin.orders', page=orders.next_num) }}"><i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Chưa có đơn hàng nào</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

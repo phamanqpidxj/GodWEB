@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Chỉnh sửa sản phẩm - GodWeb{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="color: var(--primary-color);"><i class="fas fa-cog"></i> Admin Panel</h3>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.users') }}"><i class="fas fa-users"></i> Người dùng</a>
+            <a href="{{ url_for('admin.categories') }}"><i class="fas fa-folder"></i> Danh mục</a>
+            <a href="{{ url_for('admin.posts') }}"><i class="fas fa-newspaper"></i> Bài viết</a>
+            <a href="{{ url_for('admin.products') }}" class="active"><i class="fas fa-box"></i> Sản phẩm</a>
+            <a href="{{ url_for('admin.topups') }}"><i class="fas fa-coins"></i> Yêu cầu nạp</a>
+            <a href="{{ url_for('admin.transactions') }}"><i class="fas fa-history"></i> Giao dịch</a>
+            <a href="{{ url_for('admin.orders') }}"><i class="fas fa-shopping-cart"></i> Đơn hàng</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Về trang chủ</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <h2 style="margin-bottom: 30px;"><i class="fas fa-edit"></i> Chỉnh sửa sản phẩm</h2>
+
+        <div class="card" style="padding: 30px;">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label class="form-label">Tên sản phẩm</label>
+                    <input type="text" name="name" class="form-control" value="{{ product.name }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mô tả</label>
+                    <textarea name="description" class="form-control" rows="4">{{ product.description }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Giá (GodCoin)</label>
+                    <input type="number" name="price" class="form-control" value="{{ product.price }}" required min="1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Hình ảnh</label>
+                    {% if product.image %}
+                    <div style="margin-bottom: 10px;">
+                        <p>Hình ảnh hiện tại:</p>
+                        <img src="{{ product.image|image_url }}" alt="{{ product.name }}" style="max-width: 200px; border-radius: 8px; margin-top: 5px;">
+                    </div>
+                    {% endif %}
+                    <input type="file" name="image" class="form-control" accept="image/*">
+                    <small style="color: var(--text-light);">Chọn ảnh mới để thay thế (để trống nếu không muốn đổi)</small>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Tồn kho hiện tại: <strong>{{ product.stock }}</strong> tài khoản.
+                    <a href="{{ url_for('admin.product_inventory', product_id=product.id) }}" style="color: var(--info-color);">Quản lý kho</a>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
+                    <a href="{{ url_for('admin.products') }}" class="btn btn-outline"><i class="fas fa-times"></i> Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}GodWeb - Chia sẻ kiến thức & Mua bán tài khoản{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container hero-content">
+        <h1>Chào mừng đến với <span>GodWeb</span></h1>
+        <p>Nền tảng chia sẻ tips & trick, mua bán tài khoản game, học tập và phần mềm với hệ thống GodCoin tiện lợi.</p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('blog.index') }}" class="btn btn-primary">
+                <i class="fas fa-book-reader"></i> Khám phá Blog
+            </a>
+            <a href="{{ url_for('store.index') }}" class="btn btn-secondary">
+                <i class="fas fa-shopping-cart"></i> Cửa hàng
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Tại sao chọn GodWeb?</h2>
+            <p>Chúng tôi cung cấp dịch vụ tốt nhất cho bạn</p>
+        </div>
+        <div class="grid grid-3">
+            <div class="card" style="text-align: center; padding: 40px;">
+                <div style="font-size: 50px; color: var(--primary-color); margin-bottom: 20px;">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="card-title">Kiến thức chất lượng</h3>
+                <p class="card-text">Các bài viết tips & trick được chọn lọc kỹ càng, hữu ích cho công việc và cuộc sống.</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 40px;">
+                <div style="font-size: 50px; color: var(--secondary-color); margin-bottom: 20px;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="card-title">Giao dịch an toàn</h3>
+                <p class="card-text">Hệ thống GodCoin giúp giao dịch nhanh chóng, an toàn và được bảo vệ tuyệt đối.</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 40px;">
+                <div style="font-size: 50px; color: var(--success-color); margin-bottom: 20px;">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3 class="card-title">Hỗ trợ 24/7</h3>
+                <p class="card-text">Đội ngũ hỗ trợ luôn sẵn sàng giải đáp mọi thắc mắc của bạn.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Posts -->
+<section class="section" style="background: var(--light-color);">
+    <div class="container">
+        <div class="section-title">
+            <h2>Bài viết nổi bật</h2>
+            <p>Các bài viết mới nhất từ blog của chúng tôi</p>
+        </div>
+        {% if posts %}
+        <div class="grid grid-3">
+            {% for post in posts %}
+            <div class="card">
+                {% if post.thumbnail %}
+                <img src="{{ post.thumbnail|image_url }}" alt="{{ post.title }}" class="card-image">
+                {% else %}
+                <div class="card-image" style="display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="flex-between mb-20">
+                        {% if post.category %}
+                        <span class="filter-tag" style="padding: 4px 10px; font-size: 12px;">{{ post.category.name }}</span>
+                        {% endif %}
+                        {% if post.is_premium %}
+                        <span class="premium-badge"><i class="fas fa-crown"></i> Premium</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="card-title">{{ post.title }}</h3>
+                    <p class="card-text">{{ post.content[:100] }}...</p>
+                    <div class="card-meta">
+                        <span><i class="fas fa-eye"></i> {{ post.views }}</span>
+                        {% if post.is_premium %}
+                        <span class="card-price"><i class="fas fa-coins"></i> {{ post.premium_price }} GC</span>
+                        {% else %}
+                        <span style="color: var(--success-color);"><i class="fas fa-unlock"></i> Miễn phí</span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('blog.detail', post_id=post.id) }}" class="btn btn-outline btn-sm" style="width: 100%; margin-top: 15px;">
+                        Đọc thêm <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-20">
+            <a href="{{ url_for('blog.index') }}" class="btn btn-primary">
+                Xem tất cả bài viết <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-newspaper"></i>
+            <h3>Chưa có bài viết nào</h3>
+            <p>Hãy quay lại sau để xem các bài viết mới!</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Sản phẩm nổi bật</h2>
+            <p>Các tài khoản và sản phẩm số đang được bán</p>
+        </div>
+        {% if products %}
+        <div class="grid grid-4">
+            {% for product in products %}
+            <div class="card">
+                {% if product.image %}
+                <img src="{{ product.image|image_url }}" alt="{{ product.name }}" class="card-image">
+                {% else %}
+                <div class="card-image" style="display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; background: var(--gradient-gold);">
+                    <i class="fas fa-box"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h3 class="card-title">{{ product.name }}</h3>
+                    <p class="card-text">{{ product.description[:60] if product.description else 'Không có mô tả' }}...</p>
+                    <div class="card-meta">
+                        {% if product.stock > 0 %}
+                        <span class="stock-badge in-stock"><i class="fas fa-check"></i> Còn {{ product.stock }}</span>
+                        {% else %}
+                        <span class="stock-badge out-of-stock"><i class="fas fa-times"></i> Hết hàng</span>
+                        {% endif %}
+                        <span class="card-price"><i class="fas fa-coins"></i> {{ product.price }} GC</span>
+                    </div>
+                    <a href="{{ url_for('store.detail', product_id=product.id) }}" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 15px;">
+                        Xem chi tiết
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-20">
+            <a href="{{ url_for('store.index') }}" class="btn btn-secondary">
+                Xem tất cả sản phẩm <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-store-slash"></i>
+            <h3>Chưa có sản phẩm nào</h3>
+            <p>Hãy quay lại sau để xem các sản phẩm mới!</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section" style="background: var(--gradient-primary); color: white; text-align: center;">
+    <div class="container">
+        <h2 style="font-size: 36px; margin-bottom: 20px;">Bắt đầu ngay hôm nay!</h2>
+        <p style="font-size: 18px; margin-bottom: 30px; opacity: 0.9;">Đăng ký tài khoản để trải nghiệm đầy đủ các tính năng của GodWeb</p>
+        {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-secondary" style="font-size: 18px; padding: 15px 40px;">
+            <i class="fas fa-rocket"></i> Đăng ký miễn phí
+        </a>
+        {% else %}
+        <a href="{{ url_for('wallet.topup') }}" class="btn btn-secondary" style="font-size: 18px; padding: 15px 40px;">
+            <i class="fas fa-coins"></i> Nạp GodCoin ngay
+        </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

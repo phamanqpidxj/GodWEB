@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý sản phẩm - GodWeb{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="color: var(--primary-color);"><i class="fas fa-cog"></i> Admin Panel</h3>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.users') }}"><i class="fas fa-users"></i> Người dùng</a>
+            <a href="{{ url_for('admin.categories') }}"><i class="fas fa-folder"></i> Danh mục</a>
+            <a href="{{ url_for('admin.posts') }}"><i class="fas fa-newspaper"></i> Bài viết</a>
+            <a href="{{ url_for('admin.products') }}" class="active"><i class="fas fa-box"></i> Sản phẩm</a>
+            <a href="{{ url_for('admin.topups') }}"><i class="fas fa-coins"></i> Yêu cầu nạp</a>
+            <a href="{{ url_for('admin.transactions') }}"><i class="fas fa-history"></i> Giao dịch</a>
+            <a href="{{ url_for('admin.orders') }}"><i class="fas fa-shopping-cart"></i> Đơn hàng</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Về trang chủ</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <div class="flex-between" style="margin-bottom: 30px;">
+            <h2><i class="fas fa-box"></i> Quản lý sản phẩm</h2>
+            <a href="{{ url_for('admin.create_product') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm sản phẩm</a>
+        </div>
+
+        <div class="card" style="padding: 25px;">
+            {% if products.items %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Hình ảnh</th>
+                            <th>Tên</th>
+                            <th>Giá</th>
+                            <th>Tồn kho</th>
+                            <th>Ngày tạo</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products.items %}
+                        <tr>
+                            <td>{{ product.id }}</td>
+                            <td>
+                                {% if product.image %}
+                                <img src="{{ product.image|image_url }}" alt="{{ product.name }}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                {% else %}
+                                <div style="width: 60px; height: 40px; background: var(--light-color); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-light);">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ product.name }}</td>
+                            <td><span class="card-price"><i class="fas fa-coins"></i> {{ product.price }} GC</span></td>
+                            <td>
+                                {% if product.stock > 0 %}
+                                <span class="stock-badge in-stock">{{ product.stock }}</span>
+                                {% else %}
+                                <span class="stock-badge out-of-stock">Hết hàng</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ product.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.product_inventory', product_id=product.id) }}" class="btn btn-outline btn-sm"><i class="fas fa-warehouse"></i></a>
+                                <a href="{{ url_for('admin.edit_product', product_id=product.id) }}" class="btn btn-outline btn-sm"><i class="fas fa-edit"></i></a>
+                                <form method="POST" action="{{ url_for('admin.delete_product', product_id=product.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận xóa?')"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if products.pages > 1 %}
+            <div class="pagination">
+                {% if products.has_prev %}
+                <a href="{{ url_for('admin.products', page=products.prev_num) }}"><i class="fas fa-chevron-left"></i></a>
+                {% endif %}
+                {% for page_num in products.iter_pages() %}
+                    {% if page_num %}
+                        <a href="{{ url_for('admin.products', page=page_num) }}" class="{% if page_num == products.page %}active{% endif %}">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if products.has_next %}
+                <a href="{{ url_for('admin.products', page=products.next_num) }}"><i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <p>Chưa có sản phẩm nào</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

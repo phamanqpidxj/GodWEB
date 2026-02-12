@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+
+{% block title %}Chỉnh sửa bài viết - GodWeb{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="color: var(--primary-color);"><i class="fas fa-cog"></i> Admin Panel</h3>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.users') }}"><i class="fas fa-users"></i> Người dùng</a>
+            <a href="{{ url_for('admin.categories') }}"><i class="fas fa-folder"></i> Danh mục</a>
+            <a href="{{ url_for('admin.posts') }}" class="active"><i class="fas fa-newspaper"></i> Bài viết</a>
+            <a href="{{ url_for('admin.products') }}"><i class="fas fa-box"></i> Sản phẩm</a>
+            <a href="{{ url_for('admin.topups') }}"><i class="fas fa-coins"></i> Yêu cầu nạp</a>
+            <a href="{{ url_for('admin.transactions') }}"><i class="fas fa-history"></i> Giao dịch</a>
+            <a href="{{ url_for('admin.orders') }}"><i class="fas fa-shopping-cart"></i> Đơn hàng</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Về trang chủ</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <h2 style="margin-bottom: 30px;"><i class="fas fa-edit"></i> Chỉnh sửa bài viết</h2>
+
+        <div class="card" style="padding: 30px;">
+            <form method="POST" enctype="multipart/form-data" id="postForm">
+                <div class="form-group">
+                    <label class="form-label">Tiêu đề</label>
+                    <input type="text" name="title" class="form-control" value="{{ post.title }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Danh mục</label>
+                    <select name="category_id" class="form-control">
+                        <option value="">-- Chọn danh mục --</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if post.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nội dung <small style="color: var(--text-light);">(Bạn có thể dán ảnh trực tiếp bằng Ctrl+V)</small></label>
+                    <!-- Toolbar -->
+                    <div class="editor-toolbar" style="display: flex; gap: 5px; margin-bottom: 10px; padding: 10px; background: var(--light-color); border-radius: 8px; flex-wrap: wrap; align-items: center;">
+                        <button type="button" onclick="formatText('bold')" class="btn btn-outline btn-sm" title="In đậm"><i class="fas fa-bold"></i></button>
+                        <button type="button" onclick="formatText('italic')" class="btn btn-outline btn-sm" title="In nghiêng"><i class="fas fa-italic"></i></button>
+                        <button type="button" onclick="formatText('underline')" class="btn btn-outline btn-sm" title="Gạch chân"><i class="fas fa-underline"></i></button>
+                        <span style="border-left: 1px solid var(--border-color); margin: 0 5px;"></span>
+                        <button type="button" onclick="formatText('insertUnorderedList')" class="btn btn-outline btn-sm" title="Danh sách"><i class="fas fa-list-ul"></i></button>
+                        <button type="button" onclick="formatText('insertOrderedList')" class="btn btn-outline btn-sm" title="Danh sách số"><i class="fas fa-list-ol"></i></button>
+                        <span style="border-left: 1px solid var(--border-color); margin: 0 5px;"></span>
+                        <button type="button" onclick="insertLink()" class="btn btn-outline btn-sm" title="Chèn link"><i class="fas fa-link"></i></button>
+                        <button type="button" onclick="document.getElementById('imageUpload').click()" class="btn btn-outline btn-sm" title="Chèn ảnh"><i class="fas fa-image"></i></button>
+                        <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="insertImage(this)">
+                        <span style="border-left: 1px solid var(--border-color); margin: 0 5px;"></span>
+                        <button type="button" id="toggleEditorTheme" class="btn btn-outline btn-sm" title="Đổi màu nền"><i class="fas fa-moon"></i> Nền tối</button>
+                    </div>
+                    <!-- Editor -->
+                    <div id="editor" contenteditable="true" class="form-control"
+                         style="min-height: 300px; max-height: 600px; overflow-y: auto; line-height: 1.6;">{{ post.content | safe }}</div>
+                    <input type="hidden" name="content" id="contentInput">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Thumbnail</label>
+                    {% if post.thumbnail %}
+                    <div style="margin-bottom: 10px;">
+                        <p>Thumbnail hiện tại:</p>
+                        <img src="{{ post.thumbnail|image_url }}" alt="Current thumbnail" style="max-width: 200px; border-radius: 8px; margin-top: 5px;">
+                    </div>
+                    {% endif %}
+                    <input type="file" name="thumbnail" class="form-control" accept="image/*">
+                    <small style="color: var(--text-light);">Chọn ảnh mới để thay thế (để trống nếu không muốn đổi)</small>
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" name="is_premium" id="is_premium" {% if post.is_premium %}checked{% endif %}>
+                        <span>Bài viết Premium</span>
+                    </label>
+                </div>
+
+                <div class="form-group" id="price_group" style="{% if not post.is_premium %}display: none;{% endif %}">
+                    <label class="form-label">Giá (GodCoin)</label>
+                    <input type="number" name="premium_price" class="form-control" value="{{ post.premium_price }}" min="0">
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
+                    <a href="{{ url_for('admin.posts') }}" class="btn btn-outline"><i class="fas fa-times"></i> Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+#editor {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    color: #000 !important;
+}
+#editor * {
+    color: #000 !important;
+    background-color: transparent !important;
+}
+#editor:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+#editor img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+/* Dark mode for editor */
+#editor.dark-mode {
+    background: #2d2d2d !important;
+    border-color: #444;
+}
+#editor.dark-mode,
+#editor.dark-mode * {
+    color: #fff !important;
+}
+</style>
+
+<script>
+const editor = document.getElementById('editor');
+const contentInput = document.getElementById('contentInput');
+
+// Clean HTML: Remove background-color and color styles but keep basic formatting
+function cleanPastedHTML(html) {
+    // Create a temporary div to parse HTML
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+
+    // Find all elements with style attributes
+    const allElements = temp.querySelectorAll('*');
+    allElements.forEach(el => {
+        // Remove background-color, color, and background styles
+        if (el.style) {
+            el.style.backgroundColor = '';
+            el.style.background = '';
+            el.style.color = '';
+            // Remove entire style attribute if it's empty after cleaning
+            if (!el.getAttribute('style') || el.getAttribute('style').replace(/[;\s]/g, '') === '') {
+                el.removeAttribute('style');
+            }
+        }
+        // Remove class attributes from pasted content
+        el.removeAttribute('class');
+        // Remove data attributes
+        Array.from(el.attributes).forEach(attr => {
+            if (attr.name.startsWith('data-')) {
+                el.removeAttribute(attr.name);
+            }
+        });
+    });
+
+    return temp.innerHTML;
+}
+
+// Handle paste event for images and text
+editor.addEventListener('paste', async function(e) {
+    const items = e.clipboardData.items;
+    let hasImage = false;
+
+    // Check for images first
+    for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+            e.preventDefault();
+            const file = item.getAsFile();
+            await uploadAndInsertImage(file);
+            hasImage = true;
+            break;
+        }
+    }
+
+    // If no image, handle text/HTML paste
+    if (!hasImage) {
+        // Get HTML content from clipboard
+        const htmlContent = e.clipboardData.getData('text/html');
+        const textContent = e.clipboardData.getData('text/plain');
+
+        if (htmlContent) {
+            e.preventDefault();
+            // Clean the HTML before inserting
+            const cleanedHTML = cleanPastedHTML(htmlContent);
+            document.execCommand('insertHTML', false, cleanedHTML);
+        }
+        // If only plain text, let the browser handle it normally
+    }
+});
+
+// Upload image and insert into editor
+async function uploadAndInsertImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    // Show loading indicator
+    const loadingId = 'loading-' + Date.now();
+    const loadingHtml = `<span id="${loadingId}" style="color: var(--text-light);"><i class="fas fa-spinner fa-spin"></i> Đang tải ảnh...</span>`;
+    document.execCommand('insertHTML', false, loadingHtml);
+
+    try {
+        const response = await fetch('{{ url_for("admin.upload_image") }}', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        const loadingEl = document.getElementById(loadingId);
+
+        if (result.success) {
+            const imgHtml = `<img src="${result.url}" alt="Uploaded image"><br>`;
+            if (loadingEl) {
+                loadingEl.outerHTML = imgHtml;
+            }
+        } else {
+            if (loadingEl) {
+                loadingEl.outerHTML = `<span style="color: red;">[Lỗi: ${result.error}]</span>`;
+            }
+        }
+    } catch (error) {
+        const loadingEl = document.getElementById(loadingId);
+        if (loadingEl) {
+            loadingEl.outerHTML = `<span style="color: red;">[Lỗi tải ảnh]</span>`;
+        }
+    }
+}
+
+// Insert image from file input
+function insertImage(input) {
+    if (input.files && input.files[0]) {
+        uploadAndInsertImage(input.files[0]);
+    }
+}
+
+// Format text commands
+function formatText(command) {
+    document.execCommand(command, false, null);
+    editor.focus();
+}
+
+// Insert link
+function insertLink() {
+    const url = prompt('Nhập URL:');
+    if (url) {
+        document.execCommand('createLink', false, url);
+    }
+}
+
+// Before form submit, copy editor content to hidden input
+document.getElementById('postForm').addEventListener('submit', function(e) {
+    contentInput.value = editor.innerHTML;
+});
+
+// Premium checkbox toggle
+document.getElementById('is_premium').addEventListener('change', function() {
+    document.getElementById('price_group').style.display = this.checked ? 'block' : 'none';
+});
+
+// Toggle editor theme (dark/light mode)
+const toggleThemeBtn = document.getElementById('toggleEditorTheme');
+toggleThemeBtn.addEventListener('click', function() {
+    editor.classList.toggle('dark-mode');
+
+    if (editor.classList.contains('dark-mode')) {
+        this.innerHTML = '<i class="fas fa-sun"></i> Nền sáng';
+        localStorage.setItem('editorTheme', 'dark');
+    } else {
+        this.innerHTML = '<i class="fas fa-moon"></i> Nền tối';
+        localStorage.setItem('editorTheme', 'light');
+    }
+});
+
+// Load saved theme
+if (localStorage.getItem('editorTheme') === 'dark') {
+    editor.classList.add('dark-mode');
+    toggleThemeBtn.innerHTML = '<i class="fas fa-sun"></i> Nền sáng';
+}
+</script>
+{% endblock %}

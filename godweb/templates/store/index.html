@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Cửa hàng - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-store"></i> Cửa hàng Tài khoản</h1>
+        <p>Mua bán tài khoản game, học tập, phần mềm uy tín</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <!-- Search -->
+        <form method="GET" class="search-bar">
+            <input type="text" name="search" placeholder="Tìm kiếm sản phẩm..." value="{{ search }}">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Tìm kiếm</button>
+        </form>
+
+        <!-- Products Grid -->
+        {% if products.items %}
+        <div class="grid grid-4">
+            {% for product in products.items %}
+            <div class="card">
+                {% if product.image %}
+                <img src="{{ product.image|image_url }}" alt="{{ product.name }}" class="card-image">
+                {% else %}
+                <div class="card-image" style="display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; background: var(--gradient-gold);">
+                    <i class="fas fa-box"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h3 class="card-title">{{ product.name }}</h3>
+                    <p class="card-text">{{ product.description[:80] if product.description else 'Không có mô tả' }}...</p>
+                    <div class="card-meta">
+                        {% if product.stock > 0 %}
+                        <span class="stock-badge in-stock"><i class="fas fa-check"></i> Còn {{ product.stock }}</span>
+                        {% else %}
+                        <span class="stock-badge out-of-stock"><i class="fas fa-times"></i> Hết hàng</span>
+                        {% endif %}
+                        <span class="card-price"><i class="fas fa-coins"></i> {{ product.price }} GC</span>
+                    </div>
+                    <a href="{{ url_for('store.detail', product_id=product.id) }}" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 15px;">
+                        <i class="fas fa-eye"></i> Xem chi tiết
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if products.pages > 1 %}
+        <div class="pagination">
+            {% if products.has_prev %}
+            <a href="{{ url_for('store.index', page=products.prev_num, search=search) }}"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+
+            {% for page_num in products.iter_pages() %}
+                {% if page_num %}
+                    <a href="{{ url_for('store.index', page=page_num, search=search) }}" class="{% if page_num == products.page %}active{% endif %}">{{ page_num }}</a>
+                {% else %}
+                    <span>...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if products.has_next %}
+            <a href="{{ url_for('store.index', page=products.next_num, search=search) }}"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-store-slash"></i>
+            <h3>Không tìm thấy sản phẩm</h3>
+            <p>Hãy thử tìm kiếm với từ khóa khác hoặc quay lại sau.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

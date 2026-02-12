@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Lịch sử mua hàng - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-history"></i> Lịch sử mua hàng</h1>
+        <p>Xem các sản phẩm bạn đã mua</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        {% if orders %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Thông tin tài khoản</th>
+                        <th>Ngày mua</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.product.name }}</td>
+                        <td><span class="card-price"><i class="fas fa-coins"></i> {{ order.price }} GC</span></td>
+                        <td>
+                            <code style="background: var(--light-color); padding: 5px 10px; border-radius: 5px;">{{ order.inventory.account_info }}</code>
+                        </td>
+                        <td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-shopping-bag"></i>
+            <h3>Chưa có đơn hàng nào</h3>
+            <p>Hãy mua sản phẩm đầu tiên của bạn!</p>
+            <a href="{{ url_for('store.index') }}" class="btn btn-primary" style="margin-top: 20px;">
+                <i class="fas fa-store"></i> Đến cửa hàng
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

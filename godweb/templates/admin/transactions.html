@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Lịch sử giao dịch - GodWeb{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="color: var(--primary-color);"><i class="fas fa-cog"></i> Admin Panel</h3>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.users') }}"><i class="fas fa-users"></i> Người dùng</a>
+            <a href="{{ url_for('admin.categories') }}"><i class="fas fa-folder"></i> Danh mục</a>
+            <a href="{{ url_for('admin.posts') }}"><i class="fas fa-newspaper"></i> Bài viết</a>
+            <a href="{{ url_for('admin.products') }}"><i class="fas fa-box"></i> Sản phẩm</a>
+            <a href="{{ url_for('admin.topups') }}"><i class="fas fa-coins"></i> Yêu cầu nạp</a>
+            <a href="{{ url_for('admin.transactions') }}" class="active"><i class="fas fa-history"></i> Giao dịch</a>
+            <a href="{{ url_for('admin.orders') }}"><i class="fas fa-shopping-cart"></i> Đơn hàng</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Về trang chủ</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <h2 style="margin-bottom: 30px;"><i class="fas fa-history"></i> Lịch sử giao dịch</h2>
+
+        <div class="card" style="padding: 25px;">
+            {% if transactions.items %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Loại</th>
+                            <th>Số lượng</th>
+                            <th>Mô tả</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trans in transactions.items %}
+                        <tr>
+                            <td>{{ trans.id }}</td>
+                            <td>{{ trans.user.username }}</td>
+                            <td>
+                                {% if trans.type == 'topup' %}
+                                <span style="color: var(--success-color);"><i class="fas fa-plus-circle"></i> Nạp</span>
+                                {% elif trans.type == 'purchase' %}
+                                <span style="color: var(--danger-color);"><i class="fas fa-shopping-cart"></i> Mua</span>
+                                {% elif trans.type == 'admin_add' %}
+                                <span style="color: var(--info-color);"><i class="fas fa-gift"></i> Admin+</span>
+                                {% else %}
+                                <span style="color: var(--warning-color);"><i class="fas fa-minus-circle"></i> Admin-</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: {% if trans.amount > 0 %}var(--success-color){% else %}var(--danger-color){% endif %}; font-weight: 600;">
+                                {% if trans.amount > 0 %}+{% endif %}{{ trans.amount }} GC
+                            </td>
+                            <td>{{ trans.description }}</td>
+                            <td>{{ trans.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if transactions.pages > 1 %}
+            <div class="pagination">
+                {% if transactions.has_prev %}
+                <a href="{{ url_for('admin.transactions', page=transactions.prev_num) }}"><i class="fas fa-chevron-left"></i></a>
+                {% endif %}
+                {% for page_num in transactions.iter_pages() %}
+                    {% if page_num %}
+                        <a href="{{ url_for('admin.transactions', page=page_num) }}" class="{% if page_num == transactions.page %}active{% endif %}">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if transactions.has_next %}
+                <a href="{{ url_for('admin.transactions', page=transactions.next_num) }}"><i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-receipt"></i>
+                <p>Chưa có giao dịch nào</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

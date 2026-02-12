@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Xem file tài khoản - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-file-alt"></i> File tài khoản: {{ product.name }}</h1>
+        <p>Còn lại: {{ product.stock }} | Đã bán: {{ product.sold_count or 0 }}</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container" style="max-width: 900px;">
+        <div class="card" style="padding: 30px;">
+            <div class="flex-between" style="margin-bottom: 20px;">
+                <h3><i class="fas fa-list"></i> Nội dung file ({{ product.stock }} dòng còn lại)</h3>
+                <div>
+                    <a href="{{ url_for('admin.download_inventory_file', product_id=product.id) }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-download"></i> Tải xuống
+                    </a>
+                    <a href="{{ url_for('admin.product_inventory', product_id=product.id) }}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </div>
+
+            <div style="background: #1a1a2e; border-radius: 10px; padding: 20px; max-height: 500px; overflow-y: auto;">
+                <pre style="color: #10b981; margin: 0; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.8;">{{ content }}</pre>
+            </div>
+
+            <p style="margin-top: 15px; color: var(--text-light); font-size: 14px;">
+                <i class="fas fa-info-circle"></i> Khi người dùng mua hàng, dòng đầu tiên sẽ được lấy ra và xóa khỏi file.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

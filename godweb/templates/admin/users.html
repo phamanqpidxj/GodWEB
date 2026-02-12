@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý người dùng - GodWeb{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="color: var(--primary-color);"><i class="fas fa-cog"></i> Admin Panel</h3>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="active"><i class="fas fa-users"></i> Người dùng</a>
+            <a href="{{ url_for('admin.categories') }}"><i class="fas fa-folder"></i> Danh mục</a>
+            <a href="{{ url_for('admin.posts') }}"><i class="fas fa-newspaper"></i> Bài viết</a>
+            <a href="{{ url_for('admin.products') }}"><i class="fas fa-box"></i> Sản phẩm</a>
+            <a href="{{ url_for('admin.topups') }}"><i class="fas fa-coins"></i> Yêu cầu nạp</a>
+            <a href="{{ url_for('admin.transactions') }}"><i class="fas fa-history"></i> Giao dịch</a>
+            <a href="{{ url_for('admin.orders') }}"><i class="fas fa-shopping-cart"></i> Đơn hàng</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Về trang chủ</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <h2 style="margin-bottom: 30px;"><i class="fas fa-users"></i> Quản lý người dùng</h2>
+
+        <!-- Quick Add Coin by ID -->
+        <div class="card" style="padding: 25px; margin-bottom: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h3 style="color: white; margin-bottom: 20px;"><i class="fas fa-coins"></i> Nạp GodCoin nhanh theo ID</h3>
+            <form method="POST" action="{{ url_for('admin.quick_add_coin') }}" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="color: white; display: block; margin-bottom: 8px; font-weight: 500;">User ID</label>
+                    <input type="number" name="user_id" placeholder="Nhập ID người dùng" required
+                           style="width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 16px;">
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="color: white; display: block; margin-bottom: 8px; font-weight: 500;">Số GodCoin</label>
+                    <input type="number" name="amount" placeholder="Số lượng GodCoin" required min="1"
+                           style="width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 16px;">
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="color: white; display: block; margin-bottom: 8px; font-weight: 500;">Hành động</label>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" name="action" value="add" class="btn btn-success" style="flex: 1; padding: 12px;">
+                            <i class="fas fa-plus"></i> Cộng
+                        </button>
+                        <button type="submit" name="action" value="subtract" class="btn btn-danger" style="flex: 1; padding: 12px;">
+                            <i class="fas fa-minus"></i> Trừ
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Search User -->
+        <div class="card" style="padding: 20px; margin-bottom: 20px;">
+            <form method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" name="search" placeholder="Tìm theo ID, username hoặc email..."
+                           value="{{ request.args.get('search', '') }}"
+                           class="form-control" style="margin: 0;">
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Tìm kiếm</button>
+                <a href="{{ url_for('admin.users') }}" class="btn btn-outline">Xóa lọc</a>
+            </form>
+        </div>
+
+        <div class="card" style="padding: 25px;">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>GodCoin</th>
+                            <th>Ngày tạo</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users.items %}
+                        <tr>
+                            <td><strong>#{{ user.id }}</strong></td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.role == 'admin' %}
+                                <span class="premium-badge"><i class="fas fa-crown"></i> Admin</span>
+                                {% else %}
+                                <span class="filter-tag" style="padding: 4px 10px;">User</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="card-price"><i class="fas fa-coins"></i> {{ user.godcoin_balance }}</span></td>
+                            <td>{{ user.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-outline btn-sm" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if users.pages > 1 %}
+            <div class="pagination">
+                {% if users.has_prev %}
+                <a href="{{ url_for('admin.users', page=users.prev_num, search=request.args.get('search', '')) }}"><i class="fas fa-chevron-left"></i></a>
+                {% endif %}
+                {% for page_num in users.iter_pages() %}
+                    {% if page_num %}
+                        <a href="{{ url_for('admin.users', page=page_num, search=request.args.get('search', '')) }}" class="{% if page_num == users.page %}active{% endif %}">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if users.has_next %}
+                <a href="{{ url_for('admin.users', page=users.next_num, search=request.args.get('search', '')) }}"><i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

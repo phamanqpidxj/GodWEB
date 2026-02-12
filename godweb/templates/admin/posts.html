@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý bài viết - GodWeb{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="color: var(--primary-color);"><i class="fas fa-cog"></i> Admin Panel</h3>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.users') }}"><i class="fas fa-users"></i> Người dùng</a>
+            <a href="{{ url_for('admin.categories') }}"><i class="fas fa-folder"></i> Danh mục</a>
+            <a href="{{ url_for('admin.posts') }}" class="active"><i class="fas fa-newspaper"></i> Bài viết</a>
+            <a href="{{ url_for('admin.products') }}"><i class="fas fa-box"></i> Sản phẩm</a>
+            <a href="{{ url_for('admin.topups') }}"><i class="fas fa-coins"></i> Yêu cầu nạp</a>
+            <a href="{{ url_for('admin.transactions') }}"><i class="fas fa-history"></i> Giao dịch</a>
+            <a href="{{ url_for('admin.orders') }}"><i class="fas fa-shopping-cart"></i> Đơn hàng</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Về trang chủ</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <div class="flex-between" style="margin-bottom: 30px;">
+            <h2><i class="fas fa-newspaper"></i> Quản lý bài viết</h2>
+            <a href="{{ url_for('admin.create_post') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm bài viết</a>
+        </div>
+
+        <div class="card" style="padding: 25px;">
+            {% if posts.items %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Thumbnail</th>
+                            <th>Tiêu đề</th>
+                            <th>Danh mục</th>
+                            <th>Loại</th>
+                            <th>Lượt xem</th>
+                            <th>Ngày tạo</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in posts.items %}
+                        <tr>
+                            <td>{{ post.id }}</td>
+                            <td>
+                                {% if post.thumbnail %}
+                                <img src="{{ post.thumbnail|image_url }}" alt="{{ post.title }}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                {% else %}
+                                <div style="width: 60px; height: 40px; background: var(--light-color); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-light);">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ post.title[:40] }}...</td>
+                            <td>{{ post.category.name if post.category else '-' }}</td>
+                            <td>
+                                {% if post.is_premium %}
+                                <span class="premium-badge"><i class="fas fa-crown"></i> {{ post.premium_price }} GC</span>
+                                {% else %}
+                                <span class="stock-badge in-stock">Miễn phí</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ post.views }}</td>
+                            <td>{{ post.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('blog.detail', post_id=post.id) }}" class="btn btn-outline btn-sm" target="_blank"><i class="fas fa-eye"></i></a>
+                                <a href="{{ url_for('admin.edit_post', post_id=post.id) }}" class="btn btn-outline btn-sm"><i class="fas fa-edit"></i></a>
+                                <form method="POST" action="{{ url_for('admin.delete_post', post_id=post.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận xóa?')"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if posts.pages > 1 %}
+            <div class="pagination">
+                {% if posts.has_prev %}
+                <a href="{{ url_for('admin.posts', page=posts.prev_num) }}"><i class="fas fa-chevron-left"></i></a>
+                {% endif %}
+                {% for page_num in posts.iter_pages() %}
+                    {% if page_num %}
+                        <a href="{{ url_for('admin.posts', page=page_num) }}" class="{% if page_num == posts.page %}active{% endif %}">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if posts.has_next %}
+                <a href="{{ url_for('admin.posts', page=posts.next_num) }}"><i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-newspaper"></i>
+                <p>Chưa có bài viết nào</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

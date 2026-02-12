@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Ví GodCoin - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-wallet"></i> Ví GodCoin</h1>
+        <p>Quản lý số dư và giao dịch của bạn</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+            <!-- Balance Card -->
+            <div>
+                <div class="stat-card primary" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-coins" style="font-size: 50px; margin-bottom: 15px;"></i>
+                    <h3>Số dư hiện tại</h3>
+                    <div class="value" style="font-size: 48px;">{{ current_user.godcoin_balance }}</div>
+                    <p style="opacity: 0.8;">GodCoin</p>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <a href="{{ url_for('wallet.topup') }}" class="btn btn-secondary" style="width: 100%; padding: 15px;">
+                        <i class="fas fa-plus-circle"></i> Nạp GodCoin
+                    </a>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <a href="{{ url_for('wallet.topup_history') }}" class="btn btn-outline" style="width: 100%;">
+                        <i class="fas fa-clock"></i> Lịch sử nạp
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div>
+                <div class="card" style="padding: 25px;">
+                    <h3 style="margin-bottom: 20px;"><i class="fas fa-history"></i> Giao dịch gần đây</h3>
+
+                    {% if transactions %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Loại</th>
+                                    <th>Số lượng</th>
+                                    <th>Mô tả</th>
+                                    <th>Thời gian</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trans in transactions %}
+                                <tr>
+                                    <td>
+                                        {% if trans.type == 'topup' %}
+                                        <span style="color: var(--success-color);"><i class="fas fa-arrow-down"></i> Nạp</span>
+                                        {% elif trans.type == 'purchase' %}
+                                        <span style="color: var(--danger-color);"><i class="fas fa-arrow-up"></i> Mua</span>
+                                        {% elif trans.type == 'admin_add' %}
+                                        <span style="color: var(--info-color);"><i class="fas fa-gift"></i> Admin</span>
+                                        {% else %}
+                                        <span style="color: var(--warning-color);"><i class="fas fa-minus"></i> Trừ</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span style="color: {% if trans.amount > 0 %}var(--success-color){% else %}var(--danger-color){% endif %}; font-weight: 600;">
+                                            {% if trans.amount > 0 %}+{% endif %}{{ trans.amount }} GC
+                                        </span>
+                                    </td>
+                                    <td>{{ trans.description }}</td>
+                                    <td>{{ trans.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <a href="{{ url_for('wallet.transactions') }}" class="btn btn-outline btn-sm">
+                            Xem tất cả giao dịch <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="empty-state" style="padding: 40px;">
+                        <i class="fas fa-receipt" style="font-size: 40px;"></i>
+                        <p>Chưa có giao dịch nào</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
