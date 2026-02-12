@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import Transaction, Topup
-from extensions import db
+from godweb.models import Transaction, Topup
+from godweb.extensions import db
 
 wallet_bp = Blueprint('wallet', __name__)
 

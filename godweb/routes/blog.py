@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import Post, Category, Comment, PostPurchase, Transaction
-from extensions import db
+from godweb.models import Post, Category, Comment, PostPurchase, Transaction
+from godweb.extensions import db
 from sqlalchemy import func
 
 blog_bp = Blueprint('blog', __name__)

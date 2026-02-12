@@ -1,6 +1,6 @@
 import os
 from flask import Flask, url_for
-from extensions import db, login_manager
+from godweb.extensions import db, login_manager
 
 def create_app():
     app = Flask(__name__)
@@ -46,13 +46,13 @@ def create_app():
         return url_for('main.uploaded_file', filename=image_path)
 
     # Import and register blueprints
-    from routes.main import main_bp
-    from routes.auth import auth_bp
-    from routes.blog import blog_bp
-    from routes.store import store_bp
-    from routes.wallet import wallet_bp
-    from routes.profile import profile_bp
-    from routes.admin import admin_bp
+    from godweb.routes.main import main_bp
+    from godweb.routes.auth import auth_bp
+    from godweb.routes.blog import blog_bp
+    from godweb.routes.store import store_bp
+    from godweb.routes.wallet import wallet_bp
+    from godweb.routes.profile import profile_bp
+    from godweb.routes.admin import admin_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -66,7 +66,7 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        from models import User
+        from godweb.models import User
         # Create default admin if not exists
         admin = User.query.filter_by(email='admin@godweb.com').first()
         if not admin:

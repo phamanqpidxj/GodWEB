@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, send_from_directory, current_app
-from models import Post, Product, Category
+from godweb.models import Post, Product, Category
 import os
 
 main_bp = Blueprint('main', __name__)

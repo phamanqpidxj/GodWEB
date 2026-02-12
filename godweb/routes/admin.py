@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from models import User, Post, Category, Product, Transaction, Topup, Order
-from extensions import db
+from godweb.models import User, Post, Category, Product, Transaction, Topup, Order
+from godweb.extensions import db
 from functools import wraps
 import os
 from werkzeug.utils import secure_filename

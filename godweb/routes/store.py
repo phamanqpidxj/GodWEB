@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from models import Product, Order, Transaction
-from extensions import db
+from godweb.models import Product, Order, Transaction
+from godweb.extensions import db
 from datetime import datetime
 import os
 

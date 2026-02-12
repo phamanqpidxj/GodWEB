@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import create_app
-from extensions import db
+from godweb.extensions import db
 from sqlalchemy import text
 
 app = create_app()
@@ -14,7 +14,7 @@ app = create_app()
 with app.app_context():
     try:
         # Check if columns already exist
-        from models import Post
+        from godweb.models import Post
 
         # Try to add pin_priority column
         try:

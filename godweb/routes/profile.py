@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import Order, Transaction, PostPurchase
-from extensions import db
+from godweb.models import Order, Transaction, PostPurchase
+from godweb.extensions import db
 import os
 from werkzeug.utils import secure_filename
 
@@ -24,7 +24,7 @@ def edit():
             # Update profile info
             username = request.form.get('username')
             if username and username != current_user.username:
-                from models import User
+                from godweb.models import User
                 if User.query.filter_by(username=username).first():
                     flash('Tên người dùng đã tồn tại!', 'error')
                 else:
