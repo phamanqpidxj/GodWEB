@@ -6,7 +6,7 @@ from functools import wraps
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from utils import upload_image as upload_image_util
+from godweb.utils import upload_image as upload_image_util
 
 admin_bp = Blueprint('admin', __name__)
 
