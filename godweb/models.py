@@ -86,8 +86,6 @@ class PostPurchase(db.Model):
     price = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    user = db.relationship('User', backref='post_purchases')
-
 class Product(db.Model):
     __tablename__ = 'products'
 
