@@ -122,6 +122,25 @@ def edit_user(user_id):
 
     return render_template('admin/edit_user.html', user=user)
 
+@admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+
+    if user.id == current_user.id:
+        flash('Không thể xóa tài khoản đang đăng nhập!', 'error')
+        return redirect(url_for('admin.users'))
+
+    if user.is_admin():
+        flash('Không thể xóa tài khoản admin!', 'error')
+        return redirect(url_for('admin.users'))
+
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'Đã xóa tài khoản {user.username}!', 'success')
+    return redirect(url_for('admin.users'))
+
 @admin_bp.route('/users/<int:user_id>/balance', methods=['POST'])
 @login_required
 @admin_required

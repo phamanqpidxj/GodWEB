@@ -17,14 +17,16 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), default='user')  # user, admin
     godcoin_balance = db.Column(db.Integer, default=0)
     avatar = db.Column(db.String(255), default='default.png')
+    recovery_number = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
-    posts = db.relationship('Post', backref='author', lazy=True)
-    transactions = db.relationship('Transaction', backref='user', lazy=True)
-    orders = db.relationship('Order', backref='user', lazy=True)
-    topups = db.relationship('Topup', backref='user', lazy=True)
-    comments = db.relationship('Comment', backref='author', lazy=True)
+    posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
+    transactions = db.relationship('Transaction', backref='user', lazy=True, cascade='all, delete-orphan')
+    orders = db.relationship('Order', backref='user', lazy=True, cascade='all, delete-orphan')
+    topups = db.relationship('Topup', backref='user', lazy=True, cascade='all, delete-orphan')
+    comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
+    post_purchases = db.relationship('PostPurchase', backref='user', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -63,8 +65,8 @@ class Post(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    comments = db.relationship('Comment', backref='post', lazy=True)
-    purchases = db.relationship('PostPurchase', backref='post', lazy=True)
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
+    purchases = db.relationship('PostPurchase', backref='post', lazy=True, cascade='all, delete-orphan')
 
 class Comment(db.Model):
     __tablename__ = 'comments'

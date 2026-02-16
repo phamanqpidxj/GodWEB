@@ -96,6 +96,11 @@
                             <td>{{ user.created_at.strftime('%d/%m/%Y') }}</td>
                             <td>
                                 <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-outline btn-sm" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
+                                <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display: inline-block;" onsubmit="return confirm('Xóa tài khoản này? Hành động không thể hoàn tác.');">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         {% endfor %}

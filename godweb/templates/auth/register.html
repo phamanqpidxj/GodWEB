@@ -23,6 +23,12 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label"><i class="fas fa-key"></i> Số khôi phục</label>
+                <input type="text" name="recovery_number" class="form-control" placeholder="Ví dụ: 123456" required minlength="4" maxlength="20" pattern="\d+">
+                <small style="color: var(--text-light);">Dùng để khôi phục tài khoản nếu quên mật khẩu.</small>
+            </div>
+
+            <div class="form-group">
                 <label class="form-label"><i class="fas fa-lock"></i> Mật khẩu</label>
                 <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu (ít nhất 6 ký tự)" required minlength="6">
             </div>

@@ -1,5 +1,6 @@
 import os
 from flask import Flask, url_for
+from sqlalchemy import inspect, text
 from godweb.extensions import db, login_manager
 
 def create_app():
@@ -65,6 +66,13 @@ def create_app():
     # Create database tables
     with app.app_context():
         db.create_all()
+
+        inspector = inspect(db.engine)
+        if 'users' in inspector.get_table_names():
+            columns = [column['name'] for column in inspector.get_columns('users')]
+            if 'recovery_number' not in columns:
+                db.session.execute(text('ALTER TABLE users ADD COLUMN recovery_number VARCHAR(20)'))
+                db.session.commit()
 
         from godweb.models import User
         # Create default admin if not exists

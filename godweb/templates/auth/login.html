@@ -26,7 +26,7 @@
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                     <input type="checkbox" name="remember"> Ghi nhớ đăng nhập
                 </label>
-                <a href="#" style="color: var(--primary-color);">Quên mật khẩu?</a>
+                <a href="{{ url_for('auth.forgot_password') }}" style="color: var(--primary-color);">Quên mật khẩu?</a>
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">
