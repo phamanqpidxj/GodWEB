@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from godweb.models import User, Post, Category, Product, Transaction, Topup, Order
+from godweb.models import User, Post, Category, Product, Transaction, Topup, Order, Notification
 from godweb.extensions import db
 from functools import wraps
 import os
@@ -565,3 +565,35 @@ def orders():
     page = request.args.get('page', 1, type=int)
     orders = Order.query.order_by(Order.created_at.desc()).paginate(page=page, per_page=20)
     return render_template('admin/orders.html', orders=orders)
+
+
+@admin_bp.route('/notifications', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def notifications():
+    if request.method == 'POST':
+        content = (request.form.get('content') or '').strip()
+        if not content:
+            flash('Vui lòng nhập nội dung thông báo!', 'error')
+            return redirect(url_for('admin.notifications'))
+
+        notification = Notification(content=content, created_by=current_user.id)
+        db.session.add(notification)
+        db.session.commit()
+        flash('Đã tạo thông báo mới!', 'success')
+        return redirect(url_for('admin.notifications'))
+
+    page = request.args.get('page', 1, type=int)
+    notifications = Notification.query.order_by(Notification.created_at.desc()).paginate(page=page, per_page=20)
+    return render_template('admin/notifications.html', notifications=notifications)
+
+
+@admin_bp.route('/notifications/<int:notification_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_notification(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+    db.session.delete(notification)
+    db.session.commit()
+    flash('Đã xóa thông báo!', 'success')
+    return redirect(url_for('admin.notifications'))

@@ -1,5 +1,7 @@
-from flask import Blueprint, render_template, send_from_directory, current_app
-from godweb.models import Post, Product, Category
+from flask import Blueprint, render_template, send_from_directory, current_app, jsonify
+from flask_login import login_required, current_user
+from godweb.extensions import db
+from godweb.models import Post, Product, Category, Notification, NotificationRead
 import os
 
 main_bp = Blueprint('main', __name__)
@@ -27,3 +29,28 @@ def contact():
 @main_bp.route('/terms')
 def terms():
     return render_template('terms.html')
+
+
+@main_bp.route('/notifications/<int:notification_id>/read', methods=['POST'])
+@login_required
+def read_notification(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+
+    already_read = NotificationRead.query.filter_by(
+        user_id=current_user.id,
+        notification_id=notification.id
+    ).first()
+
+    if not already_read:
+        db.session.add(NotificationRead(user_id=current_user.id, notification_id=notification.id))
+        db.session.commit()
+
+    unread_count = db.session.query(Notification.id).outerjoin(
+        NotificationRead,
+        db.and_(
+            NotificationRead.notification_id == Notification.id,
+            NotificationRead.user_id == current_user.id
+        )
+    ).filter(NotificationRead.id.is_(None)).count()
+
+    return jsonify({'success': True, 'unread_count': unread_count})

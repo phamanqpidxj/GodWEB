@@ -1,6 +1,7 @@
 import os
 from flask import Flask, url_for
 from sqlalchemy import inspect, text
+from flask_login import current_user
 from godweb.extensions import db, login_manager
 
 def create_app():
@@ -45,6 +46,40 @@ def create_app():
             return image_path
         # Otherwise, it's a local filename - use the upload route
         return url_for('main.uploaded_file', filename=image_path)
+
+    @app.context_processor
+    def inject_notifications():
+        if not current_user.is_authenticated:
+            return {'navbar_notifications': [], 'unread_notification_count': 0}
+
+        from godweb.models import Notification, NotificationRead
+
+        notifications = Notification.query.order_by(Notification.created_at.desc()).limit(12).all()
+        if not notifications:
+            return {'navbar_notifications': [], 'unread_notification_count': 0}
+
+        read_ids = {
+            row.notification_id
+            for row in NotificationRead.query.filter_by(user_id=current_user.id).all()
+        }
+
+        navbar_notifications = []
+        unread_count = 0
+        for item in notifications:
+            is_read = item.id in read_ids
+            if not is_read:
+                unread_count += 1
+            navbar_notifications.append({
+                'id': item.id,
+                'content': item.content,
+                'created_at': item.created_at,
+                'is_read': is_read
+            })
+
+        return {
+            'navbar_notifications': navbar_notifications,
+            'unread_notification_count': unread_count
+        }
 
     # Import and register blueprints
     from godweb.routes.main import main_bp

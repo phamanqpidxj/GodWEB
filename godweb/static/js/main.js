@@ -1,5 +1,158 @@
 // GodWeb - Main JavaScript
 
+function initializeScrollReveal() {
+    const revealTargets = document.querySelectorAll('.section, .page-header, .card, .blog-content, .comments-section, .stat-card, .search-bar, .pagination, .footer-section');
+
+    revealTargets.forEach((el, index) => {
+        el.classList.add('reveal');
+        const tier = index % 4;
+        if (tier > 0) {
+            el.classList.add(`reveal-delay-${tier}`);
+        }
+    });
+
+    if (!('IntersectionObserver' in window)) {
+        revealTargets.forEach(el => el.classList.add('revealed'));
+        return;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.14,
+        rootMargin: '0px 0px -8% 0px'
+    });
+
+    revealTargets.forEach(el => observer.observe(el));
+}
+
+function initializeParallaxHero() {
+    const hero = document.querySelector('.hero');
+    if (!hero) {
+        return;
+    }
+
+    window.addEventListener('scroll', () => {
+        const offset = Math.min(window.scrollY * 0.18, 42);
+        hero.style.transform = `translateY(${offset}px)`;
+    }, { passive: true });
+}
+
+function initializeCardTilt() {
+    const cards = document.querySelectorAll('.card');
+
+    cards.forEach(card => {
+        card.addEventListener('mousemove', event => {
+            if (window.innerWidth < 992) {
+                return;
+            }
+
+            const bounds = card.getBoundingClientRect();
+            const x = event.clientX - bounds.left;
+            const y = event.clientY - bounds.top;
+            const centerX = bounds.width / 2;
+            const centerY = bounds.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -4;
+            const rotateY = ((x - centerX) / centerX) * 4;
+
+            card.style.transform = `translateY(-6px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = '';
+        });
+    });
+}
+
+function initializeButtonRipple() {
+    const buttons = document.querySelectorAll('.btn');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', event => {
+            const circle = document.createElement('span');
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+
+            circle.classList.add('btn-ripple');
+            circle.style.width = `${size}px`;
+            circle.style.height = `${size}px`;
+            circle.style.left = `${event.clientX - rect.left - size / 2}px`;
+            circle.style.top = `${event.clientY - rect.top - size / 2}px`;
+
+            const existingRipple = button.querySelector('.btn-ripple');
+            if (existingRipple) {
+                existingRipple.remove();
+            }
+
+            button.appendChild(circle);
+            circle.addEventListener('animationend', () => circle.remove(), { once: true });
+        });
+    });
+}
+
+function updateNotificationBadge(newCount) {
+    const desktopBadge = document.getElementById('notificationBadge');
+    const mobileBadge = document.getElementById('mobileNotificationCount');
+
+    if (desktopBadge) {
+        desktopBadge.textContent = String(newCount);
+        desktopBadge.classList.toggle('hidden', newCount <= 0);
+    }
+
+    if (mobileBadge) {
+        mobileBadge.textContent = String(newCount);
+        mobileBadge.setAttribute('data-count', String(newCount));
+        if (newCount <= 0) {
+            mobileBadge.textContent = '';
+        }
+    }
+}
+
+function initializeNotificationActions() {
+    const notificationItems = document.querySelectorAll('.notification-item[data-notification-id]');
+    notificationItems.forEach(item => {
+        item.addEventListener('click', async function() {
+            const notificationId = this.dataset.notificationId;
+            if (!notificationId) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    this.classList.remove('unread');
+                    updateNotificationBadge(result.unread_count || 0);
+                }
+            } catch (error) {
+                console.error('Notification read error:', error);
+            }
+        });
+    });
+}
+
+function toggleNotificationFromMobile() {
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    if (notificationDropdown) {
+        notificationDropdown.classList.toggle('active');
+    }
+}
+
 // Mobile Menu Toggle Function
 function toggleMobileMenu() {
     const mobileMenu = document.getElementById('mobileMenu');
@@ -30,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Dropdown menu click toggle
     const dropdowns = document.querySelectorAll('.dropdown');
     dropdowns.forEach(dropdown => {
-        const btn = dropdown.querySelector('.btn');
+        const btn = dropdown.querySelector('.btn, .notification-toggle');
         const menu = dropdown.querySelector('.dropdown-menu');
 
         if (btn) {
@@ -111,8 +264,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
+            const targetSelector = this.getAttribute('href');
+            if (!targetSelector || targetSelector === '#') {
+                return;
+            }
+
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            const target = document.querySelector(targetSelector);
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth' });
             }
@@ -155,6 +313,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        initializeScrollReveal();
+        initializeParallaxHero();
+        initializeCardTilt();
+        initializeButtonRipple();
+    }
+
+    initializeNotificationActions();
 });
 
 // Format number with commas

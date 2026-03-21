@@ -11,7 +11,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% if request.path.startswith('/admin') %}admin-page{% endif %}">
+    <div class="fx-bg" aria-hidden="true">
+        <span class="fx-orb fx-orb-1"></span>
+        <span class="fx-orb fx-orb-2"></span>
+        <span class="fx-orb fx-orb-3"></span>
+    </div>
+
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
@@ -35,6 +41,31 @@
                 <button type="button" id="toggleSiteTheme" class="theme-toggle-btn" title="Đổi màu nền">
                     <i class="fas fa-moon"></i>
                 </button>
+                {% if current_user.is_authenticated %}
+                <div class="dropdown notification-dropdown" id="notificationDropdown">
+                    <button type="button" class="notification-toggle" aria-label="Thông báo">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge {% if unread_notification_count == 0 %}hidden{% endif %}" id="notificationBadge">
+                            {{ unread_notification_count }}
+                        </span>
+                    </button>
+                    <div class="dropdown-menu notification-menu">
+                        <div class="notification-menu-header">
+                            <strong>Thông báo</strong>
+                        </div>
+                        {% if navbar_notifications %}
+                            {% for item in navbar_notifications %}
+                            <button type="button" class="notification-item {% if not item.is_read %}unread{% endif %}" data-notification-id="{{ item.id }}">
+                                <span class="notification-item-text">{{ item.content }}</span>
+                                <span class="notification-item-time">{{ item.created_at.strftime('%d/%m %H:%M') }}</span>
+                            </button>
+                            {% endfor %}
+                        {% else %}
+                            <div class="notification-empty">Chưa có thông báo nào.</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
             <div class="navbar-auth">
@@ -87,6 +118,11 @@
                 <a href="{{ url_for('store.index') }}"><i class="fas fa-store"></i> Cửa hàng</a>
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('wallet.topup') }}"><i class="fas fa-coins"></i> Nạp GodCoin</a>
+                <a href="#" onclick="toggleNotificationFromMobile(); return false;">
+                    <i class="fas fa-bell"></i>
+                    Thông báo
+                    <span class="mobile-notification-count" id="mobileNotificationCount" data-count="{{ unread_notification_count }}">{% if unread_notification_count > 0 %}{{ unread_notification_count }}{% endif %}</span>
+                </a>
                 <a href="{{ url_for('profile.index') }}"><i class="fas fa-user-circle"></i> Trang cá nhân</a>
                 <a href="{{ url_for('wallet.index') }}"><i class="fas fa-wallet"></i> Ví GodCoin</a>
                 <a href="{{ url_for('profile.orders') }}"><i class="fas fa-shopping-bag"></i> Lịch sử mua</a>

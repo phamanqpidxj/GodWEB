@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý thông báo - GodWeb{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="color: var(--primary-color);"><i class="fas fa-cog"></i> Admin Panel</h3>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.users') }}"><i class="fas fa-users"></i> Người dùng</a>
+            <a href="{{ url_for('admin.categories') }}"><i class="fas fa-folder"></i> Danh mục</a>
+            <a href="{{ url_for('admin.posts') }}"><i class="fas fa-newspaper"></i> Bài viết</a>
+            <a href="{{ url_for('admin.products') }}"><i class="fas fa-box"></i> Sản phẩm</a>
+            <a href="{{ url_for('admin.topups') }}"><i class="fas fa-coins"></i> Yêu cầu nạp</a>
+            <a href="{{ url_for('admin.transactions') }}"><i class="fas fa-history"></i> Giao dịch</a>
+            <a href="{{ url_for('admin.orders') }}"><i class="fas fa-shopping-cart"></i> Đơn hàng</a>
+            <a href="{{ url_for('admin.notifications') }}" class="active"><i class="fas fa-bell"></i> Thông báo</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-home"></i> Về trang chủ</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <h2 style="margin-bottom: 20px;"><i class="fas fa-bell"></i> Quản lý thông báo</h2>
+
+        <div class="card" style="padding: 24px; margin-bottom: 24px;">
+            <h3 style="margin-bottom: 12px;">Tạo thông báo mới</h3>
+            <form method="POST" action="{{ url_for('admin.notifications') }}" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+                <div style="flex: 1; min-width: 260px;">
+                    <label class="form-label">Nội dung thông báo</label>
+                    <input type="text" name="content" class="form-control" maxlength="255" placeholder="Ví dụ: Hệ thống bảo trì lúc 23:00" required>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm thông báo</button>
+            </form>
+        </div>
+
+        <div class="card" style="padding: 24px;">
+            <h3 style="margin-bottom: 14px;">Danh sách thông báo</h3>
+            {% if notifications.items %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nội dung</th>
+                            <th>Người tạo</th>
+                            <th>Thời gian</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in notifications.items %}
+                        <tr>
+                            <td>#{{ item.id }}</td>
+                            <td>{{ item.content }}</td>
+                            <td>{{ item.creator.username }}</td>
+                            <td>{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin.delete_notification', notification_id=item.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thông báo này?');">
+                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if notifications.pages > 1 %}
+            <div class="pagination">
+                {% if notifications.has_prev %}
+                <a href="{{ url_for('admin.notifications', page=notifications.prev_num) }}"><i class="fas fa-chevron-left"></i></a>
+                {% endif %}
+
+                {% for page_num in notifications.iter_pages() %}
+                    {% if page_num %}
+                    <a href="{{ url_for('admin.notifications', page=page_num) }}" class="{% if page_num == notifications.page %}active{% endif %}">{{ page_num }}</a>
+                    {% else %}
+                    <span>...</span>
+                    {% endif %}
+                {% endfor %}
+
+                {% if notifications.has_next %}
+                <a href="{{ url_for('admin.notifications', page=notifications.next_num) }}"><i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <p style="color: var(--text-light);">Chưa có thông báo nào.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -27,6 +27,8 @@ class User(UserMixin, db.Model):
     topups = db.relationship('Topup', backref='user', lazy=True, cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
     post_purchases = db.relationship('PostPurchase', backref='user', lazy=True, cascade='all, delete-orphan')
+    sent_notifications = db.relationship('Notification', backref='creator', lazy=True, cascade='all, delete-orphan')
+    notification_reads = db.relationship('NotificationRead', backref='user', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -133,3 +135,27 @@ class Topup(db.Model):
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     processed_at = db.Column(db.DateTime)
+
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(255), nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    reads = db.relationship('NotificationRead', backref='notification', lazy=True, cascade='all, delete-orphan')
+
+
+class NotificationRead(db.Model):
+    __tablename__ = 'notification_reads'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    notification_id = db.Column(db.Integer, db.ForeignKey('notifications.id'), nullable=False)
+    read_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'notification_id', name='uq_notification_read_user_notification'),
+    )
