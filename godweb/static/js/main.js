@@ -281,6 +281,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
         form.addEventListener('submit', function(e) {
+            if (form.dataset.submitting === 'true') {
+                e.preventDefault();
+                return;
+            }
+
             const requiredFields = form.querySelectorAll('[required]');
             let isValid = true;
 
@@ -296,6 +301,32 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isValid) {
                 e.preventDefault();
                 alert('Vui lòng điền đầy đủ các trường bắt buộc!');
+                return;
+            }
+
+            if ((form.method || 'GET').toUpperCase() === 'GET') {
+                return;
+            }
+
+            form.dataset.submitting = 'true';
+            const submitButton = form.querySelector('button[type="submit"], input[type="submit"]');
+            if (!submitButton) {
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.classList.add('is-loading');
+
+            if (submitButton.tagName === 'BUTTON') {
+                if (!submitButton.dataset.originalText) {
+                    submitButton.dataset.originalText = submitButton.innerHTML;
+                }
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            } else {
+                if (!submitButton.dataset.originalText) {
+                    submitButton.dataset.originalText = submitButton.value;
+                }
+                submitButton.value = 'Đang xử lý...';
             }
         });
     });

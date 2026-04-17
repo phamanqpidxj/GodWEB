@@ -1,10 +1,23 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, make_response
 from flask_login import login_required, current_user
 from godweb.models import Post, Category, Comment, PostPurchase, Transaction
 from godweb.extensions import db
 from sqlalchemy import func
 
 blog_bp = Blueprint('blog', __name__)
+
+
+def can_access_post(post, user):
+    if not post.is_premium:
+        return True
+
+    if not user.is_authenticated:
+        return False
+
+    if user.is_admin() or post.author_id == user.id:
+        return True
+
+    return PostPurchase.query.filter_by(user_id=user.id, post_id=post.id).first() is not None
 
 @blog_bp.route('/')
 def index():
@@ -84,19 +97,19 @@ def detail(post_id):
     post.views += 1
     db.session.commit()
 
-    # Check if user has purchased premium content
-    has_access = False
-    if not post.is_premium:
-        has_access = True
-    elif current_user.is_authenticated:
-        if current_user.is_admin():
-            has_access = True
-        elif PostPurchase.query.filter_by(user_id=current_user.id, post_id=post_id).first():
-            has_access = True
+    has_access = can_access_post(post, current_user)
 
-    comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.created_at.desc()).all()
+    comments = []
+    if has_access:
+        comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.created_at.desc()).all()
 
-    return render_template('blog/detail.html', post=post, has_access=has_access, comments=comments)
+    response = make_response(render_template('blog/detail.html', post=post, has_access=has_access, comments=comments))
+
+    if post.is_premium and not has_access:
+        response.headers['Cache-Control'] = 'private, no-store, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+
+    return response
 
 @blog_bp.route('/<int:post_id>/purchase', methods=['POST'])
 @login_required
@@ -139,6 +152,11 @@ def purchase(post_id):
 @login_required
 def add_comment(post_id):
     post = Post.query.get_or_404(post_id)
+
+    if not can_access_post(post, current_user):
+        flash('Bạn cần mua bài viết premium để bình luận.', 'error')
+        return redirect(url_for('blog.detail', post_id=post_id))
+
     content = request.form.get('content')
 
     if content:

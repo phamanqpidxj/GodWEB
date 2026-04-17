@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, send_from_directory, current_app, jsonify
+from flask import Blueprint, render_template, send_from_directory, current_app, jsonify, abort
 from flask_login import login_required, current_user
 from godweb.extensions import db
 from godweb.models import Post, Product, Category, Notification, NotificationRead
@@ -9,6 +9,10 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/uploads/<filename>')
 def uploaded_file(filename):
     """Serve uploaded files"""
+    normalized = filename.lower()
+    if normalized.endswith('.txt') or normalized.startswith('inventory_'):
+        abort(404)
+
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
 
 @main_bp.route('/')

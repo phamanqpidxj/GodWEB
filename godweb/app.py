@@ -1,5 +1,6 @@
 import os
-from flask import Flask, url_for
+from urllib.parse import urlparse
+from flask import Flask, url_for, request, abort
 from sqlalchemy import inspect, text
 from flask_login import current_user
 from godweb.extensions import db, login_manager
@@ -24,6 +25,15 @@ def create_app():
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+
+    is_prod_like = os.environ.get('FLASK_ENV') == 'production' or bool(os.environ.get('DYNO'))
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_COOKIE_SECURE'] = is_prod_like
+    app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+    app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
+    app.config['REMEMBER_COOKIE_SECURE'] = is_prod_like
+    app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB
 
     # Create upload folder if not exists
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -80,6 +90,36 @@ def create_app():
             'navbar_notifications': navbar_notifications,
             'unread_notification_count': unread_count
         }
+
+    @app.before_request
+    def enforce_same_origin_for_mutations():
+        if request.method not in ('POST', 'PUT', 'PATCH', 'DELETE'):
+            return
+
+        source = request.headers.get('Origin') or request.headers.get('Referer')
+        if not source:
+            return
+
+        parsed = urlparse(source)
+        if not parsed.netloc or parsed.netloc != request.host:
+            abort(403)
+
+    @app.after_request
+    def add_security_headers(response):
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
+            "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; "
+            "img-src 'self' https: data:; "
+            "connect-src 'self'; "
+            "frame-ancestors 'self';"
+        )
+        return response
 
     # Import and register blueprints
     from godweb.routes.main import main_bp
