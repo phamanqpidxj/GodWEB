@@ -32,11 +32,22 @@
         <div class="card" style="padding: 25px; margin-bottom: 30px;">
             <h3 style="margin-bottom: 20px;"><i class="fas fa-upload"></i> Upload file tài khoản</h3>
             <form method="POST" enctype="multipart/form-data">
+                {% set current_mode = product.parse_mode or 'line' %}
+                <div class="form-group">
+                    <label class="form-label">Chế độ tách tài khoản</label>
+                    <select name="parse_mode" class="form-control" required>
+                        <option value="line" {% if current_mode == 'line' %}selected{% endif %}>Mỗi dòng là 1 tài khoản</option>
+                        <option value="separator" {% if current_mode == 'separator' %}selected{% endif %}>Phân cách bằng dòng | (mỗi tài khoản có thể nhiều dòng)</option>
+                    </select>
+                    <p style="font-size: 14px; color: var(--text-light); margin-top: 5px;">
+                        <i class="fas fa-info-circle"></i> Chế độ này được lưu theo từng sản phẩm và dùng cho cả upload lẫn bán hàng.
+                    </p>
+                </div>
                 <div class="form-group">
                     <label class="form-label">File tài khoản (.txt)</label>
                     <input type="file" name="inventory_file" class="form-control" accept=".txt" required>
                     <p style="font-size: 14px; color: var(--text-light); margin-top: 5px;">
-                        <i class="fas fa-info-circle"></i> Mỗi dòng là một tài khoản. File sẽ được lưu và cập nhật khi có người mua.
+                        <i class="fas fa-info-circle"></i> Chế độ line: mỗi dòng là 1 tài khoản. Chế độ separator: dùng dòng chỉ có ký tự | để ngăn cách từng tài khoản nhiều dòng.
                     </p>
                 </div>
                 <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Upload</button>
@@ -62,6 +73,17 @@
                     <div class="value">{{ product.sold_count or 0 }}</div>
                 </div>
             </div>
+
+            <p style="margin-bottom: 20px; color: var(--text-light);">
+                <i class="fas fa-cogs"></i> Chế độ hiện tại:
+                <strong>
+                    {% if (product.parse_mode or 'line') == 'separator' %}
+                        Phân cách bằng dòng |
+                    {% else %}
+                        Mỗi dòng là 1 tài khoản
+                    {% endif %}
+                </strong>
+            </p>
 
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                 <a href="{{ url_for('admin.view_inventory_file', product_id=product.id) }}" class="btn btn-primary" target="_blank">

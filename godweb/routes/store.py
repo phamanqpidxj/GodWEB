@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from godweb.models import Product, Order, Transaction
 from godweb.extensions import db
+from godweb.utils import normalize_inventory_parse_mode, parse_inventory_accounts, write_inventory_accounts
 from datetime import datetime
 import os
 
@@ -42,11 +43,10 @@ def buy(product_id):
         flash('File tài khoản không tồn tại!', 'error')
         return redirect(url_for('store.detail', product_id=product_id))
 
-    # Read file and get first line
-    with open(filepath, 'r', encoding='utf-8') as f:
-        lines = [line.strip() for line in f.readlines() if line.strip()]
+    parse_mode = normalize_inventory_parse_mode(getattr(product, 'parse_mode', 'line'))
+    accounts = parse_inventory_accounts(filepath, parse_mode)
 
-    if not lines:
+    if not accounts:
         flash('Sản phẩm đã hết hàng!', 'error')
         product.stock = 0
         db.session.commit()
@@ -58,16 +58,15 @@ def buy(product_id):
         return redirect(url_for('wallet.topup'))
 
     # Get first account and remove it from file
-    account_info = lines[0]
-    remaining_lines = lines[1:]
+    account_info = accounts[0]
+    remaining_accounts = accounts[1:]
 
-    # Write remaining lines back to file
-    with open(filepath, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(remaining_lines))
+    # Write remaining accounts back to file using the same format mode
+    write_inventory_accounts(filepath, remaining_accounts, parse_mode)
 
     # Process purchase
     current_user.godcoin_balance -= product.price
-    product.stock = len(remaining_lines)
+    product.stock = len(remaining_accounts)
     product.sold_count = (product.sold_count or 0) + 1
 
     order = Order(

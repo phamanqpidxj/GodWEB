@@ -109,6 +109,14 @@ def create_app():
                 db.session.execute(text('ALTER TABLE users ADD COLUMN recovery_number VARCHAR(20)'))
                 db.session.commit()
 
+        if 'products' in inspector.get_table_names():
+            product_columns = [column['name'] for column in inspector.get_columns('products')]
+            if 'parse_mode' not in product_columns:
+                db.session.execute(text("ALTER TABLE products ADD COLUMN parse_mode VARCHAR(20) DEFAULT 'line'"))
+                db.session.commit()
+            db.session.execute(text("UPDATE products SET parse_mode = 'line' WHERE parse_mode IS NULL"))
+            db.session.commit()
+
         from godweb.models import User
         # Create default admin if not exists
         admin = User.query.filter_by(email='admin@godweb.com').first()

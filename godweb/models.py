@@ -99,6 +99,7 @@ class Product(db.Model):
     stock = db.Column(db.Integer, default=0)  # Number of accounts remaining in file
     sold_count = db.Column(db.Integer, default=0)  # Number of accounts sold
     inventory_file = db.Column(db.String(255))  # Path to txt file containing accounts
+    parse_mode = db.Column(db.String(20), default='line', nullable=False)  # line or separator
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     orders = db.relationship('Order', backref='product', lazy=True)

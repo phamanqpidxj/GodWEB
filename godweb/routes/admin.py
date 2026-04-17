@@ -6,7 +6,11 @@ from functools import wraps
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from godweb.utils import upload_image as upload_image_util
+from godweb.utils import (
+    upload_image as upload_image_util,
+    normalize_inventory_parse_mode,
+    parse_inventory_accounts,
+)
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -411,6 +415,7 @@ def product_inventory(product_id):
     product = Product.query.get_or_404(product_id)
 
     if request.method == 'POST':
+        parse_mode = normalize_inventory_parse_mode(request.form.get('parse_mode'))
         if 'inventory_file' in request.files:
             inventory_file = request.files['inventory_file']
             if inventory_file.filename:
@@ -419,15 +424,14 @@ def product_inventory(product_id):
                 inv_filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], inv_filename)
                 inventory_file.save(inv_filepath)
 
-                # Count lines
-                with open(inv_filepath, 'r', encoding='utf-8') as f:
-                    lines = [line.strip() for line in f.readlines() if line.strip()]
-                    product.stock = len(lines)
+                accounts = parse_inventory_accounts(inv_filepath, parse_mode)
+                product.stock = len(accounts)
+                product.parse_mode = parse_mode
 
                 product.inventory_file = inv_filename
                 product.sold_count = 0  # Reset sold count when uploading new file
                 db.session.commit()
-                flash(f'Đã upload file với {len(lines)} tài khoản!', 'success')
+                flash(f'Đã upload file với {len(accounts)} tài khoản!', 'success')
 
     return render_template('admin/product_inventory.html', product=product)
 
