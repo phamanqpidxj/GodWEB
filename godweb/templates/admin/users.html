@@ -28,7 +28,8 @@
         <!-- Quick Add Coin by ID -->
         <div class="card" style="padding: 25px; margin-bottom: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
             <h3 style="color: white; margin-bottom: 20px;"><i class="fas fa-coins"></i> Nạp GodCoin nhanh theo ID</h3>
-            <form method="POST" action="{{ url_for('admin.quick_add_coin') }}" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+            <form id="quickAddCoinForm" method="POST" action="{{ url_for('admin.quick_add_coin') }}" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                <input type="hidden" name="action" id="actionInput" value="add">
                 <div style="flex: 1; min-width: 150px;">
                     <label style="color: white; display: block; margin-bottom: 8px; font-weight: 500;">User ID</label>
                     <input type="number" name="user_id" placeholder="Nhập ID người dùng" required
@@ -42,10 +43,10 @@
                 <div style="flex: 1; min-width: 200px;">
                     <label style="color: white; display: block; margin-bottom: 8px; font-weight: 500;">Hành động</label>
                     <div style="display: flex; gap: 10px;">
-                        <button type="submit" name="action" value="add" class="btn btn-success" style="flex: 1; padding: 12px;">
+                        <button type="submit" onclick="document.getElementById('actionInput').value='add'" class="btn btn-success" style="flex: 1; padding: 12px;">
                             <i class="fas fa-plus"></i> Cộng
                         </button>
-                        <button type="submit" name="action" value="subtract" class="btn btn-danger" style="flex: 1; padding: 12px;">
+                        <button type="submit" onclick="document.getElementById('actionInput').value='subtract'" class="btn btn-danger" style="flex: 1; padding: 12px;">
                             <i class="fas fa-minus"></i> Trừ
                         </button>
                     </div>

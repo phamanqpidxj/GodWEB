@@ -70,7 +70,7 @@ def users():
 def quick_add_coin():
     user_id = request.form.get('user_id', type=int)
     amount = request.form.get('amount', type=int)
-    action = request.form.get('action')
+    action = request.form.get('action', 'add')  # Default to 'add' if not specified
 
     if not user_id or not amount or amount <= 0:
         flash('Vui lòng nhập đầy đủ ID và số lượng GodCoin!', 'error')
@@ -93,7 +93,7 @@ def quick_add_coin():
         db.session.add(transaction)
         db.session.commit()
         flash(f'Đã cộng {amount} GodCoin cho {user.username} (ID #{user_id})! Số dư mới: {user.godcoin_balance} GC', 'success')
-    else:
+    elif action == 'subtract':
         if user.godcoin_balance >= amount:
             user.godcoin_balance -= amount
             transaction = Transaction(
@@ -107,6 +107,8 @@ def quick_add_coin():
             flash(f'Đã trừ {amount} GodCoin của {user.username} (ID #{user_id})! Số dư mới: {user.godcoin_balance} GC', 'success')
         else:
             flash(f'Số dư không đủ để trừ! {user.username} chỉ có {user.godcoin_balance} GC', 'error')
+    else:
+        flash(f'Hành động không hợp lệ!', 'error')
 
     return redirect(url_for('admin.users'))
 
