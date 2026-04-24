@@ -12,17 +12,30 @@
 
 <section class="section">
     <div class="container">
+        <div class="filter-tags" style="margin-bottom: 15px;">
+            <a href="{{ url_for('blog.index', type='free', search=search, category=current_category) }}" class="filter-tag {% if current_type == 'free' %}active{% endif %}">
+                <i class="fas fa-unlock"></i> Blog thường
+            </a>
+            <a href="{{ url_for('blog.index', type='premium', search=search, category=current_category) }}" class="filter-tag {% if current_type == 'premium' %}active{% endif %}">
+                <i class="fas fa-crown"></i> Blog VIP
+            </a>
+        </div>
+
         <!-- Search and Filter -->
         <form method="GET" class="search-bar">
+            <input type="hidden" name="type" value="{{ current_type }}">
+            {% if current_category %}
+            <input type="hidden" name="category" value="{{ current_category }}">
+            {% endif %}
             <input type="text" name="search" placeholder="Tìm kiếm bài viết..." value="{{ search }}">
             <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Tìm kiếm</button>
         </form>
 
         <!-- Categories -->
         <div class="filter-tags">
-            <a href="{{ url_for('blog.index') }}" class="filter-tag {% if not current_category %}active{% endif %}">Tất cả</a>
+            <a href="{{ url_for('blog.index', type=current_type, search=search) }}" class="filter-tag {% if not current_category %}active{% endif %}">Tất cả</a>
             {% for cat in categories %}
-            <a href="{{ url_for('blog.index', category=cat.id) }}" class="filter-tag {% if current_category == cat.id %}active{% endif %}">{{ cat.name }}</a>
+            <a href="{{ url_for('blog.index', category=cat.id, type=current_type, search=search) }}" class="filter-tag {% if current_category == cat.id %}active{% endif %}">{{ cat.name }}</a>
             {% endfor %}
         </div>
 
@@ -80,19 +93,19 @@
         {% if posts.pages > 1 %}
         <div class="pagination">
             {% if posts.has_prev %}
-            <a href="{{ url_for('blog.index', page=posts.prev_num, category=current_category, search=search) }}"><i class="fas fa-chevron-left"></i></a>
+            <a href="{{ url_for('blog.index', page=posts.prev_num, category=current_category, search=search, type=current_type) }}"><i class="fas fa-chevron-left"></i></a>
             {% endif %}
 
             {% for page_num in posts.iter_pages() %}
                 {% if page_num %}
-                    <a href="{{ url_for('blog.index', page=page_num, category=current_category, search=search) }}" class="{% if page_num == posts.page %}active{% endif %}">{{ page_num }}</a>
+                    <a href="{{ url_for('blog.index', page=page_num, category=current_category, search=search, type=current_type) }}" class="{% if page_num == posts.page %}active{% endif %}">{{ page_num }}</a>
                 {% else %}
                     <span>...</span>
                 {% endif %}
             {% endfor %}
 
             {% if posts.has_next %}
-            <a href="{{ url_for('blog.index', page=posts.next_num, category=current_category, search=search) }}"><i class="fas fa-chevron-right"></i></a>
+            <a href="{{ url_for('blog.index', page=posts.next_num, category=current_category, search=search, type=current_type) }}"><i class="fas fa-chevron-right"></i></a>
             {% endif %}
         </div>
         {% endif %}

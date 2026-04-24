@@ -24,8 +24,17 @@ def index():
     page = request.args.get('page', 1, type=int)
     category_id = request.args.get('category', type=int)
     search = request.args.get('search', '')
+    post_type = request.args.get('type', 'free')
+
+    if post_type not in ['free', 'premium']:
+        post_type = 'free'
 
     query = Post.query
+
+    if post_type == 'premium':
+        query = query.filter_by(is_premium=True)
+    else:
+        query = query.filter_by(is_premium=False)
 
     if category_id:
         query = query.filter_by(category_id=category_id)
@@ -43,7 +52,7 @@ def index():
     categories = Category.query.all()
 
     return render_template('blog/index.html', posts=posts, categories=categories,
-                          current_category=category_id, search=search)
+                          current_category=category_id, search=search, current_type=post_type)
 
 @blog_bp.route('/<int:post_id>/pin', methods=['POST'])
 @login_required

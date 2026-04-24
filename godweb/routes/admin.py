@@ -226,8 +226,19 @@ def delete_category(category_id):
 @admin_required
 def posts():
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.created_at.desc()).paginate(page=page, per_page=20)
-    return render_template('admin/posts.html', posts=posts)
+    post_type = request.args.get('type', 'free')
+
+    if post_type not in ['free', 'premium']:
+        post_type = 'free'
+
+    query = Post.query
+    if post_type == 'premium':
+        query = query.filter_by(is_premium=True)
+    else:
+        query = query.filter_by(is_premium=False)
+
+    posts = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=20)
+    return render_template('admin/posts.html', posts=posts, current_type=post_type)
 
 @admin_bp.route('/posts/create', methods=['GET', 'POST'])
 @login_required

@@ -28,6 +28,15 @@
             <a href="{{ url_for('admin.create_post') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm bài viết</a>
         </div>
 
+        <div class="filter-tags" style="margin-bottom: 20px;">
+            <a href="{{ url_for('admin.posts', type='free') }}" class="filter-tag {% if current_type == 'free' %}active{% endif %}">
+                <i class="fas fa-unlock"></i> Blog thường
+            </a>
+            <a href="{{ url_for('admin.posts', type='premium') }}" class="filter-tag {% if current_type == 'premium' %}active{% endif %}">
+                <i class="fas fa-crown"></i> Blog VIP
+            </a>
+        </div>
+
         <div class="card" style="padding: 25px;">
             {% if posts.items %}
             <div class="table-responsive">
@@ -84,15 +93,15 @@
             {% if posts.pages > 1 %}
             <div class="pagination">
                 {% if posts.has_prev %}
-                <a href="{{ url_for('admin.posts', page=posts.prev_num) }}"><i class="fas fa-chevron-left"></i></a>
+                <a href="{{ url_for('admin.posts', page=posts.prev_num, type=current_type) }}"><i class="fas fa-chevron-left"></i></a>
                 {% endif %}
                 {% for page_num in posts.iter_pages() %}
                     {% if page_num %}
-                        <a href="{{ url_for('admin.posts', page=page_num) }}" class="{% if page_num == posts.page %}active{% endif %}">{{ page_num }}</a>
+                        <a href="{{ url_for('admin.posts', page=page_num, type=current_type) }}" class="{% if page_num == posts.page %}active{% endif %}">{{ page_num }}</a>
                     {% endif %}
                 {% endfor %}
                 {% if posts.has_next %}
-                <a href="{{ url_for('admin.posts', page=posts.next_num) }}"><i class="fas fa-chevron-right"></i></a>
+                <a href="{{ url_for('admin.posts', page=posts.next_num, type=current_type) }}"><i class="fas fa-chevron-right"></i></a>
                 {% endif %}
             </div>
             {% endif %}
