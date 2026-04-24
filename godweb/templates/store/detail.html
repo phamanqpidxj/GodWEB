@@ -4,7 +4,7 @@
 
 {% block content %}
 <section class="section" style="padding-top: 40px;">
-    <div class="container" style="max-width: 1000px;">
+    <div class="container page-container-narrow">
         <a href="{{ url_for('store.index') }}" class="btn btn-outline btn-sm" style="margin-bottom: 30px;">
             <i class="fas fa-arrow-left"></i> Quay lại cửa hàng
         </a>
@@ -23,26 +23,26 @@
 
             <!-- Product Info -->
             <div>
-                <h1 style="font-size: 32px; margin-bottom: 15px;">{{ product.name }}</h1>
+                <h1 class="product-title">{{ product.name }}</h1>
 
-                <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                <div class="product-meta">
                     {% if product.stock > 0 %}
-                    <span class="stock-badge in-stock" style="padding: 8px 16px;"><i class="fas fa-check"></i> Còn {{ product.stock }} sản phẩm</span>
+                    <span class="stock-badge in-stock product-stock-badge"><i class="fas fa-check"></i> Còn {{ product.stock }} sản phẩm</span>
                     {% else %}
-                    <span class="stock-badge out-of-stock" style="padding: 8px 16px;"><i class="fas fa-times"></i> Hết hàng</span>
+                    <span class="stock-badge out-of-stock product-stock-badge"><i class="fas fa-times"></i> Hết hàng</span>
                     {% endif %}
                 </div>
 
                 <div class="product-price-card">
-                    <div style="display: flex; align-items: center; gap: 10px; font-size: 28px; color: var(--secondary-color); font-weight: 700;">
+                    <div class="product-price-row">
                         <i class="fas fa-coins"></i>
                         <span>{{ product.price }} GodCoin</span>
                     </div>
                 </div>
 
                 <div style="margin-bottom: 30px;">
-                    <h3 style="margin-bottom: 15px;"><i class="fas fa-info-circle"></i> Mô tả sản phẩm</h3>
-                    <p style="color: var(--text-light); line-height: 1.8;">{{ product.description or 'Không có mô tả chi tiết.' }}</p>
+                    <h3 class="product-description-title"><i class="fas fa-info-circle"></i> Mô tả sản phẩm</h3>
+                    <p class="product-description">{{ product.description or 'Không có mô tả chi tiết.' }}</p>
                 </div>
 
                 <div class="product-actions">
@@ -50,11 +50,11 @@
                         {% if current_user.is_authenticated %}
                             {% if current_user.godcoin_balance >= product.price %}
                             <form method="POST" action="{{ url_for('store.buy', product_id=product.id) }}">
-                                <button type="submit" class="btn btn-secondary" style="width: 100%; padding: 15px; font-size: 18px;">
+                                <button type="submit" class="btn btn-secondary product-buy-btn">
                                     <i class="fas fa-shopping-cart"></i> Mua ngay
                                 </button>
                             </form>
-                            <p style="text-align: center; margin-top: 10px; color: var(--text-light);">
+                            <p class="product-note">
                                 Số dư hiện tại: <strong>{{ current_user.godcoin_balance }} GC</strong>
                             </p>
                             {% else %}
@@ -62,17 +62,17 @@
                                 <i class="fas fa-exclamation-triangle"></i>
                                 Số dư không đủ! Bạn cần {{ product.price - current_user.godcoin_balance }} GC nữa.
                             </div>
-                            <a href="{{ url_for('wallet.topup') }}" class="btn btn-primary" style="width: 100%; padding: 15px;">
+                            <a href="{{ url_for('wallet.topup') }}" class="btn btn-primary product-buy-btn">
                                 <i class="fas fa-coins"></i> Nạp GodCoin ngay
                             </a>
                             {% endif %}
                         {% else %}
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 18px;">
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary product-buy-btn">
                             <i class="fas fa-sign-in-alt"></i> Đăng nhập để mua
                         </a>
                         {% endif %}
                     {% else %}
-                    <button class="btn btn-outline" style="width: 100%; padding: 15px; font-size: 18px; opacity: 0.5;" disabled>
+                    <button class="btn btn-outline product-buy-btn" style="opacity: 0.5;" disabled>
                         <i class="fas fa-times"></i> Hết hàng
                     </button>
                     {% endif %}

@@ -13,7 +13,7 @@
             <span class="premium-badge"><i class="fas fa-crown"></i> Premium - {{ post.premium_price }} GC</span>
             {% endif %}
             {% if post.pin_priority > 0 %}
-            <span style="background: {% if post.pin_priority == 2 %}var(--danger-color){% else %}var(--primary-color){% endif %}; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px;">
+            <span class="blog-pin-badge" style="background: {% if post.pin_priority == 2 %}var(--danger-color){% else %}var(--primary-color){% endif %};">
                 <i class="fas fa-thumbtack"></i> {% if post.pin_priority == 2 %}Admin Ghim{% else %}Đã ghim{% endif %}
             </span>
             {% endif %}
@@ -36,10 +36,10 @@
 </div>
 
 <section class="section" style="padding-top: 40px;">
-    <div class="container" style="max-width: 900px;">
+    <div class="container blog-detail-container">
         <div class="blog-content">
             {% if post.thumbnail %}
-            <img src="{{ post.thumbnail|image_url }}" alt="{{ post.title }}" style="width: 100%; border-radius: 10px; margin-bottom: 30px;">
+            <img src="{{ post.thumbnail|image_url }}" alt="{{ post.title }}" class="blog-thumbnail">
             {% endif %}
 
             {% if has_access %}
@@ -47,10 +47,10 @@
                     {{ post.content | safe }}
                 </div>
             {% else %}
-                <div style="background: var(--light-color); border-radius: 16px; padding: 40px; text-align: center; margin-top: 20px;">
-                    <i class="fas fa-lock" style="font-size: 50px; color: var(--secondary-color); margin-bottom: 20px;"></i>
-                    <h3 style="margin-bottom: 15px;">Nội dung Premium</h3>
-                    <p style="color: var(--text-light); margin-bottom: 20px;">Bài viết này yêu cầu <strong>{{ post.premium_price }} GodCoin</strong> để xem đầy đủ nội dung.</p>
+                <div class="premium-card">
+                    <i class="fas fa-lock premium-lock"></i>
+                    <h3 class="premium-card-title">Nội dung Premium</h3>
+                    <p class="premium-card-text">Bài viết này yêu cầu <strong>{{ post.premium_price }} GodCoin</strong> để xem đầy đủ nội dung.</p>
 
                     {% if current_user.is_authenticated %}
                         {% if current_user.godcoin_balance >= post.premium_price %}
@@ -59,7 +59,7 @@
                                 <i class="fas fa-unlock"></i> Mở khóa với {{ post.premium_price }} GC
                             </button>
                         </form>
-                        <p style="font-size: 14px; color: var(--text-light); margin-top: 10px;">Số dư hiện tại: {{ current_user.godcoin_balance }} GC</p>
+                        <p class="payment-note" style="margin-top: 10px;">Số dư hiện tại: {{ current_user.godcoin_balance }} GC</p>
                         {% else %}
                         <p style="color: var(--danger-color); margin-bottom: 15px;">Số dư không đủ (hiện có: {{ current_user.godcoin_balance }} GC)</p>
                         <a href="{{ url_for('wallet.topup') }}" class="btn btn-primary">
@@ -78,10 +78,10 @@
         {% if has_access %}
         <!-- Comments Section -->
         <div class="comments-section" style="margin-top: 40px;">
-            <h3 style="margin-bottom: 20px;"><i class="fas fa-comments"></i> Bình luận ({{ comments|length }})</h3>
+            <h3 class="comment-count-title"><i class="fas fa-comments"></i> Bình luận ({{ comments|length }})</h3>
 
             {% if current_user.is_authenticated %}
-            <form method="POST" action="{{ url_for('blog.add_comment', post_id=post.id) }}" style="margin-bottom: 30px;">
+            <form method="POST" action="{{ url_for('blog.add_comment', post_id=post.id) }}" class="comment-form">
                 <div class="form-group">
                     <textarea name="content" class="form-control" rows="3" placeholder="Viết bình luận của bạn..." required></textarea>
                 </div>
@@ -106,8 +106,8 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="empty-state" style="padding: 30px;">
-                    <i class="fas fa-comment-slash" style="font-size: 40px;"></i>
+                <div class="comment-empty">
+                    <i class="fas fa-comment-slash"></i>
                     <p>Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
                 </div>
             {% endif %}

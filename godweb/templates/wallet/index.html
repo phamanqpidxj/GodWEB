@@ -12,24 +12,24 @@
 
 <section class="section">
     <div class="container">
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+        <div class="wallet-layout">
             <!-- Balance Card -->
             <div>
-                <div class="stat-card primary" style="text-align: center; padding: 40px;">
-                    <i class="fas fa-coins" style="font-size: 50px; margin-bottom: 15px;"></i>
+                <div class="stat-card primary balance-card">
+                    <i class="fas fa-coins"></i>
                     <h3>Số dư hiện tại</h3>
-                    <div class="value" style="font-size: 48px;">{{ current_user.godcoin_balance }}</div>
+                    <div class="value balance-value">{{ current_user.godcoin_balance }}</div>
                     <p style="opacity: 0.8;">GodCoin</p>
                 </div>
 
-                <div style="margin-top: 20px;">
-                    <a href="{{ url_for('wallet.topup') }}" class="btn btn-secondary" style="width: 100%; padding: 15px;">
+                <div class="wallet-action">
+                    <a href="{{ url_for('wallet.topup') }}" class="btn btn-secondary">
                         <i class="fas fa-plus-circle"></i> Nạp GodCoin
                     </a>
                 </div>
 
-                <div style="margin-top: 15px;">
-                    <a href="{{ url_for('wallet.topup_history') }}" class="btn btn-outline" style="width: 100%;">
+                <div class="wallet-action secondary">
+                    <a href="{{ url_for('wallet.topup_history') }}" class="btn btn-outline">
                         <i class="fas fa-clock"></i> Lịch sử nạp
                     </a>
                 </div>
@@ -37,8 +37,8 @@
 
             <!-- Recent Transactions -->
             <div>
-                <div class="card" style="padding: 25px;">
-                    <h3 style="margin-bottom: 20px;"><i class="fas fa-history"></i> Giao dịch gần đây</h3>
+                <div class="card transactions-card">
+                    <h3 class="transactions-title"><i class="fas fa-history"></i> Giao dịch gần đây</h3>
 
                     {% if transactions %}
                     <div class="table-responsive">
@@ -83,8 +83,8 @@
                         </a>
                     </div>
                     {% else %}
-                    <div class="empty-state" style="padding: 40px;">
-                        <i class="fas fa-receipt" style="font-size: 40px;"></i>
+                    <div class="wallet-empty empty-state">
+                        <i class="fas fa-receipt"></i>
                         <p>Chưa có giao dịch nào</p>
                     </div>
                     {% endif %}
