@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, after_this_request
 from flask_login import login_required, current_user
 from godweb.models import User, Post, Category, Product, Transaction, Topup, Order, Notification
 from godweb.extensions import db
@@ -10,7 +10,12 @@ from godweb.utils import (
     upload_image as upload_image_util,
     normalize_inventory_parse_mode,
     parse_inventory_accounts,
+    cleanup_inventory_folder,
+    extract_inventory_zip,
+    list_inventory_folder_files,
 )
+import tempfile
+import zipfile
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -428,23 +433,58 @@ def product_inventory(product_id):
     product = Product.query.get_or_404(product_id)
 
     if request.method == 'POST':
-        parse_mode = normalize_inventory_parse_mode(request.form.get('parse_mode'))
         if 'inventory_file' in request.files:
             inventory_file = request.files['inventory_file']
             if inventory_file.filename:
-                # Save file with product id
-                inv_filename = f"inventory_{product.id}.txt"
-                inv_filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], inv_filename)
-                inventory_file.save(inv_filepath)
+                upload_folder = current_app.config['UPLOAD_FOLDER']
+                filename = (inventory_file.filename or '').lower()
 
-                accounts = parse_inventory_accounts(inv_filepath, parse_mode)
-                product.stock = len(accounts)
-                product.parse_mode = parse_mode
+                if filename.endswith('.zip'):
+                    try:
+                        folder_name, accounts_count = extract_inventory_zip(inventory_file, upload_folder, product.id)
 
-                product.inventory_file = inv_filename
-                product.sold_count = 0  # Reset sold count when uploading new file
-                db.session.commit()
-                flash(f'Đã upload file với {len(accounts)} tài khoản!', 'success')
+                        # Remove legacy single-file inventory when switching mode.
+                        if product.inventory_file:
+                            legacy_filepath = os.path.join(upload_folder, product.inventory_file)
+                            if os.path.exists(legacy_filepath):
+                                os.remove(legacy_filepath)
+
+                        # Remove previous folder to avoid orphan data if folder name changed in future.
+                        if product.inventory_folder_path and product.inventory_folder_path != folder_name:
+                            cleanup_inventory_folder(upload_folder, product.inventory_folder_path)
+
+                        product.inventory_type = 'folder'
+                        product.inventory_folder_path = folder_name
+                        product.inventory_file = None
+                        product.stock = accounts_count
+                        product.sold_count = 0
+                        db.session.commit()
+                        flash(f'Da upload zip voi {accounts_count} tai khoan (moi file .txt la 1 tai khoan)!', 'success')
+                    except ValueError as exc:
+                        flash(str(exc), 'error')
+                    except Exception:
+                        flash('Khong the xu ly file zip. Vui long kiem tra lai!', 'error')
+                elif filename.endswith('.txt'):
+                    parse_mode = normalize_inventory_parse_mode(request.form.get('parse_mode'))
+                    inv_filename = f"inventory_{product.id}.txt"
+                    inv_filepath = os.path.join(upload_folder, inv_filename)
+                    inventory_file.save(inv_filepath)
+
+                    accounts = parse_inventory_accounts(inv_filepath, parse_mode)
+                    product.stock = len(accounts)
+                    product.parse_mode = parse_mode
+                    product.inventory_type = 'file'
+                    product.inventory_file = inv_filename
+                    product.sold_count = 0  # Reset sold count when uploading new file
+
+                    if product.inventory_folder_path:
+                        cleanup_inventory_folder(upload_folder, product.inventory_folder_path)
+                        product.inventory_folder_path = None
+
+                    db.session.commit()
+                    flash(f'Da upload file voi {len(accounts)} tai khoan!', 'success')
+                else:
+                    flash('Chi ho tro file .txt hoac .zip', 'error')
 
     return render_template('admin/product_inventory.html', product=product)
 
@@ -454,36 +494,89 @@ def product_inventory(product_id):
 def view_inventory_file(product_id):
     product = Product.query.get_or_404(product_id)
 
+    inventory_type = getattr(product, 'inventory_type', 'file') or 'file'
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+
+    if inventory_type == 'folder':
+        if not product.inventory_folder_path:
+            flash('San pham chua co thu muc tai khoan!', 'error')
+            return redirect(url_for('admin.product_inventory', product_id=product_id))
+
+        folder_path = os.path.join(upload_folder, product.inventory_folder_path)
+        if not os.path.isdir(folder_path):
+            flash('Thu muc kho khong ton tai!', 'error')
+            return redirect(url_for('admin.product_inventory', product_id=product_id))
+
+        files = list_inventory_folder_files(folder_path)
+        preview_files = files[:50]
+        return render_template('admin/view_inventory_file.html', product=product, mode='folder', files=preview_files, total_files=len(files), content='')
+
     if not product.inventory_file:
-        flash('Sản phẩm chưa có file tài khoản!', 'error')
+        flash('San pham chua co file tai khoan!', 'error')
         return redirect(url_for('admin.product_inventory', product_id=product_id))
 
-    filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], product.inventory_file)
+    filepath = os.path.join(upload_folder, product.inventory_file)
 
     if not os.path.exists(filepath):
-        flash('File không tồn tại!', 'error')
+        flash('File khong ton tai!', 'error')
         return redirect(url_for('admin.product_inventory', product_id=product_id))
 
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    return render_template('admin/view_inventory_file.html', product=product, content=content)
+    return render_template('admin/view_inventory_file.html', product=product, mode='file', content=content)
 
 @admin_bp.route('/products/<int:product_id>/download-file')
 @login_required
 @admin_required
 def download_inventory_file(product_id):
-    from flask import send_file
     product = Product.query.get_or_404(product_id)
 
+    inventory_type = getattr(product, 'inventory_type', 'file') or 'file'
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+
+    if inventory_type == 'folder':
+        if not product.inventory_folder_path:
+            flash('San pham chua co thu muc tai khoan!', 'error')
+            return redirect(url_for('admin.product_inventory', product_id=product_id))
+
+        folder_path = os.path.join(upload_folder, product.inventory_folder_path)
+        if not os.path.isdir(folder_path):
+            flash('Thu muc kho khong ton tai!', 'error')
+            return redirect(url_for('admin.product_inventory', product_id=product_id))
+
+        files = list_inventory_folder_files(folder_path)
+        if not files:
+            flash('Thu muc kho khong con file .txt de tai xuong!', 'error')
+            return redirect(url_for('admin.product_inventory', product_id=product_id))
+
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
+        temp_zip_path = temp_file.name
+        temp_file.close()
+
+        with zipfile.ZipFile(temp_zip_path, 'w', zipfile.ZIP_DEFLATED) as zip_output:
+            for filename in files:
+                full_path = os.path.join(folder_path, filename)
+                if os.path.isfile(full_path):
+                    zip_output.write(full_path, arcname=filename)
+
+        @after_this_request
+        def cleanup_temp_file(response):
+            if os.path.exists(temp_zip_path):
+                os.remove(temp_zip_path)
+            return response
+
+        safe_name = secure_filename(product.name) or f'product_{product.id}'
+        return send_file(temp_zip_path, as_attachment=True, download_name=f"{safe_name}_inventory.zip")
+
     if not product.inventory_file:
-        flash('Sản phẩm chưa có file tài khoản!', 'error')
+        flash('San pham chua co file tai khoan!', 'error')
         return redirect(url_for('admin.product_inventory', product_id=product_id))
 
-    filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], product.inventory_file)
+    filepath = os.path.join(upload_folder, product.inventory_file)
 
     if not os.path.exists(filepath):
-        flash('File không tồn tại!', 'error')
+        flash('File khong ton tai!', 'error')
         return redirect(url_for('admin.product_inventory', product_id=product_id))
 
     return send_file(filepath, as_attachment=True, download_name=f"{product.name}_inventory.txt")
@@ -499,6 +592,9 @@ def delete_product(product_id):
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], product.inventory_file)
         if os.path.exists(filepath):
             os.remove(filepath)
+
+    if getattr(product, 'inventory_folder_path', None):
+        cleanup_inventory_folder(current_app.config['UPLOAD_FOLDER'], product.inventory_folder_path)
 
     db.session.delete(product)
     db.session.commit()

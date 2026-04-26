@@ -142,19 +142,33 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+        def safe_add_column(sql):
+            try:
+                db.session.execute(text(sql))
+                db.session.commit()
+            except Exception as exc:
+                db.session.rollback()
+                # Gunicorn multi-worker boot can race on ALTER TABLE; ignore duplicate-column errors.
+                message = str(exc).lower()
+                if 'duplicate column name' not in message and 'already exists' not in message:
+                    raise
+
         inspector = inspect(db.engine)
         if 'users' in inspector.get_table_names():
             columns = [column['name'] for column in inspector.get_columns('users')]
             if 'recovery_number' not in columns:
-                db.session.execute(text('ALTER TABLE users ADD COLUMN recovery_number VARCHAR(20)'))
-                db.session.commit()
+                safe_add_column('ALTER TABLE users ADD COLUMN recovery_number VARCHAR(20)')
 
         if 'products' in inspector.get_table_names():
             product_columns = [column['name'] for column in inspector.get_columns('products')]
             if 'parse_mode' not in product_columns:
-                db.session.execute(text("ALTER TABLE products ADD COLUMN parse_mode VARCHAR(20) DEFAULT 'line'"))
-                db.session.commit()
+                safe_add_column("ALTER TABLE products ADD COLUMN parse_mode VARCHAR(20) DEFAULT 'line'")
+            if 'inventory_type' not in product_columns:
+                safe_add_column("ALTER TABLE products ADD COLUMN inventory_type VARCHAR(20) DEFAULT 'file'")
+            if 'inventory_folder_path' not in product_columns:
+                safe_add_column("ALTER TABLE products ADD COLUMN inventory_folder_path VARCHAR(255)")
             db.session.execute(text("UPDATE products SET parse_mode = 'line' WHERE parse_mode IS NULL"))
+            db.session.execute(text("UPDATE products SET inventory_type = 'file' WHERE inventory_type IS NULL"))
             db.session.commit()
 
         from godweb.models import User

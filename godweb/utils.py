@@ -1,4 +1,6 @@
 import os
+import shutil
+import zipfile
 import uuid
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -149,3 +151,108 @@ def write_inventory_accounts(filepath, accounts, parse_mode='line'):
 
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
+
+
+def cleanup_inventory_folder(upload_folder, folder_name):
+    """Delete a product inventory folder if it exists."""
+    if not folder_name:
+        return
+
+    folder_path = os.path.join(upload_folder, folder_name)
+    if os.path.isdir(folder_path):
+        shutil.rmtree(folder_path, ignore_errors=True)
+
+
+def list_inventory_folder_files(folder_path):
+    """Return sorted .txt files from inventory folder (A-Z, case-insensitive)."""
+    if not folder_path or not os.path.isdir(folder_path):
+        return []
+
+    files = []
+    for name in os.listdir(folder_path):
+        path = os.path.join(folder_path, name)
+        if os.path.isfile(path) and name.lower().endswith('.txt'):
+            files.append(name)
+
+    return sorted(files, key=lambda item: item.lower())
+
+
+def read_inventory_folder_account(folder_path, filename):
+    """Read one account file content from folder inventory mode."""
+    account_path = os.path.join(folder_path, filename)
+    with open(account_path, 'r', encoding='utf-8') as f:
+        return f.read().strip()
+
+
+def consume_inventory_folder_account(folder_path, filename):
+    """Delete a consumed account file from folder inventory mode."""
+    account_path = os.path.join(folder_path, filename)
+    if os.path.exists(account_path):
+        os.remove(account_path)
+
+
+def extract_inventory_zip(uploaded_file, upload_folder, product_id):
+    """
+    Extract a zip containing .txt account files into a per-product folder.
+    Returns (folder_name, files_count).
+    """
+    folder_name = f"inventory_folder_{product_id}"
+    target_folder = os.path.join(upload_folder, folder_name)
+
+    cleanup_inventory_folder(upload_folder, folder_name)
+    os.makedirs(target_folder, exist_ok=True)
+
+    try:
+        with zipfile.ZipFile(uploaded_file) as archive:
+            used_names = set()
+            txt_count = 0
+
+            for item in archive.infolist():
+                if item.is_dir():
+                    continue
+
+                raw_name = item.filename.replace('\\', '/')
+                normalized_parts = [part for part in raw_name.split('/') if part and part != '.']
+
+                # Prevent zip-slip and unsupported paths.
+                if not normalized_parts or '..' in normalized_parts:
+                    continue
+
+                original_name = normalized_parts[-1]
+                if not original_name.lower().endswith('.txt'):
+                    continue
+
+                safe_name = secure_filename(original_name)
+                if not safe_name:
+                    continue
+
+                base, ext = os.path.splitext(safe_name)
+                candidate = safe_name
+                suffix = 1
+                while candidate.lower() in used_names:
+                    candidate = f"{base}_{suffix}{ext}"
+                    suffix += 1
+
+                file_bytes = archive.read(item)
+                file_text = file_bytes.decode('utf-8-sig', errors='replace').strip()
+                if not file_text:
+                    continue
+
+                destination = os.path.join(target_folder, candidate)
+                with open(destination, 'w', encoding='utf-8') as f:
+                    f.write(file_text)
+
+                used_names.add(candidate.lower())
+                txt_count += 1
+
+        if txt_count == 0:
+            cleanup_inventory_folder(upload_folder, folder_name)
+            raise ValueError('File zip không chứa tài khoản .txt hợp lệ')
+
+        return folder_name, txt_count
+    except zipfile.BadZipFile as exc:
+        cleanup_inventory_folder(upload_folder, folder_name)
+        raise ValueError('File upload không phải zip hợp lệ') from exc
+    except Exception:
+        cleanup_inventory_folder(upload_folder, folder_name)
+        raise

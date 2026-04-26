@@ -1,4 +1,4 @@
-# Migration script to add pin_priority and pinned_by columns to posts table
+# Migration script to add missing schema columns used by current app features
 import os
 import sys
 
@@ -29,6 +29,23 @@ with app.app_context():
             print("Added pinned_by column")
         except Exception as e:
             print(f"pinned_by column may already exist: {e}")
+
+        # Try to add product inventory_type column
+        try:
+            db.session.execute(text("ALTER TABLE products ADD COLUMN inventory_type VARCHAR(20) DEFAULT 'file'"))
+            print("Added inventory_type column")
+        except Exception as e:
+            print(f"inventory_type column may already exist: {e}")
+
+        # Try to add product inventory_folder_path column
+        try:
+            db.session.execute(text('ALTER TABLE products ADD COLUMN inventory_folder_path VARCHAR(255)'))
+            print("Added inventory_folder_path column")
+        except Exception as e:
+            print(f"inventory_folder_path column may already exist: {e}")
+
+        # Backfill inventory_type for old products
+        db.session.execute(text("UPDATE products SET inventory_type = 'file' WHERE inventory_type IS NULL"))
 
         db.session.commit()
         print("Migration completed successfully!")
