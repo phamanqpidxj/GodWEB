@@ -9,15 +9,34 @@ def test_secret_key_random_fallback_in_production(monkeypatch, caplog, tmp_path)
     monkeypatch.delenv('SECRET_KEY', raising=False)
     monkeypatch.setenv('FLASK_ENV', 'production')
     monkeypatch.setenv('DATABASE_URL', f"sqlite:///{tmp_path / 'fallback.db'}")
-    from godweb.app import create_app, DEFAULT_DEV_SECRET_KEY
+    fallback_secret = tmp_path / 'secret'
+    monkeypatch.setenv('GODWEB_FALLBACK_SECRET_FILE', str(fallback_secret))
+    import importlib
+    import godweb.app as godweb_app
+    importlib.reload(godweb_app)
     with caplog.at_level('WARNING', logger='godweb.app'):
-        app = create_app()
+        app = godweb_app.create_app()
     secret = app.config['SECRET_KEY']
     assert secret and len(secret) >= 32
-    assert secret != DEFAULT_DEV_SECRET_KEY
+    assert secret != godweb_app.DEFAULT_DEV_SECRET_KEY
+    assert fallback_secret.exists()
     assert any('SECRET_KEY' in rec.message for rec in caplog.records), (
         'expected a loud warning when SECRET_KEY env var is missing'
     )
+
+
+def test_secret_key_persisted_across_workers(monkeypatch, tmp_path):
+    """Two create_app() calls (simulating two workers) share the same fallback key."""
+    monkeypatch.delenv('SECRET_KEY', raising=False)
+    monkeypatch.setenv('FLASK_ENV', 'production')
+    monkeypatch.setenv('DATABASE_URL', f"sqlite:///{tmp_path / 'shared.db'}")
+    monkeypatch.setenv('GODWEB_FALLBACK_SECRET_FILE', str(tmp_path / 'shared-secret'))
+    import importlib
+    import godweb.app as godweb_app
+    importlib.reload(godweb_app)
+    app_a = godweb_app.create_app()
+    app_b = godweb_app.create_app()
+    assert app_a.config['SECRET_KEY'] == app_b.config['SECRET_KEY']
 
 
 def test_no_default_admin_is_seeded(app):

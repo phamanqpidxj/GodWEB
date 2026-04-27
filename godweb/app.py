@@ -1,15 +1,50 @@
 import logging
 import os
 import secrets
+import time
 from urllib.parse import urlparse
 from flask import Flask, url_for, request, abort
 from sqlalchemy import inspect, text
 from flask_login import current_user
+from werkzeug.middleware.proxy_fix import ProxyFix
 from godweb.extensions import db, login_manager, csrf
 
 DEFAULT_DEV_SECRET_KEY = 'godweb-dev-secret-key-do-not-use-in-production'
+FALLBACK_SECRET_FILE = os.environ.get(
+    'GODWEB_FALLBACK_SECRET_FILE', '/tmp/godweb-fallback-secret'
+)
 
 logger = logging.getLogger(__name__)
+
+
+def _load_or_create_persistent_secret(path: str) -> str:
+    """Atomically share a random SECRET_KEY across gunicorn workers.
+
+    Multiple workers in the same dyno call ``create_app`` independently; if each
+    generated its own random key, sessions issued by worker A would not verify
+    on worker B and the user would appear logged out on every other request.
+    Persisting the first-generated key to a file solves this for the lifetime
+    of the dyno.
+    """
+    for _ in range(20):
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+            try:
+                os.write(fd, secrets.token_urlsafe(48).encode())
+            finally:
+                os.close(fd)
+        except FileExistsError:
+            pass
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read().strip()
+            if content:
+                return content
+        except FileNotFoundError:
+            pass
+        time.sleep(0.05)
+    # Last resort: in-process random key. Better than crashing the dyno.
+    return secrets.token_urlsafe(48)
 
 
 def create_app():
@@ -17,23 +52,28 @@ def create_app():
 
     is_prod_like = os.environ.get('FLASK_ENV') == 'production' or bool(os.environ.get('DYNO'))
 
-    # SECRET_KEY: prefer env, fall back to a random ephemeral key in
-    # production-like environments (with a loud warning) so a missing env var
-    # does not crash-loop the dyno. Sessions reset on each restart until
-    # SECRET_KEY is set explicitly via the platform config.
+    # SECRET_KEY: prefer env, otherwise fall back to a key persisted on disk so
+    # all gunicorn workers in this dyno share the same value (sessions survive
+    # the lifetime of the dyno even if the operator hasn't set the env var).
     secret_key = os.environ.get('SECRET_KEY')
     if not secret_key:
         if is_prod_like:
-            secret_key = secrets.token_urlsafe(48)
+            secret_key = _load_or_create_persistent_secret(FALLBACK_SECRET_FILE)
             logger.warning(
                 'SECRET_KEY env var is not set in a production-like environment; '
-                'generated an ephemeral random key. Set SECRET_KEY in your '
+                'using a persisted random key from %s. Set SECRET_KEY in your '
                 'platform config (e.g. `heroku config:set SECRET_KEY=...`) so '
-                'user sessions survive restarts.'
+                'sessions survive dyno restarts.', FALLBACK_SECRET_FILE,
             )
         else:
             secret_key = DEFAULT_DEV_SECRET_KEY
     app.config['SECRET_KEY'] = secret_key
+
+    # Honor the X-Forwarded-* headers set by Heroku's router so Flask sees the
+    # client IP, https scheme, and original host. Required for url_for(_external=True)
+    # and for cookie/Secure semantics behind the proxy.
+    if is_prod_like:
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     # Database configuration
     database_url = os.environ.get('DATABASE_URL')
