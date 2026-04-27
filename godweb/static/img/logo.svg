@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-label="GodWeb logo" role="img">
+  <defs>
+    <radialGradient id="logoGlow" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#fde68a" stop-opacity="0.95"/>
+      <stop offset="45%" stop-color="#f59e0b" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="logoArc" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="55%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <filter id="logoBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5"/>
+    </filter>
+  </defs>
+  <circle cx="50" cy="50" r="46" fill="url(#logoGlow)" filter="url(#logoBlur)" opacity="0.9"/>
+  <circle cx="50" cy="50" r="38" fill="#0a0a0c" stroke="url(#logoArc)" stroke-width="2.4"/>
+  <path d="M50 12 A38 38 0 0 1 50 88 A19 19 0 0 1 50 50 A19 19 0 0 0 50 12 Z" fill="url(#logoArc)"/>
+  <circle cx="50" cy="31" r="5.5" fill="#0a0a0c"/>
+  <circle cx="50" cy="69" r="5.5" fill="#fde68a"/>
+  <circle cx="50" cy="50" r="44" fill="none" stroke="url(#logoArc)" stroke-width="0.8" opacity="0.4"/>
+</svg>
