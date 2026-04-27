@@ -76,9 +76,11 @@
                             <td>
                                 {% if topup.status == 'pending' %}
                                 <form method="POST" action="{{ url_for('admin.approve_topup', topup_id=topup.id) }}" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
                                 </form>
                                 <form method="POST" action="{{ url_for('admin.reject_topup', topup_id=topup.id) }}" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
                                 </form>
                                 {% else %}

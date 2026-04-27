@@ -12,6 +12,7 @@
         </div>
 
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label class="form-label"><i class="fas fa-user"></i> Tên người dùng</label>
                 <input type="text" name="username" class="form-control" placeholder="Nhập tên người dùng" required>

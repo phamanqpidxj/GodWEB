@@ -19,6 +19,7 @@
             </div>
 
             <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <label class="form-label"><i class="fas fa-money-bill"></i> Số tiền nạp (VNĐ)</label>
                     <select name="amount" class="form-control" id="amount-select">

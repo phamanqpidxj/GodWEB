@@ -28,6 +28,7 @@
         <div class="card" style="padding: 24px; margin-bottom: 24px;">
             <h3 style="margin-bottom: 12px;">Tạo thông báo mới</h3>
             <form method="POST" action="{{ url_for('admin.notifications') }}" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div style="flex: 1; min-width: 260px;">
                     <label class="form-label">Nội dung thông báo</label>
                     <input type="text" name="content" class="form-control" maxlength="255" placeholder="Ví dụ: Hệ thống bảo trì lúc 23:00" required>
@@ -59,6 +60,7 @@
                             <td>{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>
                                 <form method="POST" action="{{ url_for('admin.delete_notification', notification_id=item.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thông báo này?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Xóa</button>
                                 </form>
                             </td>

@@ -16,6 +16,7 @@
         <div class="card" style="padding: 40px; margin-bottom: 30px;">
             <h3 style="margin-bottom: 25px; color: var(--primary-color);"><i class="fas fa-user-circle"></i> Thông tin cá nhân</h3>
             <form method="POST" action="{{ url_for('profile.edit') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="form_type" value="profile">
 
                 <div class="form-group">
@@ -44,6 +45,7 @@
         <div class="card" style="padding: 40px;">
             <h3 style="margin-bottom: 25px; color: var(--danger-color);"><i class="fas fa-lock"></i> Đổi mật khẩu</h3>
             <form method="POST" action="{{ url_for('profile.edit') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="form_type" value="password">
 
                 <div class="form-group">

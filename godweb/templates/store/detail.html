@@ -50,6 +50,7 @@
                         {% if current_user.is_authenticated %}
                             {% if current_user.godcoin_balance >= product.price %}
                             <form method="POST" action="{{ url_for('store.buy', product_id=product.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-secondary product-buy-btn">
                                     <i class="fas fa-shopping-cart"></i> Mua ngay
                                 </button>

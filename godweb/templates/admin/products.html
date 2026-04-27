@@ -70,6 +70,7 @@
                                 <a href="{{ url_for('admin.product_inventory', product_id=product.id) }}" class="btn btn-outline btn-sm"><i class="fas fa-warehouse"></i></a>
                                 <a href="{{ url_for('admin.edit_product', product_id=product.id) }}" class="btn btn-outline btn-sm"><i class="fas fa-edit"></i></a>
                                 <form method="POST" action="{{ url_for('admin.delete_product', product_id=product.id) }}" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận xóa?')"><i class="fas fa-trash"></i></button>
                                 </form>
                             </td>
