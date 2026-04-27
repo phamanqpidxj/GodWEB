@@ -1,4 +1,6 @@
+import logging
 import os
+import secrets
 from urllib.parse import urlparse
 from flask import Flask, url_for, request, abort
 from sqlalchemy import inspect, text
@@ -7,20 +9,30 @@ from godweb.extensions import db, login_manager, csrf
 
 DEFAULT_DEV_SECRET_KEY = 'godweb-dev-secret-key-do-not-use-in-production'
 
+logger = logging.getLogger(__name__)
+
+
 def create_app():
     app = Flask(__name__)
 
     is_prod_like = os.environ.get('FLASK_ENV') == 'production' or bool(os.environ.get('DYNO'))
 
-    # SECRET_KEY must be provided via env in production-like environments.
+    # SECRET_KEY: prefer env, fall back to a random ephemeral key in
+    # production-like environments (with a loud warning) so a missing env var
+    # does not crash-loop the dyno. Sessions reset on each restart until
+    # SECRET_KEY is set explicitly via the platform config.
     secret_key = os.environ.get('SECRET_KEY')
     if not secret_key:
         if is_prod_like:
-            raise RuntimeError(
-                'SECRET_KEY environment variable is required when running in '
-                'production (FLASK_ENV=production or DYNO is set).'
+            secret_key = secrets.token_urlsafe(48)
+            logger.warning(
+                'SECRET_KEY env var is not set in a production-like environment; '
+                'generated an ephemeral random key. Set SECRET_KEY in your '
+                'platform config (e.g. `heroku config:set SECRET_KEY=...`) so '
+                'user sessions survive restarts.'
             )
-        secret_key = DEFAULT_DEV_SECRET_KEY
+        else:
+            secret_key = DEFAULT_DEV_SECRET_KEY
     app.config['SECRET_KEY'] = secret_key
 
     # Database configuration

@@ -1,19 +1,22 @@
 """Regression tests for the security fixes shipped in this PR."""
 from __future__ import annotations
 
-import os
-
-import pytest
-
 from tests.conftest import extract_csrf_token
 
 
-def test_secret_key_required_in_production(monkeypatch):
+def test_secret_key_random_fallback_in_production(monkeypatch, caplog):
+    """When SECRET_KEY is missing in prod we generate a random one + log a warning."""
     monkeypatch.delenv('SECRET_KEY', raising=False)
     monkeypatch.setenv('FLASK_ENV', 'production')
-    from godweb.app import create_app
-    with pytest.raises(RuntimeError, match='SECRET_KEY'):
-        create_app()
+    from godweb.app import create_app, DEFAULT_DEV_SECRET_KEY
+    with caplog.at_level('WARNING', logger='godweb.app'):
+        app = create_app()
+    secret = app.config['SECRET_KEY']
+    assert secret and len(secret) >= 32
+    assert secret != DEFAULT_DEV_SECRET_KEY
+    assert any('SECRET_KEY' in rec.message for rec in caplog.records), (
+        'expected a loud warning when SECRET_KEY env var is missing'
+    )
 
 
 def test_no_default_admin_is_seeded(app):
