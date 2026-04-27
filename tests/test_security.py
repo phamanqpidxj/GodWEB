@@ -4,10 +4,11 @@ from __future__ import annotations
 from tests.conftest import extract_csrf_token
 
 
-def test_secret_key_random_fallback_in_production(monkeypatch, caplog):
+def test_secret_key_random_fallback_in_production(monkeypatch, caplog, tmp_path):
     """When SECRET_KEY is missing in prod we generate a random one + log a warning."""
     monkeypatch.delenv('SECRET_KEY', raising=False)
     monkeypatch.setenv('FLASK_ENV', 'production')
+    monkeypatch.setenv('DATABASE_URL', f"sqlite:///{tmp_path / 'fallback.db'}")
     from godweb.app import create_app, DEFAULT_DEV_SECRET_KEY
     with caplog.at_level('WARNING', logger='godweb.app'):
         app = create_app()
