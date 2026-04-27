@@ -29,6 +29,7 @@
         <div class="card" style="padding: 25px; margin-bottom: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
             <h3 style="color: white; margin-bottom: 20px;"><i class="fas fa-coins"></i> Nạp GodCoin nhanh theo ID</h3>
             <form id="quickAddCoinForm" method="POST" action="{{ url_for('admin.quick_add_coin') }}" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" id="actionInput" value="add">
                 <div style="flex: 1; min-width: 150px;">
                     <label style="color: white; display: block; margin-bottom: 8px; font-weight: 500;">User ID</label>
@@ -99,6 +100,7 @@
                             <td>
                                 <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-outline btn-sm" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
                                 <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display: inline-block;" onsubmit="return confirm('Xóa tài khoản này? Hành động không thể hoàn tác.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-danger btn-sm" title="Xóa">
                                         <i class="fas fa-trash"></i>
                                     </button>

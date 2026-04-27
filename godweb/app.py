@@ -3,13 +3,25 @@ from urllib.parse import urlparse
 from flask import Flask, url_for, request, abort
 from sqlalchemy import inspect, text
 from flask_login import current_user
-from godweb.extensions import db, login_manager
+from godweb.extensions import db, login_manager, csrf
+
+DEFAULT_DEV_SECRET_KEY = 'godweb-dev-secret-key-do-not-use-in-production'
 
 def create_app():
     app = Flask(__name__)
 
-    # Configuration
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'godweb-secret-key-change-in-production')
+    is_prod_like = os.environ.get('FLASK_ENV') == 'production' or bool(os.environ.get('DYNO'))
+
+    # SECRET_KEY must be provided via env in production-like environments.
+    secret_key = os.environ.get('SECRET_KEY')
+    if not secret_key:
+        if is_prod_like:
+            raise RuntimeError(
+                'SECRET_KEY environment variable is required when running in '
+                'production (FLASK_ENV=production or DYNO is set).'
+            )
+        secret_key = DEFAULT_DEV_SECRET_KEY
+    app.config['SECRET_KEY'] = secret_key
 
     # Database configuration
     database_url = os.environ.get('DATABASE_URL')
@@ -26,7 +38,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 
-    is_prod_like = os.environ.get('FLASK_ENV') == 'production' or bool(os.environ.get('DYNO'))
+    app.config['WTF_CSRF_TIME_LIMIT'] = None
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['SESSION_COOKIE_SECURE'] = is_prod_like
@@ -41,6 +53,7 @@ def create_app():
 
     # Initialize extensions
     db.init_app(app)
+    csrf.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Vui lòng đăng nhập để tiếp tục.'
@@ -172,18 +185,22 @@ def create_app():
             db.session.commit()
 
         from godweb.models import User
-        # Create default admin if not exists
-        admin = User.query.filter_by(email='admin@godweb.com').first()
-        if not admin:
-            admin = User(
-                username='admin',
-                email='admin@godweb.com',
-                role='admin',
-                godcoin_balance=10000
-            )
-            admin.set_password('admin123')
-            db.session.add(admin)
-            db.session.commit()
+        # Bootstrap an admin only when explicit env vars are supplied. This
+        # avoids shipping a known admin@godweb.com / admin123 account.
+        admin_email = os.environ.get('ADMIN_EMAIL')
+        admin_password = os.environ.get('ADMIN_PASSWORD')
+        if admin_email and admin_password:
+            existing_admin = User.query.filter_by(email=admin_email).first()
+            if not existing_admin:
+                admin = User(
+                    username=os.environ.get('ADMIN_USERNAME', 'admin'),
+                    email=admin_email,
+                    role='admin',
+                    godcoin_balance=int(os.environ.get('ADMIN_INITIAL_GODCOIN', '0') or 0),
+                )
+                admin.set_password(admin_password)
+                db.session.add(admin)
+                db.session.commit()
 
     return app
 

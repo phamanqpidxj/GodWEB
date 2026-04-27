@@ -97,8 +97,6 @@ def pin_post(post_id):
     db.session.commit()
     return redirect(url_for('blog.detail', post_id=post_id))
 
-    return render_template('blog/index.html', posts=posts, categories=categories,
-                          current_category=category_id, search=search)
 
 @blog_bp.route('/<int:post_id>')
 def detail(post_id):

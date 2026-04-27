@@ -27,6 +27,7 @@
 
         <div class="card" style="padding: 30px; max-width: 600px;">
             <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <label class="form-label">Tên danh mục</label>
                     <input type="text" name="name" class="form-control" required>

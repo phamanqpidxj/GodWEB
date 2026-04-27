@@ -22,6 +22,7 @@
             {% if current_user.is_authenticated and (current_user.is_admin() or post.author_id == current_user.id) %}
                 {% if not (post.pinned_by == 'admin' and not current_user.is_admin()) %}
                 <form method="POST" action="{{ url_for('blog.pin_post', post_id=post.id) }}" style="margin-left: auto;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 4px 12px;">
                         <i class="fas fa-thumbtack"></i>
                         {% if post.pin_priority > 0 %}Bỏ ghim{% else %}Ghim{% endif %}
@@ -55,6 +56,7 @@
                     {% if current_user.is_authenticated %}
                         {% if current_user.godcoin_balance >= post.premium_price %}
                         <form method="POST" action="{{ url_for('blog.purchase', post_id=post.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-secondary">
                                 <i class="fas fa-unlock"></i> Mở khóa với {{ post.premium_price }} GC
                             </button>
@@ -82,6 +84,7 @@
 
             {% if current_user.is_authenticated %}
             <form method="POST" action="{{ url_for('blog.add_comment', post_id=post.id) }}" class="comment-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <textarea name="content" class="form-control" rows="3" placeholder="Viết bình luận của bạn..." required></textarea>
                 </div>
