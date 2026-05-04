@@ -101,10 +101,33 @@ class Product(db.Model):
     inventory_file = db.Column(db.String(255))  # Path to txt file containing accounts
     parse_mode = db.Column(db.String(20), default='line', nullable=False)  # line or separator
     inventory_type = db.Column(db.String(20), default='file', nullable=False)  # file or folder
-    inventory_folder_path = db.Column(db.String(255))  # Relative folder name for folder inventory mode
+    inventory_folder_path = db.Column(db.String(255))  # Legacy folder name (filesystem mode), kept for migration
+    inventory_data = db.Column(db.Text)  # Inventory text persisted in DB (file mode) so it survives dyno restarts
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     orders = db.relationship('Order', backref='product', lazy=True)
+    inventory_accounts = db.relationship(
+        'ProductInventoryAccount',
+        backref='product',
+        lazy='dynamic',
+        cascade='all, delete-orphan',
+        order_by='ProductInventoryAccount.filename, ProductInventoryAccount.id',
+    )
+
+
+class ProductInventoryAccount(db.Model):
+    """One row per .txt account for products in 'folder' inventory mode.
+
+    Storing each account as a DB row (instead of a file under uploads/) makes the
+    inventory survive Heroku dyno restarts where the ephemeral filesystem is wiped.
+    """
+    __tablename__ = 'product_inventory_accounts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id', ondelete='CASCADE'), nullable=False, index=True)
+    filename = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Order(db.Model):
     __tablename__ = 'orders'

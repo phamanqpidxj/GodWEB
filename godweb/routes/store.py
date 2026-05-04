@@ -1,14 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from godweb.models import Product, Order, Transaction, User
+from godweb.models import Product, Order, Transaction, User, ProductInventoryAccount
 from godweb.extensions import db
 from godweb.utils import (
     normalize_inventory_parse_mode,
-    parse_inventory_accounts,
-    write_inventory_accounts,
-    consume_inventory_folder_account,
-    list_inventory_folder_files,
-    read_inventory_folder_account,
+    parse_inventory_accounts_text,
+    serialize_inventory_accounts,
 )
 from datetime import datetime
 import os
@@ -51,8 +48,6 @@ def _lock_row(model, row_id):
 @store_bp.route('/<int:product_id>/buy', methods=['POST'])
 @login_required
 def buy(product_id):
-    upload_folder = current_app.config['UPLOAD_FOLDER']
-
     try:
         # Lock both rows for the duration of the transaction so concurrent
         # buyers can't double-spend the same balance or claim the same account.
@@ -78,44 +73,40 @@ def buy(product_id):
         remaining_stock = 0
 
         if inventory_type == 'folder':
-            folder_rel = getattr(product, 'inventory_folder_path', None)
-            if not folder_rel:
-                db.session.rollback()
-                flash('Sản phẩm chưa có hàng!', 'error')
-                return redirect(url_for('store.detail', product_id=product_id))
+            # Inventory accounts are persisted as DB rows so they survive dyno restarts.
+            account_query = (
+                db.session.query(ProductInventoryAccount)
+                .filter_by(product_id=product.id)
+                .order_by(ProductInventoryAccount.filename, ProductInventoryAccount.id)
+            )
+            bind = db.session.get_bind()
+            if bind.dialect.name in ('postgresql', 'mysql'):
+                account_query = account_query.with_for_update(skip_locked=True)
+            account_row = account_query.first()
 
-            folder_path = os.path.join(upload_folder, folder_rel)
-            if not os.path.isdir(folder_path):
-                db.session.rollback()
-                flash('Thư mục tài khoản không tồn tại!', 'error')
-                return redirect(url_for('store.detail', product_id=product_id))
-
-            files = list_inventory_folder_files(folder_path)
-            if not files:
+            if account_row is None:
                 product.stock = 0
                 db.session.commit()
                 flash('Sản phẩm đã hết hàng!', 'error')
                 return redirect(url_for('store.detail', product_id=product_id))
 
-            selected_filename = files[0]
-            account_info = read_inventory_folder_account(folder_path, selected_filename)
-            consume_inventory_folder_account(folder_path, selected_filename)
-            remaining_stock = len(files) - 1
+            account_info = (account_row.content or '').strip()
+            db.session.delete(account_row)
+            db.session.flush()
+            remaining_stock = (
+                db.session.query(ProductInventoryAccount)
+                .filter_by(product_id=product.id)
+                .count()
+            )
         else:
-            if not product.inventory_file:
-                db.session.rollback()
-                flash('Sản phẩm chưa có hàng!', 'error')
-                return redirect(url_for('store.detail', product_id=product_id))
-
-            filepath = os.path.join(upload_folder, product.inventory_file)
-            if not os.path.exists(filepath):
-                db.session.rollback()
-                flash('File tài khoản không tồn tại!', 'error')
-                return redirect(url_for('store.detail', product_id=product_id))
-
             parse_mode = normalize_inventory_parse_mode(getattr(product, 'parse_mode', 'line'))
-            accounts = parse_inventory_accounts(filepath, parse_mode)
+            inventory_data = getattr(product, 'inventory_data', None)
+            accounts = parse_inventory_accounts_text(inventory_data, parse_mode) if inventory_data else []
             if not accounts:
+                if not (inventory_data or product.inventory_file):
+                    db.session.rollback()
+                    flash('Sản phẩm chưa có hàng!', 'error')
+                    return redirect(url_for('store.detail', product_id=product_id))
                 product.stock = 0
                 db.session.commit()
                 flash('Sản phẩm đã hết hàng!', 'error')
@@ -123,7 +114,7 @@ def buy(product_id):
 
             account_info = accounts[0]
             remaining_accounts = accounts[1:]
-            write_inventory_accounts(filepath, remaining_accounts, parse_mode)
+            product.inventory_data = serialize_inventory_accounts(remaining_accounts, parse_mode)
             remaining_stock = len(remaining_accounts)
 
         user.godcoin_balance -= product.price

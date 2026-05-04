@@ -232,9 +232,50 @@ def create_app():
                 safe_add_column("ALTER TABLE products ADD COLUMN inventory_type VARCHAR(20) DEFAULT 'file'")
             if 'inventory_folder_path' not in product_columns:
                 safe_add_column("ALTER TABLE products ADD COLUMN inventory_folder_path VARCHAR(255)")
+            if 'inventory_data' not in product_columns:
+                safe_add_column("ALTER TABLE products ADD COLUMN inventory_data TEXT")
             db.session.execute(text("UPDATE products SET parse_mode = 'line' WHERE parse_mode IS NULL"))
             db.session.execute(text("UPDATE products SET inventory_type = 'file' WHERE inventory_type IS NULL"))
             db.session.commit()
+
+        # Rescue any legacy filesystem inventory into the database BEFORE Heroku
+        # ephemeral storage wipes it on the next dyno restart. Idempotent.
+        try:
+            from godweb.models import Product, ProductInventoryAccount
+            from godweb.utils import list_inventory_folder_files, read_inventory_folder_account
+            upload_folder = app.config.get('UPLOAD_FOLDER')
+            if upload_folder and os.path.isdir(upload_folder):
+                for product in Product.query.all():
+                    inv_type = getattr(product, 'inventory_type', 'file') or 'file'
+                    if inv_type == 'folder':
+                        existing_count = ProductInventoryAccount.query.filter_by(product_id=product.id).count()
+                        if existing_count == 0 and getattr(product, 'inventory_folder_path', None):
+                            folder_path = os.path.join(upload_folder, product.inventory_folder_path)
+                            if os.path.isdir(folder_path):
+                                for fname in list_inventory_folder_files(folder_path):
+                                    try:
+                                        content = read_inventory_folder_account(folder_path, fname)
+                                    except OSError:
+                                        continue
+                                    db.session.add(ProductInventoryAccount(
+                                        product_id=product.id,
+                                        filename=fname,
+                                        content=content,
+                                    ))
+                                product.stock = ProductInventoryAccount.query.filter_by(product_id=product.id).count()
+                    else:
+                        if not getattr(product, 'inventory_data', None) and product.inventory_file:
+                            filepath = os.path.join(upload_folder, product.inventory_file)
+                            if os.path.isfile(filepath):
+                                try:
+                                    with open(filepath, 'r', encoding='utf-8', errors='replace') as fh:
+                                        product.inventory_data = fh.read()
+                                except OSError:
+                                    pass
+                db.session.commit()
+        except Exception as exc:
+            db.session.rollback()
+            app.logger.warning('Inventory rescue migration skipped: %s', exc)
 
         from godweb.models import User
         # Bootstrap an admin only when explicit env vars are supplied. This
