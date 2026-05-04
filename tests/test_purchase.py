@@ -25,9 +25,6 @@ def _create_user(app, **kwargs):
 def _create_product(app, upload_dir, accounts):
     from godweb.extensions import db
     from godweb.models import Product
-    inv_path = os.path.join(upload_dir, 'inv.txt')
-    with open(inv_path, 'w', encoding='utf-8') as fh:
-        fh.write('\n'.join(accounts))
     with app.app_context():
         product = Product(
             name='Demo Product',
@@ -35,6 +32,7 @@ def _create_product(app, upload_dir, accounts):
             price=50,
             stock=len(accounts),
             inventory_file='inv.txt',
+            inventory_data='\n'.join(accounts),
             parse_mode='line',
             inventory_type='file',
         )

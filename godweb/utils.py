@@ -111,6 +111,88 @@ def _trim_empty_edges(lines):
     return lines[start:end]
 
 
+def parse_inventory_accounts_text(content, parse_mode='line'):
+    """Parse inventory accounts from a raw string.
+
+    Used when inventory is stored in DB (preferred) instead of on disk.
+    """
+    mode = normalize_inventory_parse_mode(parse_mode)
+    raw = content or ''
+
+    if mode == 'line':
+        return [line.strip() for line in raw.splitlines() if line.strip()]
+
+    accounts = []
+    current_block = []
+
+    for line in raw.splitlines():
+        if line.strip() == '|':
+            block_lines = _trim_empty_edges(current_block)
+            if block_lines:
+                accounts.append('\n'.join(block_lines))
+            current_block = []
+            continue
+        current_block.append(line)
+
+    block_lines = _trim_empty_edges(current_block)
+    if block_lines:
+        accounts.append('\n'.join(block_lines))
+
+    return accounts
+
+
+def serialize_inventory_accounts(accounts, parse_mode='line'):
+    """Inverse of parse_inventory_accounts_text: rebuild raw string for storage."""
+    mode = normalize_inventory_parse_mode(parse_mode)
+    if mode == 'separator':
+        return '\n|\n'.join(accounts)
+    return '\n'.join(accounts)
+
+
+def parse_zip_to_accounts(uploaded_file):
+    """Parse a .zip into list of (filename, content) tuples for DB storage.
+
+    Mirrors extract_inventory_zip but never writes to disk; returned filenames
+    are sanitized and de-duplicated. Raises ValueError on invalid input.
+    """
+    try:
+        archive = zipfile.ZipFile(uploaded_file)
+    except zipfile.BadZipFile as exc:
+        raise ValueError('File upload không phải zip hợp lệ') from exc
+
+    accounts = []
+    used_names = set()
+    with archive:
+        for item in archive.infolist():
+            if item.is_dir():
+                continue
+            raw_name = item.filename.replace('\\', '/')
+            normalized_parts = [part for part in raw_name.split('/') if part and part != '.']
+            if not normalized_parts or '..' in normalized_parts:
+                continue
+            original_name = normalized_parts[-1]
+            if not original_name.lower().endswith('.txt'):
+                continue
+            safe_name = secure_filename(original_name)
+            if not safe_name:
+                continue
+            base, ext = os.path.splitext(safe_name)
+            candidate = safe_name
+            suffix = 1
+            while candidate.lower() in used_names:
+                candidate = f"{base}_{suffix}{ext}"
+                suffix += 1
+            file_text = archive.read(item).decode('utf-8-sig', errors='replace').strip()
+            if not file_text:
+                continue
+            used_names.add(candidate.lower())
+            accounts.append((candidate, file_text))
+
+    if not accounts:
+        raise ValueError('File zip không chứa tài khoản .txt hợp lệ')
+    return accounts
+
+
 def parse_inventory_accounts(filepath, parse_mode='line'):
     """Parse inventory accounts from text file by selected mode."""
     mode = normalize_inventory_parse_mode(parse_mode)
