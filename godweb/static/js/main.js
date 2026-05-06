@@ -16,6 +16,28 @@ function initializeScrollReveal() {
         return;
     }
 
+    // Anything already in (or near) the viewport at load time is
+    // revealed immediately. This is critical for elements that are
+    // taller than the viewport (e.g. long blog post content):
+    // a percentage-based intersection threshold could never fire
+    // because their visible slice is always smaller than the
+    // threshold ratio, leaving them stuck at opacity: 0.
+    const viewportH = window.innerHeight || document.documentElement.clientHeight;
+    const isInOrNearViewport = el => {
+        const rect = el.getBoundingClientRect();
+        return rect.top < viewportH + 200 && rect.bottom > -200;
+    };
+    const isTallerThanViewport = el => el.getBoundingClientRect().height >= viewportH * 0.9;
+
+    const toObserve = [];
+    revealTargets.forEach(el => {
+        if (isInOrNearViewport(el) || isTallerThanViewport(el)) {
+            el.classList.add('revealed');
+        } else {
+            toObserve.push(el);
+        }
+    });
+
     const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -24,11 +46,27 @@ function initializeScrollReveal() {
             }
         });
     }, {
-        threshold: 0.14,
-        rootMargin: '0px 0px -8% 0px'
+        // Use threshold 0 so any pixel of the element entering the
+        // viewport reveals it. The previous 14% threshold could
+        // never be reached on tall elements (max intersection ratio
+        // = viewportHeight / elementHeight) which is exactly why
+        // long blog posts disappeared on narrow displays.
+        threshold: 0,
+        rootMargin: '0px 0px -5% 0px'
     });
 
-    revealTargets.forEach(el => observer.observe(el));
+    toObserve.forEach(el => observer.observe(el));
+
+    // Final safety net: if anything remains hidden 1.5s after load
+    // (e.g. observer never fired), force-reveal it so users always
+    // see the content.
+    setTimeout(() => {
+        revealTargets.forEach(el => {
+            if (!el.classList.contains('revealed')) {
+                el.classList.add('revealed');
+            }
+        });
+    }, 1500);
 }
 
 function initializeParallaxHero() {
