@@ -11,6 +11,63 @@ from flask_login import current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 from godweb.extensions import db, login_manager, csrf
 
+def _init_sentry(is_prod_like: bool) -> None:
+    """Wire Sentry up if SENTRY_DSN is set.
+
+    Heroku's Sentry add-on auto-injects ``SENTRY_DSN``. We only call
+    ``sentry_sdk.init`` when the DSN is present so local dev runs and the
+    test-suite never talk to Sentry. Errors come with Flask request and
+    SQLAlchemy query context, plus the Heroku release tag when available.
+    """
+    dsn = os.environ.get('SENTRY_DSN')
+    if not dsn:
+        if is_prod_like:
+            logger.info('SENTRY_DSN not set; Sentry error reporting disabled.')
+        return
+
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.flask import FlaskIntegration
+        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+    except ImportError:
+        logger.warning('sentry-sdk is not installed; SENTRY_DSN ignored.')
+        return
+
+    environment = (
+        os.environ.get('SENTRY_ENVIRONMENT')
+        or ('production' if is_prod_like else 'development')
+    )
+    release = (
+        os.environ.get('SENTRY_RELEASE')
+        or os.environ.get('HEROKU_SLUG_COMMIT')
+        or os.environ.get('HEROKU_RELEASE_VERSION')
+    )
+
+    def _sample_rate(env_name: str, default: float) -> float:
+        raw = os.environ.get(env_name)
+        if raw is None:
+            return default
+        try:
+            value = float(raw)
+        except ValueError:
+            return default
+        return max(0.0, min(1.0, value))
+
+    sentry_sdk.init(
+        dsn=dsn,
+        environment=environment,
+        release=release,
+        integrations=[FlaskIntegration(), SqlalchemyIntegration()],
+        traces_sample_rate=_sample_rate('SENTRY_TRACES_SAMPLE_RATE', 0.1),
+        profiles_sample_rate=_sample_rate('SENTRY_PROFILES_SAMPLE_RATE', 0.0),
+        send_default_pii=False,
+    )
+    logger.info(
+        'Sentry initialized (environment=%s release=%s).',
+        environment, release or '<unset>',
+    )
+
+
 DEFAULT_DEV_SECRET_KEY = 'godweb-dev-secret-key-do-not-use-in-production'
 FALLBACK_SECRET_FILE = os.environ.get(
     'GODWEB_FALLBACK_SECRET_FILE', '/tmp/godweb-fallback-secret'
@@ -109,6 +166,8 @@ def create_app():
     app = Flask(__name__)
 
     is_prod_like = os.environ.get('FLASK_ENV') == 'production' or bool(os.environ.get('DYNO'))
+
+    _init_sentry(is_prod_like)
 
     # SECRET_KEY: prefer env, otherwise fall back to a key persisted on disk so
     # all gunicorn workers in this dyno share the same value (sessions survive
