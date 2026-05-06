@@ -27,6 +27,49 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+@admin_bp.route('/sentry-debug/message')
+@login_required
+@admin_required
+def sentry_debug_message():
+    """Send a benign test event to Sentry. Admin-only.
+
+    Visit this once after deploying with SENTRY_DSN configured to finish
+    Sentry's onboarding ("Waiting for events..." page). Captures a Sentry
+    message and redirects back to the dashboard with a flash; does not
+    raise an exception so it cannot accidentally break the admin UI.
+    """
+    try:
+        import sentry_sdk
+    except ImportError:
+        flash('sentry-sdk chưa được cài đặt.', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+    client = sentry_sdk.Hub.current.client if hasattr(sentry_sdk, 'Hub') else None
+    if client is None:
+        flash('Sentry chưa được khởi tạo (SENTRY_DSN chưa set?).', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+    event_id = sentry_sdk.capture_message(
+        'GodWeb Sentry test event from admin panel',
+        level='info',
+    )
+    sentry_sdk.flush(timeout=2.0)
+    flash(f'Đã gửi test event tới Sentry (event_id={event_id}).', 'success')
+    return redirect(url_for('admin.dashboard'))
+
+
+@admin_bp.route('/sentry-debug/error')
+@login_required
+@admin_required
+def sentry_debug_error():
+    """Raise a ZeroDivisionError so Sentry captures a real exception event.
+
+    Admin-only; the resulting 500 page is expected. Use only when
+    verifying Sentry integration end-to-end.
+    """
+    raise ZeroDivisionError('Intentional GodWeb Sentry verification error')
+
+
 @admin_bp.route('/')
 @login_required
 @admin_required
