@@ -2,9 +2,10 @@ import logging
 import os
 import secrets
 import time
+from datetime import timedelta
 from urllib.parse import urlparse
-from flask import Flask, url_for, request, abort
-from sqlalchemy import inspect, text
+from flask import Flask, url_for, request, abort, redirect, session
+from sqlalchemy import inspect, text, create_engine
 from flask_login import current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 from godweb.extensions import db, login_manager, csrf
@@ -47,6 +48,62 @@ def _load_or_create_persistent_secret(path: str) -> str:
     return secrets.token_urlsafe(48)
 
 
+def _load_or_create_persistent_secret_db(database_url):
+    """Persist SECRET_KEY in the application database.
+
+    Heroku's filesystem (incl. ``/tmp``) is wiped on every dyno restart, which
+    rotates any file-based fallback key roughly every 24h and silently logs
+    every user out. Storing the key in Postgres makes it stable for the
+    lifetime of the database, so 'Remember me' cookies actually survive.
+    """
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    engine = create_engine(database_url, pool_pre_ping=True)
+    try:
+        with engine.begin() as conn:
+            conn.execute(text(
+                "CREATE TABLE IF NOT EXISTS app_secrets ("
+                "  key VARCHAR(64) PRIMARY KEY,"
+                "  value TEXT NOT NULL,"
+                "  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                ")"
+            ))
+            row = conn.execute(
+                text("SELECT value FROM app_secrets WHERE key = :k"),
+                {'k': 'session_secret'},
+            ).fetchone()
+            if row and row[0]:
+                return row[0]
+            new_secret = secrets.token_urlsafe(48)
+            try:
+                conn.execute(
+                    text("INSERT INTO app_secrets (key, value) VALUES (:k, :v)"),
+                    {'k': 'session_secret', 'v': new_secret},
+                )
+                return new_secret
+            except Exception:
+                # Lost a race with another worker; re-read the row they inserted.
+                row = conn.execute(
+                    text("SELECT value FROM app_secrets WHERE key = :k"),
+                    {'k': 'session_secret'},
+                ).fetchone()
+                if row and row[0]:
+                    return row[0]
+                return new_secret
+    finally:
+        engine.dispose()
+
+
+# Endpoints reachable without authentication. Everything else requires
+# a logged-in user (see ``require_login_globally`` below).
+PUBLIC_ENDPOINTS = frozenset({
+    'static',
+    'auth.login',
+    'auth.register',
+    'auth.forgot_password',
+})
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -58,13 +115,23 @@ def create_app():
     secret_key = os.environ.get('SECRET_KEY')
     if not secret_key:
         if is_prod_like:
-            secret_key = _load_or_create_persistent_secret(FALLBACK_SECRET_FILE)
-            logger.warning(
-                'SECRET_KEY env var is not set in a production-like environment; '
-                'using a persisted random key from %s. Set SECRET_KEY in your '
-                'platform config (e.g. `heroku config:set SECRET_KEY=...`) so '
-                'sessions survive dyno restarts.', FALLBACK_SECRET_FILE,
-            )
+            db_url_for_secret = os.environ.get('DATABASE_URL')
+            if db_url_for_secret:
+                try:
+                    secret_key = _load_or_create_persistent_secret_db(db_url_for_secret)
+                    logger.info(
+                        'SECRET_KEY loaded from app_secrets table; sessions survive dyno restarts.'
+                    )
+                except Exception as exc:
+                    logger.warning('DB-backed SECRET_KEY load failed (%s); falling back to filesystem.', exc)
+            if not secret_key:
+                secret_key = _load_or_create_persistent_secret(FALLBACK_SECRET_FILE)
+                logger.warning(
+                    'SECRET_KEY env var is not set in a production-like environment; '
+                    'using a persisted random key from %s. Set SECRET_KEY in your '
+                    'platform config (e.g. `heroku config:set SECRET_KEY=...`) so '
+                    'sessions survive dyno restarts.', FALLBACK_SECRET_FILE,
+                )
         else:
             secret_key = DEFAULT_DEV_SECRET_KEY
     app.config['SECRET_KEY'] = secret_key
@@ -97,6 +164,14 @@ def create_app():
     app.config['REMEMBER_COOKIE_HTTPONLY'] = True
     app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
     app.config['REMEMBER_COOKIE_SECURE'] = is_prod_like
+    # 'Remember me' must keep the user signed in for at least a week even
+    # if the dyno restarts. Both the session cookie and the remember-me
+    # cookie need a 7-day lifetime; the login route flips session.permanent
+    # so the session cookie obeys PERMANENT_SESSION_LIFETIME.
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+    app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=7)
+    app.config['REMEMBER_COOKIE_REFRESH_EACH_REQUEST'] = True
+    app.config['SESSION_REFRESH_EACH_REQUEST'] = True
     app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB
 
     # Create upload folder if not exists
@@ -109,6 +184,8 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Vui lòng đăng nhập để tiếp tục.'
+    login_manager.login_message_category = 'info'
+    login_manager.refresh_view = 'auth.login'
 
     # Add custom Jinja2 filter for image URLs
     @app.template_filter('image_url')
@@ -155,6 +232,29 @@ def create_app():
             'navbar_notifications': navbar_notifications,
             'unread_notification_count': unread_count
         }
+
+    @app.before_request
+    def require_login_globally():
+        """Force authentication site-wide except for the auth blueprint and assets.
+
+        Anonymous visitors hitting any other endpoint are redirected to the
+        login page; the original URL is preserved via the ``next`` parameter
+        so they land back where they started after signing in.
+        """
+        endpoint = request.endpoint
+        if endpoint is None:
+            return None
+        if current_user.is_authenticated:
+            return None
+        if endpoint in PUBLIC_ENDPOINTS:
+            return None
+        # Allow blueprint-scoped static endpoints too (e.g. 'admin.static').
+        if endpoint.endswith('.static'):
+            return None
+        if request.method in ('POST', 'PUT', 'PATCH', 'DELETE'):
+            # 401 instead of a redirect makes the gate obvious to API callers.
+            abort(401)
+        return redirect(url_for('auth.login', next=request.url))
 
     @app.before_request
     def enforce_same_origin_for_mutations():

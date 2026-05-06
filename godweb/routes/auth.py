@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
 from godweb.models import User
 from godweb.extensions import db
@@ -13,15 +13,22 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        remember = request.form.get('remember', False)
+        remember = bool(request.form.get('remember'))
 
         user = User.query.filter_by(email=email).first()
 
         if user and user.check_password(password):
+            # Mark the session as permanent so the session cookie obeys
+            # PERMANENT_SESSION_LIFETIME (7 days) when 'Remember me' is on.
+            if remember:
+                session.permanent = True
             login_user(user, remember=remember)
             flash('Đăng nhập thành công!', 'success')
             next_page = request.args.get('next')
-            return redirect(next_page if next_page else url_for('main.home'))
+            # Refuse open-redirect attempts: only allow same-origin relative paths.
+            if next_page and (next_page.startswith('/') and not next_page.startswith('//')):
+                return redirect(next_page)
+            return redirect(url_for('main.home'))
         else:
             flash('Email hoặc mật khẩu không đúng!', 'error')
 
