@@ -4,7 +4,8 @@ import secrets
 import time
 from datetime import timedelta
 from urllib.parse import urlparse
-from flask import Flask, url_for, request, abort, redirect, session
+from flask import Flask, url_for, request, abort, redirect, session, flash
+from flask_wtf.csrf import CSRFError
 from sqlalchemy import inspect, text, create_engine
 from flask_login import current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -254,7 +255,12 @@ def create_app():
         if request.method in ('POST', 'PUT', 'PATCH', 'DELETE'):
             # 401 instead of a redirect makes the gate obvious to API callers.
             abort(401)
-        return redirect(url_for('auth.login', next=request.url))
+        # Pass the original path+query as a relative URL so the login route's
+        # open-redirect guard (which rejects absolute URLs) honors it.
+        next_target = request.full_path if request.query_string else request.path
+        if next_target.endswith('?'):
+            next_target = next_target[:-1]
+        return redirect(url_for('auth.login', next=next_target))
 
     @app.before_request
     def enforce_same_origin_for_mutations():
@@ -268,6 +274,23 @@ def create_app():
         parsed = urlparse(source)
         if not parsed.netloc or parsed.netloc != request.host:
             abort(403)
+
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(error):
+        """Recover gracefully from CSRF failures (e.g. stale session cookies).
+
+        After a SECRET_KEY rotation the browser's old session cookie can no
+        longer be deserialized, so the form's CSRF token has nothing to
+        validate against and Flask-WTF returns a bare ``400`` page. Wipe the
+        stale session, flash a friendly message and bounce back to the login
+        form so a fresh session + token are issued automatically.
+        """
+        session.clear()
+        flash('Phiên làm việc đã hết hạn, vui lòng thử lại.', 'warning')
+        next_target = request.args.get('next') or request.form.get('next')
+        if next_target and next_target.startswith('/') and not next_target.startswith('//'):
+            return redirect(url_for('auth.login', next=next_target))
+        return redirect(url_for('auth.login'))
 
     @app.after_request
     def add_security_headers(response):
