@@ -147,6 +147,28 @@
         </div>
     </nav>
 
+    <!-- Site notification ticker (admin announcements scroll right-to-left) -->
+    {% if navbar_notifications %}
+    <div class="site-ticker" role="region" aria-label="Thông báo">
+        <div class="site-ticker-inner">
+            <span class="site-ticker-label" aria-hidden="true"><i class="fas fa-bullhorn"></i> Thông báo</span>
+            <div class="site-ticker-viewport">
+                <div class="site-ticker-track">
+                    {% for _ticker_pass in [1, 2] %}
+                        {% for n in navbar_notifications %}
+                        <span class="site-ticker-item"{% if _ticker_pass == 2 %} aria-hidden="true"{% endif %}>
+                            <i class="fas fa-bell"></i>
+                            {{ n.content }}
+                        </span>
+                        <span class="site-ticker-sep"{% if _ticker_pass == 2 %} aria-hidden="true"{% endif %}>•</span>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
