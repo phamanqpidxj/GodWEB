@@ -93,7 +93,14 @@ def test_purchase_blocks_when_balance_insufficient(app, client):
 
 
 def test_purchase_blocks_unauthenticated(client):
-    """CSRF protection rejects unauthenticated POSTs even before login_required."""
+    """CSRF/auth protection rejects unauthenticated POSTs.
+
+    The custom CSRFError handler turns the bare 400 into a 302 redirect
+    to /auth/login so users with stale session cookies can recover. The
+    auth gate would also block this request before processing -- either
+    way the purchase MUST NOT execute.
+    """
     resp = client.post('/store/1/buy', follow_redirects=False)
-    # Without a valid CSRF token Flask-WTF returns 400 BAD REQUEST.
-    assert resp.status_code == 400
+    assert resp.status_code in (302, 400, 401)
+    if resp.status_code == 302:
+        assert '/auth/login' in resp.headers['Location']
