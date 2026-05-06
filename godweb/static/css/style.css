@@ -2700,3 +2700,112 @@ body.dark-mode #mobileThemeToggle i::before {
     content: "\f185"; /* sun icon */
 }
 
+
+/* ============================================================
+   Site Notification Ticker (right-to-left marquee)
+   ============================================================ */
+.site-ticker {
+    background: linear-gradient(90deg, rgba(180, 83, 9, 0.95), rgba(245, 158, 11, 0.92), rgba(180, 83, 9, 0.95));
+    border-top: 1px solid rgba(251, 191, 36, 0.35);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.35);
+    color: #1a1408;
+    overflow: hidden;
+    box-shadow: 0 4px 14px -8px rgba(0, 0, 0, 0.6);
+}
+
+.site-ticker-inner {
+    display: flex;
+    align-items: stretch;
+    height: 36px;
+    max-width: 100%;
+}
+
+.site-ticker-label {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fde68a;
+    border-right: 1px solid rgba(251, 191, 36, 0.35);
+    white-space: nowrap;
+}
+.site-ticker-label i { color: #fbbf24; }
+
+.site-ticker-viewport {
+    flex: 1 1 auto;
+    overflow: hidden;
+    position: relative;
+    /* fade edges so items appear/disappear smoothly */
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%);
+}
+
+.site-ticker-track {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    white-space: nowrap;
+    /* The track contains TWO copies of the items so when the first
+       copy has translated fully off the left edge, the second copy
+       is exactly in the start position. Translating from 0 to -50%
+       gives a perfectly seamless loop. */
+    animation: site-ticker-marquee 40s linear infinite;
+    will-change: transform;
+}
+
+.site-ticker:hover .site-ticker-track {
+    animation-play-state: paused;
+}
+
+.site-ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1408;
+}
+.site-ticker-item i {
+    color: #b45309;
+    font-size: 12px;
+}
+
+.site-ticker-sep {
+    display: inline-block;
+    color: rgba(26, 20, 8, 0.45);
+    font-weight: 700;
+}
+
+@keyframes site-ticker-marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+    .site-ticker-inner { height: 32px; }
+    .site-ticker-label {
+        padding: 0 10px;
+        font-size: 11px;
+    }
+    .site-ticker-item { font-size: 13px; padding: 0 10px; }
+    .site-ticker-track { animation-duration: 28s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-ticker-track { animation-duration: 80s; }
+}
+
+body.dark-mode .site-ticker {
+    background: linear-gradient(90deg, rgba(120, 53, 15, 0.95), rgba(180, 83, 9, 0.92), rgba(120, 53, 15, 0.95));
+    color: #fde68a;
+}
+body.dark-mode .site-ticker-item { color: #fef3c7; }
+body.dark-mode .site-ticker-item i { color: #fbbf24; }
+body.dark-mode .site-ticker-sep { color: rgba(253, 230, 138, 0.45); }
