@@ -1315,12 +1315,21 @@ select:focus-visible,
     border-radius: 18px;
     padding: 32px;
     box-shadow: var(--shadow-sm);
+    /* Long posts pasted from external sources may include wide images,
+       <pre> blocks or unbroken URLs. Clip them to the container so the
+       viewport never has to expand horizontally. */
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .post-content {
     font-size: 17px;
     line-height: 1.9;
     color: var(--text-color);
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .post-content h2,
@@ -1333,6 +1342,57 @@ select:focus-visible,
 .post-content ol {
     padding-left: 22px;
     margin: 12px 0 18px;
+}
+
+/* Force pasted/inserted media to fit the post container. Editors that
+   paste images with explicit width/height (e.g. the contenteditable
+   blog editor) would otherwise push the page wider than the viewport,
+   making text disappear off-screen on mobile. */
+.post-content img,
+.post-content video,
+.post-content iframe,
+.post-content embed,
+.post-content object {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 12px auto;
+    border-radius: 8px;
+}
+
+.post-content pre,
+.post-content code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.post-content pre {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 12px;
+    background: var(--surface-muted);
+    border-radius: 8px;
+}
+
+.post-content table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+}
+
+.post-content blockquote {
+    border-left: 4px solid var(--primary-color);
+    margin: 16px 0;
+    padding: 8px 16px;
+    color: var(--text-light);
+}
+
+.post-content a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 /* Comments */
@@ -2245,6 +2305,11 @@ textarea.form-control {
 
     .blog-content h1 {
         font-size: 22px;
+    }
+
+    .post-content {
+        font-size: 16px;
+        line-height: 1.8;
     }
 
     /* QR Section Mobile */
