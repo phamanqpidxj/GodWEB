@@ -59,6 +59,8 @@
                             <td>
                                 {% if topup.method == 'momo' %}
                                 <span style="color: #ae2070;"><i class="fas fa-mobile-alt"></i> MoMo</span>
+                                {% elif topup.method == 'vnpay' %}
+                                <span style="color: #0096d6;"><i class="fas fa-credit-card"></i> VNPay {% if topup.vnp_transaction_no %}<small>({{ topup.vnp_transaction_no }})</small>{% endif %}</span>
                                 {% else %}
                                 <span style="color: var(--primary-color);"><i class="fas fa-university"></i> Bank</span>
                                 {% endif %}

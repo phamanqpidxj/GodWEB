@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Kết quả thanh toán VNPay - GodWeb{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-receipt"></i> Kết quả thanh toán VNPay</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container" style="max-width: 720px;">
+        <div class="card" style="padding: 30px;">
+            {% if not sig_ok %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Chữ ký phản hồi không hợp lệ. Vui lòng liên hệ admin nếu bạn đã thanh toán.
+                </div>
+            {% elif success %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    Thanh toán thành công <strong>{{ '{:,}'.format(amount_vnd) }} VNĐ</strong>!
+                    GodCoin sẽ được cộng vào tài khoản của bạn ngay khi VNPay xác nhận chính thức (thường trong vài giây).
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-times-circle"></i>
+                    Giao dịch chưa thành công (mã: {{ response_code or 'không rõ' }}).
+                </div>
+            {% endif %}
+
+            {% if topup %}
+            <div style="margin-top: 20px;">
+                <p><strong>Mã giao dịch:</strong> {{ topup.vnp_txn_ref }}</p>
+                <p><strong>Số tiền:</strong> {{ '{:,}'.format(topup.amount) }} VNĐ</p>
+                <p><strong>GodCoin sẽ nhận:</strong> {{ topup.godcoin_amount }} GC</p>
+                <p><strong>Trạng thái:</strong>
+                    {% if topup.status == 'approved' %}
+                        <span style="color: #4ade80;">Đã cộng GodCoin</span>
+                    {% elif topup.status == 'rejected' %}
+                        <span style="color: #f87171;">Bị từ chối</span>
+                    {% else %}
+                        <span style="color: #fbbf24;">Đang chờ xác nhận</span>
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <a href="{{ url_for('wallet.topup_history') }}" class="btn btn-primary">
+                    <i class="fas fa-history"></i> Lịch sử nạp
+                </a>
+                <a href="{{ url_for('wallet.topup') }}" class="btn btn-secondary">
+                    <i class="fas fa-coins"></i> Nạp thêm
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

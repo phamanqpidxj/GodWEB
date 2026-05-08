@@ -159,6 +159,9 @@ PUBLIC_ENDPOINTS = frozenset({
     'auth.login',
     'auth.register',
     'auth.forgot_password',
+    # VNPay's IPN is a server-to-server callback from the gateway with no
+    # session cookie. It must be reachable without authentication.
+    'wallet.vnpay_ipn',
 })
 
 
@@ -419,6 +422,16 @@ def create_app():
             db.session.execute(text("UPDATE products SET parse_mode = 'line' WHERE parse_mode IS NULL"))
             db.session.execute(text("UPDATE products SET inventory_type = 'file' WHERE inventory_type IS NULL"))
             db.session.commit()
+
+        if 'topups' in inspector.get_table_names():
+            topup_columns = [column['name'] for column in inspector.get_columns('topups')]
+            if 'vnp_txn_ref' not in topup_columns:
+                safe_add_column('ALTER TABLE topups ADD COLUMN vnp_txn_ref VARCHAR(100)')
+                safe_add_column('CREATE UNIQUE INDEX IF NOT EXISTS ix_topups_vnp_txn_ref ON topups (vnp_txn_ref)')
+            if 'vnp_transaction_no' not in topup_columns:
+                safe_add_column('ALTER TABLE topups ADD COLUMN vnp_transaction_no VARCHAR(100)')
+            if 'vnp_response_code' not in topup_columns:
+                safe_add_column('ALTER TABLE topups ADD COLUMN vnp_response_code VARCHAR(10)')
 
         # Rescue any legacy filesystem inventory into the database BEFORE Heroku
         # ephemeral storage wipes it on the next dyno restart. Idempotent.

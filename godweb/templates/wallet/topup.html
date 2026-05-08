@@ -60,6 +60,17 @@
                                 <p class="payment-note">Chuyển khoản ngân hàng</p>
                             </div>
                         </label>
+
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="method" value="vnpay" required style="display: none;" class="payment-radio">
+                            <div class="payment-option">
+                                <div class="payment-icon vnpay" style="background: linear-gradient(135deg,#005baa,#0096d6); color: #fff;">
+                                    VNPAY
+                                </div>
+                                <h4>VNPay (tự động)</h4>
+                                <p class="payment-note">Thẻ / QR / Internet Banking - GodCoin cộng ngay sau khi thanh toán</p>
+                            </div>
+                        </label>
                     </div>
                 </div>
 
@@ -138,9 +149,16 @@
 <script>
 document.querySelectorAll('.payment-radio').forEach(radio => {
     radio.addEventListener('change', function() {
-        document.getElementById('qr-section').style.display = 'block';
+        const isVnpay = this.value === 'vnpay';
+        document.getElementById('qr-section').style.display = isVnpay ? 'none' : 'block';
         document.getElementById('momo-qr').style.display = this.value === 'momo' ? 'block' : 'none';
         document.getElementById('bank-qr').style.display = this.value === 'bank' ? 'block' : 'none';
+        const btn = document.querySelector('.topup-submit');
+        if (btn) {
+            btn.innerHTML = isVnpay
+                ? '<i class="fas fa-arrow-right"></i> Thanh toán qua VNPay'
+                : '<i class="fas fa-check-circle"></i> Tôi đã thanh toán';
+        }
     });
 });
 

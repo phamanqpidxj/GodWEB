@@ -157,10 +157,15 @@ class Topup(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     amount = db.Column(db.Integer, nullable=False)  # Amount in VND
     godcoin_amount = db.Column(db.Integer, nullable=False)  # GodCoin to receive
-    method = db.Column(db.String(50), nullable=False)  # momo, bank
+    method = db.Column(db.String(50), nullable=False)  # momo, bank, vnpay
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     processed_at = db.Column(db.DateTime)
+    # VNPay-specific tracking. ``vnp_txn_ref`` is our merchant reference
+    # (unique per topup); ``vnp_transaction_no`` is the gateway-side id.
+    vnp_txn_ref = db.Column(db.String(100), unique=True, index=True)
+    vnp_transaction_no = db.Column(db.String(100))
+    vnp_response_code = db.Column(db.String(10))
 
 
 class Notification(db.Model):

@@ -35,6 +35,8 @@
                         <td>
                             {% if topup.method == 'momo' %}
                             <span style="color: #ae2070;"><i class="fas fa-mobile-alt"></i> MoMo</span>
+                            {% elif topup.method == 'vnpay' %}
+                            <span style="color: #0096d6;"><i class="fas fa-credit-card"></i> VNPay</span>
                             {% else %}
                             <span style="color: var(--primary-color);"><i class="fas fa-university"></i> Ngân hàng</span>
                             {% endif %}
@@ -42,6 +44,9 @@
                         <td>
                             {% if topup.status == 'pending' %}
                             <span class="stock-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning-color);"><i class="fas fa-clock"></i> Đang chờ</span>
+                            {% if topup.method == 'vnpay' %}
+                            <a href="{{ url_for('wallet.vnpay_create', topup_id=topup.id) }}" class="btn btn-primary btn-sm" style="margin-left: 8px;"><i class="fas fa-arrow-right"></i> Trả tiếp</a>
+                            {% endif %}
                             {% elif topup.status == 'approved' %}
                             <span class="stock-badge in-stock"><i class="fas fa-check"></i> Đã duyệt</span>
                             {% else %}
