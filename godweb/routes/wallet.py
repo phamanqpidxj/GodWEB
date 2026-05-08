@@ -145,7 +145,8 @@ def vnpay_create(topup_id):
         'vnp_Amount': str(topup_obj.amount * 100),  # VNPay expects smallest unit
         'vnp_CurrCode': 'VND',
         'vnp_TxnRef': topup_obj.vnp_txn_ref,
-        'vnp_OrderInfo': f'Nap {topup_obj.godcoin_amount} GodCoin cho user #{topup_obj.user_id}',
+        # VNPay spec requires Vietnamese without diacritics and no special characters.
+        'vnp_OrderInfo': f'Nap {topup_obj.godcoin_amount} GodCoin user {topup_obj.user_id}',
         'vnp_OrderType': 'other',
         'vnp_Locale': request.args.get('locale', 'vn'),
         'vnp_ReturnUrl': return_url,
