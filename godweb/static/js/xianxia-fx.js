@@ -155,9 +155,32 @@
 
     // ────────────────────────────────────────────────────────────
     // 3. Click shockwave
+    //
+    // The wave is appended to a single body-level layer rather than the
+    // clicked host. Two reasons:
+    //   1. host click handlers sometimes replace their own innerHTML
+    //      (e.g. icon swap on a theme-toggle button), which would wipe a
+    //      child wave element before its animation could even start.
+    //   2. dropdowns / cards with overflow:hidden would otherwise clip
+    //      the wave to a tiny visible portion.
     // ────────────────────────────────────────────────────────────
+    var shockwaveLayer = null;
+
+    function ensureShockwaveLayer() {
+        if (shockwaveLayer && document.body.contains(shockwaveLayer)) {
+            return shockwaveLayer;
+        }
+        shockwaveLayer = document.createElement('div');
+        shockwaveLayer.className = 'xx-shockwave-layer';
+        shockwaveLayer.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(shockwaveLayer);
+        return shockwaveLayer;
+    }
+
     function initShockwave() {
         if (prefersReducedMotion) return;
+
+        ensureShockwaveLayer();
 
         // Selectors that should "absorb" linh khí on click.
         var targetSelectors = [
@@ -174,43 +197,19 @@
         document.addEventListener('click', function (ev) {
             var host = ev.target.closest(targetSelectors);
             if (!host) return;
-            // Skip submit buttons that immediately navigate away — animation
-            // would be cut off mid-flight and looks jarring.
-            if (host.tagName === 'BUTTON' && host.getAttribute('type') === 'submit') {
-                // Still emit; modern browsers paint the next frame before nav.
-            }
-            spawnShockwave(host, ev);
+            spawnShockwave(ev);
         }, true);
     }
 
-    function spawnShockwave(host, ev) {
-        // Need positioning context + clipping for the ring.
-        var prevPosition = host.style.position;
-        var prevOverflow = host.style.overflow;
-        if (getComputedStyle(host).position === 'static') {
-            host.style.position = 'relative';
-        }
-        // We only force overflow:hidden if the host doesn't already define one;
-        // otherwise we'd clobber dropdowns / popovers anchored to the same node.
-        if (!host.classList.contains('dropdown')) {
-            host.classList.add('xx-shockwave-host');
-        }
-
-        var rect = host.getBoundingClientRect();
-        var x = ev.clientX - rect.left;
-        var y = ev.clientY - rect.top;
-
+    function spawnShockwave(ev) {
+        var layer = ensureShockwaveLayer();
         var wave = document.createElement('span');
         wave.className = 'xx-shockwave';
-        wave.style.setProperty('--xx-x', x + 'px');
-        wave.style.setProperty('--xx-y', y + 'px');
-        host.appendChild(wave);
-
+        wave.style.setProperty('--xx-x', ev.clientX + 'px');
+        wave.style.setProperty('--xx-y', ev.clientY + 'px');
+        layer.appendChild(wave);
         wave.addEventListener('animationend', function () {
-            if (wave.parentNode === host) host.removeChild(wave);
-            // Restore inline styles we may have set so we don't leak state.
-            if (!prevPosition) host.style.position = prevPosition;
-            if (!prevOverflow) host.style.overflow = prevOverflow;
+            if (wave.parentNode === layer) layer.removeChild(wave);
         });
     }
 

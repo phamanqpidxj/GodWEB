@@ -301,10 +301,14 @@ canvas.xx-stars-canvas {
  * 5. Chấn Động Linh Lực — click shockwave
  * ──────────────────────────────────────────────────────────────── */
 
-/* The host element gets position:relative + overflow:hidden when JS injects
-   the shockwave node so the ring is clipped to the surface. */
-.xx-shockwave-host {
-    position: relative;
+/* All shockwave nodes are appended to a single fixed-position layer
+   anchored to the viewport, so host-level mutations (e.g. a button's own
+   click handler swapping its icon) cannot wipe them out. */
+.xx-shockwave-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
     overflow: hidden;
 }
 
@@ -324,7 +328,6 @@ canvas.xx-stars-canvas {
             transparent 65%);
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.35);
     animation: xxShockwave 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
-    z-index: 5;
 }
 
 @keyframes xxShockwave {
