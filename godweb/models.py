@@ -158,7 +158,10 @@ class Topup(db.Model):
     amount = db.Column(db.Integer, nullable=False)  # Amount in VND
     godcoin_amount = db.Column(db.Integer, nullable=False)  # GodCoin to receive
     method = db.Column(db.String(50), nullable=False)  # momo, bank
-    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
+    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected, cancelled
+    proof_image = db.Column(db.String(255))  # URL/path to transfer proof screenshot
+    note = db.Column(db.String(255))  # Optional note from user
+    admin_note = db.Column(db.String(255))  # Optional note from admin
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     processed_at = db.Column(db.DateTime)
 

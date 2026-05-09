@@ -6,7 +6,7 @@
 <div class="page-header">
     <div class="container">
         <h1><i class="fas fa-coins"></i> Nạp GodCoin</h1>
-        <p>Chọn phương thức thanh toán và nạp GodCoin</p>
+        <p>Chọn số tiền, phương thức thanh toán và nạp GodCoin</p>
     </div>
 </div>
 
@@ -18,24 +18,47 @@
                 <p class="payment-note">ID của bạn: <strong class="wallet-id">#{{ current_user.id }}</strong></p>
             </div>
 
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Step 1: Amount -->
                 <div class="form-group">
                     <label class="form-label"><i class="fas fa-money-bill"></i> Số tiền nạp (VNĐ)</label>
-                    <select name="amount" class="form-control" id="amount-select">
-                        <option value="10000">10,000 VNĐ = 10 GodCoin</option>
-                        <option value="20000">20,000 VNĐ = 20 GodCoin</option>
-                        <option value="50000">50,000 VNĐ = 50 GodCoin</option>
-                        <option value="100000" selected>100,000 VNĐ = 100 GodCoin</option>
-                        <option value="200000">200,000 VNĐ = 200 GodCoin</option>
-                        <option value="500000">500,000 VNĐ = 500 GodCoin</option>
-                        <option value="1000000">1,000,000 VNĐ = 1000 GodCoin</option>
-                    </select>
-                    <p style="font-size: 14px; color: var(--text-light); margin-top: 10px;">
-                        <i class="fas fa-info-circle"></i> Tỷ lệ: 1,000 VNĐ = 1 GodCoin
+
+                    <!-- Quick preset buttons -->
+                    <div class="topup-presets">
+                        {% for p in presets %}
+                        <button type="button" class="preset-btn" data-amount="{{ p.value }}"
+                                onclick="selectPreset(this, {{ p.value }})">
+                            {{ p.label }}
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Custom amount input -->
+                    <div class="custom-amount-wrapper">
+                        <input type="number" name="amount" id="amount-input"
+                               class="form-control"
+                               placeholder="Hoặc nhập số tiền tùy chỉnh..."
+                               min="{{ min_amount }}" max="{{ max_amount }}" step="1000"
+                               oninput="updateConversion()">
+                        <span class="amount-suffix">VNĐ</span>
+                    </div>
+
+                    <!-- Real-time conversion preview -->
+                    <div id="conversion-preview" class="conversion-preview" style="display: none;">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Bạn sẽ nhận được: <strong id="godcoin-preview">0</strong> GodCoin</span>
+                    </div>
+
+                    <p style="font-size: 13px; color: var(--text-light); margin-top: 8px;">
+                        <i class="fas fa-info-circle"></i> Tỷ lệ: 1,000 VNĐ = 1 GodCoin &bull;
+                        Tối thiểu {{ '{:,.0f}'.format(min_amount) }} VNĐ &bull;
+                        Tối đa {{ '{:,.0f}'.format(max_amount) }} VNĐ
                     </p>
                 </div>
 
+                <!-- Step 2: Payment method -->
                 <div class="form-group">
                     <label class="form-label"><i class="fas fa-credit-card"></i> Phương thức thanh toán</label>
                     <div class="payment-grid">
@@ -63,7 +86,7 @@
                     </div>
                 </div>
 
-                <!-- QR Code Display -->
+                <!-- Step 3: QR Code Display (dynamic) -->
                 <div id="qr-section" class="qr-section">
                     <!-- MoMo QR -->
                     <div id="momo-qr" class="qr-panel momo" style="display: none;">
@@ -76,7 +99,8 @@
                                 <span class="qr-logo-vietqr">VIETQR</span>
                                 <span class="qr-logo-napas">napas247</span>
                             </div>
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=2|99|0867401017|PHAM DI AN||0|0|0||transfer_myqr"
+                            <img id="momo-qr-img"
+                                 src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=2|99|0867401017|PHAM DI AN||0|0|0||transfer_myqr"
                                  alt="MoMo QR" class="qr-image">
                         </div>
 
@@ -86,10 +110,11 @@
                         </div>
                     </div>
 
-                    <!-- Bank QR -->
+                    <!-- Bank QR (dynamic with VietQR including amount & description) -->
                     <div id="bank-qr" class="qr-panel bank" style="display: none;">
                         <div class="qr-card">
-                            <img src="https://img.vietqr.io/image/VCB-1040222867-compact.png"
+                            <img id="bank-qr-img"
+                                 src="https://img.vietqr.io/image/VCB-1040222867-compact.png"
                                  alt="Bank QR" class="qr-image bank">
                         </div>
 
@@ -100,7 +125,7 @@
                         </div>
                     </div>
 
-                    <!-- Nội dung chuyển khoản -->
+                    <!-- Transfer content -->
                     <div class="transfer-card">
                         <p style="color: white; margin-bottom: 10px;"><i class="fas fa-edit"></i> Nội dung chuyển khoản:</p>
                         <div class="transfer-body">
@@ -115,14 +140,45 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-secondary topup-submit">
+                <!-- Step 4: Proof & Note (optional) -->
+                <div class="form-group" style="margin-top: 20px;">
+                    <label class="form-label"><i class="fas fa-camera"></i> Ảnh minh chứng chuyển khoản (tùy chọn)</label>
+                    <div class="proof-upload-wrapper">
+                        <input type="file" name="proof_image" id="proof-image-input"
+                               accept="image/*" style="display: none;"
+                               onchange="previewProof(this)">
+                        <div id="proof-drop-zone" class="proof-drop-zone" onclick="document.getElementById('proof-image-input').click()">
+                            <div id="proof-placeholder">
+                                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: var(--text-light);"></i>
+                                <p style="color: var(--text-light); margin-top: 8px;">Nhấn để chọn ảnh hoặc kéo thả vào đây</p>
+                            </div>
+                            <img id="proof-preview-img" style="display: none; max-width: 100%; max-height: 200px; border-radius: 8px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-sticky-note"></i> Ghi chú (tùy chọn)</label>
+                    <input type="text" name="note" class="form-control"
+                           placeholder="Ví dụ: Đã chuyển qua MoMo lúc 14h30..."
+                           maxlength="255">
+                </div>
+
+                <button type="submit" class="btn btn-secondary topup-submit" id="submit-btn">
                     <i class="fas fa-check-circle"></i> Tôi đã thanh toán
                 </button>
             </form>
 
             <div class="alert alert-info" style="margin-top: 20px;">
                 <i class="fas fa-info-circle"></i>
-                Sau khi chuyển khoản, vui lòng bấm "Tôi đã thanh toán" và chờ Admin xác nhận (thường trong 5-15 phút).
+                <strong>Hướng dẫn:</strong>
+                <ol style="margin: 10px 0 0 20px; font-size: 14px;">
+                    <li>Chọn số tiền muốn nạp</li>
+                    <li>Chọn phương thức thanh toán (MoMo hoặc Ngân hàng)</li>
+                    <li>Quét mã QR và chuyển khoản với nội dung <strong>GOD{{ current_user.id }}</strong></li>
+                    <li>Chụp ảnh minh chứng (nếu có) và bấm "Tôi đã thanh toán"</li>
+                    <li>Chờ Admin xác nhận (thường trong 5-15 phút)</li>
+                </ol>
             </div>
         </div>
     </div>
@@ -133,14 +189,157 @@
     border-color: var(--primary-color);
     background: rgba(99, 102, 241, 0.1);
 }
+
+.topup-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.preset-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.preset-btn:hover {
+    border-color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.preset-btn.active {
+    border-color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.custom-amount-wrapper {
+    position: relative;
+}
+
+.custom-amount-wrapper input {
+    padding-right: 50px;
+}
+
+.amount-suffix {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.conversion-preview {
+    margin-top: 10px;
+    padding: 12px 16px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+    color: var(--success-color);
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.conversion-preview strong {
+    font-size: 18px;
+}
+
+.proof-drop-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.proof-drop-zone:hover {
+    border-color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.03);
+}
+
+.proof-drop-zone.dragover {
+    border-color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.08);
+}
 </style>
 
 <script>
+const TRANSFER_CONTENT = 'GOD{{ current_user.id }}';
+const BANK_ACCOUNT = '1040222867';
+const BANK_CODE = 'VCB';
+
+function selectPreset(btn, amount) {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('amount-input').value = amount;
+    updateConversion();
+}
+
+function updateConversion() {
+    const input = document.getElementById('amount-input');
+    const amount = parseInt(input.value) || 0;
+    const preview = document.getElementById('conversion-preview');
+    const gcPreview = document.getElementById('godcoin-preview');
+
+    if (amount >= {{ min_amount }}) {
+        const gc = Math.floor(amount / 1000);
+        gcPreview.textContent = gc;
+        preview.style.display = 'flex';
+    } else {
+        preview.style.display = 'none';
+    }
+
+    // Update preset button states
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        if (parseInt(btn.dataset.amount) === amount) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    // Update dynamic QR codes with the new amount
+    updateQRCodes(amount);
+}
+
+function updateQRCodes(amount) {
+    // Update Bank QR with amount and description via VietQR
+    const bankImg = document.getElementById('bank-qr-img');
+    if (amount > 0) {
+        bankImg.src = 'https://img.vietqr.io/image/' + BANK_CODE + '-' + BANK_ACCOUNT +
+                       '-compact.png?amount=' + amount + '&addInfo=' + encodeURIComponent(TRANSFER_CONTENT);
+    } else {
+        bankImg.src = 'https://img.vietqr.io/image/' + BANK_CODE + '-' + BANK_ACCOUNT + '-compact.png';
+    }
+
+    // Update MoMo QR with amount in data
+    const momoImg = document.getElementById('momo-qr-img');
+    const momoData = '2|99|0867401017|PHAM DI AN||0|0|' + (amount || 0) + '||transfer_myqr';
+    momoImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(momoData);
+}
+
 document.querySelectorAll('.payment-radio').forEach(radio => {
     radio.addEventListener('change', function() {
         document.getElementById('qr-section').style.display = 'block';
         document.getElementById('momo-qr').style.display = this.value === 'momo' ? 'block' : 'none';
         document.getElementById('bank-qr').style.display = this.value === 'bank' ? 'block' : 'none';
+
+        // Refresh QR with current amount
+        const amount = parseInt(document.getElementById('amount-input').value) || 0;
+        updateQRCodes(amount);
     });
 });
 
@@ -150,5 +349,47 @@ function copyContent() {
         alert('Đã copy: ' + content);
     });
 }
+
+function previewProof(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('proof-preview-img').src = e.target.result;
+            document.getElementById('proof-preview-img').style.display = 'block';
+            document.getElementById('proof-placeholder').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Drag and drop support for proof image
+const dropZone = document.getElementById('proof-drop-zone');
+if (dropZone) {
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', function() {
+        this.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].type.startsWith('image/')) {
+            document.getElementById('proof-image-input').files = files;
+            previewProof(document.getElementById('proof-image-input'));
+        }
+    });
+}
+
+// Set default selected amount
+document.addEventListener('DOMContentLoaded', function() {
+    const defaultBtn = document.querySelector('.preset-btn[data-amount="100000"]');
+    if (defaultBtn) {
+        selectPreset(defaultBtn, 100000);
+    }
+});
 </script>
 {% endblock %}

@@ -31,6 +31,9 @@
                 <div class="wallet-action secondary">
                     <a href="{{ url_for('wallet.topup_history') }}" class="btn btn-outline">
                         <i class="fas fa-clock"></i> Lịch sử nạp
+                        {% if pending_topups > 0 %}
+                        <span style="background: var(--warning-color); color: white; border-radius: 50%; padding: 2px 7px; font-size: 12px; margin-left: 5px;">{{ pending_topups }}</span>
+                        {% endif %}
                     </a>
                 </div>
             </div>

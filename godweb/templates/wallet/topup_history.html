@@ -22,8 +22,11 @@
                         <th>GodCoin</th>
                         <th>Phương thức</th>
                         <th>Trạng thái</th>
+                        <th>Minh chứng</th>
+                        <th>Ghi chú</th>
                         <th>Ngày tạo</th>
                         <th>Ngày xử lý</th>
+                        <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,12 +47,48 @@
                             <span class="stock-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning-color);"><i class="fas fa-clock"></i> Đang chờ</span>
                             {% elif topup.status == 'approved' %}
                             <span class="stock-badge in-stock"><i class="fas fa-check"></i> Đã duyệt</span>
+                            {% elif topup.status == 'cancelled' %}
+                            <span class="stock-badge" style="background: rgba(107, 114, 128, 0.1); color: #6b7280;"><i class="fas fa-ban"></i> Đã hủy</span>
                             {% else %}
                             <span class="stock-badge out-of-stock"><i class="fas fa-times"></i> Từ chối</span>
                             {% endif %}
                         </td>
+                        <td>
+                            {% if topup.proof_image %}
+                            <a href="{% if topup.proof_image.startswith('http') %}{{ topup.proof_image }}{% else %}{{ url_for('main.uploaded_file', filename=topup.proof_image) }}{% endif %}"
+                               target="_blank" class="btn btn-outline btn-sm" title="Xem ảnh minh chứng">
+                                <i class="fas fa-image"></i>
+                            </a>
+                            {% else %}
+                            <span style="color: var(--text-light);">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if topup.note %}
+                            <span title="{{ topup.note }}">{{ topup.note[:30] }}{% if topup.note|length > 30 %}...{% endif %}</span>
+                            {% else %}
+                            <span style="color: var(--text-light);">-</span>
+                            {% endif %}
+                            {% if topup.admin_note %}
+                            <br><small style="color: var(--primary-color);"><i class="fas fa-comment"></i> Admin: {{ topup.admin_note[:30] }}{% if topup.admin_note|length > 30 %}...{% endif %}</small>
+                            {% endif %}
+                        </td>
                         <td>{{ topup.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
                         <td>{{ topup.processed_at.strftime('%d/%m/%Y %H:%M') if topup.processed_at else '-' }}</td>
+                        <td>
+                            {% if topup.status == 'pending' %}
+                            <form method="POST" action="{{ url_for('wallet.cancel_topup', topup_id=topup.id) }}"
+                                  style="display: inline;"
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn hủy yêu cầu nạp này?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-sm" title="Hủy yêu cầu">
+                                    <i class="fas fa-times"></i> Hủy
+                                </button>
+                            </form>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
