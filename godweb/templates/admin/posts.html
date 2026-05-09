@@ -37,6 +37,20 @@
             </a>
         </div>
 
+        <!-- Search posts -->
+        <div class="card" style="padding: 20px; margin-bottom: 20px;">
+            <form method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <input type="hidden" name="type" value="{{ current_type }}">
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" name="search" placeholder="Tìm theo ID hoặc tiêu đề bài viết..."
+                           value="{{ current_search or '' }}"
+                           class="form-control" style="margin: 0;">
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Tìm kiếm</button>
+                <a href="{{ url_for('admin.posts', type=current_type) }}" class="btn btn-outline">Xóa lọc</a>
+            </form>
+        </div>
+
         <div class="card" style="padding: 25px;">
             {% if posts.items %}
             <div class="table-responsive">
@@ -94,22 +108,26 @@
             {% if posts.pages > 1 %}
             <div class="pagination">
                 {% if posts.has_prev %}
-                <a href="{{ url_for('admin.posts', page=posts.prev_num, type=current_type) }}"><i class="fas fa-chevron-left"></i></a>
+                <a href="{{ url_for('admin.posts', page=posts.prev_num, type=current_type, search=current_search or None) }}"><i class="fas fa-chevron-left"></i></a>
                 {% endif %}
                 {% for page_num in posts.iter_pages() %}
                     {% if page_num %}
-                        <a href="{{ url_for('admin.posts', page=page_num, type=current_type) }}" class="{% if page_num == posts.page %}active{% endif %}">{{ page_num }}</a>
+                        <a href="{{ url_for('admin.posts', page=page_num, type=current_type, search=current_search or None) }}" class="{% if page_num == posts.page %}active{% endif %}">{{ page_num }}</a>
                     {% endif %}
                 {% endfor %}
                 {% if posts.has_next %}
-                <a href="{{ url_for('admin.posts', page=posts.next_num, type=current_type) }}"><i class="fas fa-chevron-right"></i></a>
+                <a href="{{ url_for('admin.posts', page=posts.next_num, type=current_type, search=current_search or None) }}"><i class="fas fa-chevron-right"></i></a>
                 {% endif %}
             </div>
             {% endif %}
             {% else %}
             <div class="empty-state">
                 <i class="fas fa-newspaper"></i>
+                {% if current_search %}
+                <p>Không tìm thấy bài viết nào khớp với "{{ current_search }}"</p>
+                {% else %}
                 <p>Chưa có bài viết nào</p>
+                {% endif %}
             </div>
             {% endif %}
         </div>

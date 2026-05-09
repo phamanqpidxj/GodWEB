@@ -220,6 +220,9 @@
     </footer>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% if current_user.is_authenticated and current_user.is_admin() and request.path.startswith('/admin') %}
+    <script src="{{ url_for('static', filename='js/admin-notifier.js') }}"></script>
+    {% endif %}
     {% block extra_js %}{% endblock %}
 </body>
 </html>

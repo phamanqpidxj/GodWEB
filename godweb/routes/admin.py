@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, after_this_request
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, after_this_request, jsonify
 from flask_login import login_required, current_user
 from godweb.models import User, Post, Category, Product, ProductInventoryAccount, Transaction, Topup, Order, Notification
 from godweb.extensions import db
 from functools import wraps
 import os
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timedelta
 from godweb.utils import (
     upload_image as upload_image_util,
     normalize_inventory_parse_mode,
@@ -274,6 +274,7 @@ def delete_category(category_id):
 def posts():
     page = request.args.get('page', 1, type=int)
     post_type = request.args.get('type', 'free')
+    search = (request.args.get('search') or '').strip()
 
     if post_type not in ['free', 'premium']:
         post_type = 'free'
@@ -284,8 +285,24 @@ def posts():
     else:
         query = query.filter_by(is_premium=False)
 
+    if search:
+        if search.isdigit():
+            query = query.filter(
+                db.or_(
+                    Post.id == int(search),
+                    Post.title.contains(search),
+                )
+            )
+        else:
+            query = query.filter(Post.title.contains(search))
+
     posts = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=20)
-    return render_template('admin/posts.html', posts=posts, current_type=post_type)
+    return render_template(
+        'admin/posts.html',
+        posts=posts,
+        current_type=post_type,
+        current_search=search,
+    )
 
 @admin_bp.route('/posts/create', methods=['GET', 'POST'])
 @login_required
@@ -715,6 +732,19 @@ def orders():
     page = request.args.get('page', 1, type=int)
     orders = Order.query.order_by(Order.created_at.desc()).paginate(page=page, per_page=20)
     return render_template('admin/orders.html', orders=orders)
+
+
+# Lightweight JSON endpoint polled by the admin notification script so the
+# admin tab can chime as soon as a user submits a top-up request and fall
+# silent again once every pending request has been approved or rejected.
+@admin_bp.route('/api/pending-topups-count')
+@login_required
+@admin_required
+def pending_topups_count():
+    count = Topup.query.filter_by(status='pending').count()
+    response = jsonify({'count': count})
+    response.headers['Cache-Control'] = 'no-store'
+    return response
 
 
 @admin_bp.route('/notifications', methods=['GET', 'POST'])
