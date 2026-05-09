@@ -1,0 +1,356 @@
+/* GodWeb · Xianxia FX overlay
+ * Layered on top of style.css + theme-yinyang.css. Provides the cultivation /
+ * tu-tiên feel: animated Taiji+Bagua logo, starfield void background, fog at
+ * the footer, border-beam hovers, and click shockwaves. Strictly additive —
+ * does not modify the existing structural rules.
+ * --------------------------------------------------------------- */
+
+:root {
+    /* Linh khí palette --- supplements the existing amber theme. */
+    --lq-void:    #0a0a0a;
+    --lq-gold:    #ffd700;
+    --lq-gold-soft: rgba(255, 215, 0, 0.55);
+    --lq-cyan:    #7fdcff;
+    --lq-cyan-soft: rgba(127, 220, 255, 0.55);
+    --lq-violet:  #8a5cff;
+}
+
+/* @property allows --xx-angle to be animated as a real number, which is
+   required for the conic-gradient border-beam effect to spin smoothly. */
+@property --xx-angle {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * 1. Thiên Địa Linh Khí — starfield void background
+ * ──────────────────────────────────────────────────────────────── */
+
+.xx-stars {
+    position: fixed;
+    inset: 0;
+    z-index: -3;
+    pointer-events: none;
+    background:
+        radial-gradient(1200px 800px at 50% 30%, rgba(255, 215, 0, 0.05), transparent 60%),
+        radial-gradient(900px 700px at 90% 90%, rgba(127, 220, 255, 0.04), transparent 60%),
+        var(--lq-void);
+}
+
+/* The canvas is rendered above the gradient layer but still behind content. */
+canvas.xx-stars-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
+    pointer-events: none;
+    opacity: 0.95;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    canvas.xx-stars-canvas { display: none; }
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * 2. Mây mù — fog at the footer
+ * ──────────────────────────────────────────────────────────────── */
+
+.xx-fog {
+    position: relative;
+    height: 140px;
+    margin-top: -120px;     /* overlap with footer top */
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.xx-fog::before,
+.xx-fog::after {
+    content: "";
+    position: absolute;
+    inset: -20px -10% 0 -10%;
+    background:
+        radial-gradient(ellipse 60% 100% at 30% 100%, rgba(255, 215, 0, 0.10), transparent 70%),
+        radial-gradient(ellipse 70% 100% at 75% 100%, rgba(127, 220, 255, 0.08), transparent 70%),
+        radial-gradient(ellipse 80% 100% at 50%  90%, rgba(255, 255, 255, 0.06), transparent 70%);
+    filter: blur(18px);
+    animation: xxFogDrift 24s ease-in-out infinite alternate;
+}
+
+.xx-fog::after {
+    animation-duration: 36s;
+    animation-direction: alternate-reverse;
+    opacity: 0.7;
+    transform: translateX(40px);
+}
+
+@keyframes xxFogDrift {
+    0%   { transform: translate3d(-30px, 6px, 0) scale(1.02); }
+    50%  { transform: translate3d(20px, -8px, 0) scale(1.06); }
+    100% { transform: translate3d(40px, 4px, 0) scale(1.02); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .xx-fog::before, .xx-fog::after { animation: none; }
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * 3. Trận Pháp Âm Dương — Taiji + Bagua logo
+ * ──────────────────────────────────────────────────────────────── */
+
+.xx-logo {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    display: inline-block;
+    cursor: pointer;
+    overflow: visible;
+    /* small viewport halo so the glow can spill outside the SVG box */
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.35));
+    transition: filter 320ms ease, transform 320ms ease;
+}
+
+.xx-logo svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.xx-logo .xx-logo-taiji {
+    transform-origin: 50% 50%;
+    animation: xxLogoSpin 24s linear infinite;
+}
+
+.xx-logo .xx-logo-bagua {
+    transform-origin: 50% 50%;
+    animation: xxLogoCounterSpin 60s linear infinite;
+}
+
+.xx-logo .xx-bagua-trigram {
+    fill: var(--lq-gold);
+    opacity: 0.55;
+    transform-origin: 50% 50%;
+    animation: xxTrigramPulse 4.8s ease-in-out infinite;
+}
+
+/* Stagger the 8 trigrams so they appear to absorb linh khí in waves. */
+.xx-logo .xx-bagua-trigram:nth-child(1) { animation-delay: 0s; }
+.xx-logo .xx-bagua-trigram:nth-child(2) { animation-delay: 0.6s; }
+.xx-logo .xx-bagua-trigram:nth-child(3) { animation-delay: 1.2s; }
+.xx-logo .xx-bagua-trigram:nth-child(4) { animation-delay: 1.8s; }
+.xx-logo .xx-bagua-trigram:nth-child(5) { animation-delay: 2.4s; }
+.xx-logo .xx-bagua-trigram:nth-child(6) { animation-delay: 3.0s; }
+.xx-logo .xx-bagua-trigram:nth-child(7) { animation-delay: 3.6s; }
+.xx-logo .xx-bagua-trigram:nth-child(8) { animation-delay: 4.2s; }
+
+.xx-logo:hover {
+    filter: drop-shadow(0 0 14px var(--lq-gold)) drop-shadow(0 0 22px var(--lq-cyan-soft));
+    transform: scale(1.08);
+}
+
+.xx-logo:hover .xx-logo-taiji {
+    animation-duration: 6s;
+}
+
+.xx-logo:hover .xx-logo-bagua {
+    animation-duration: 14s;
+}
+
+.xx-logo:hover .xx-bagua-trigram {
+    opacity: 1;
+    animation-duration: 1.8s;
+    filter: drop-shadow(0 0 4px var(--lq-gold));
+}
+
+@keyframes xxLogoSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes xxLogoCounterSpin {
+    from { transform: rotate(360deg); }
+    to   { transform: rotate(0deg); }
+}
+
+@keyframes xxTrigramPulse {
+    0%, 100% { opacity: 0.25; transform: scale(0.94); }
+    50%      { opacity: 0.95; transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .xx-logo .xx-logo-taiji,
+    .xx-logo .xx-logo-bagua,
+    .xx-logo .xx-bagua-trigram { animation: none; }
+}
+
+/* Particle layer — JS appends span elements during hover. */
+.xx-logo .xx-particles {
+    position: absolute;
+    inset: -40%;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.xx-particles .xx-particle {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--lq-gold) 0%, var(--lq-gold-soft) 60%, transparent 100%);
+    opacity: 0;
+    animation: xxParticleBurst 900ms cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
+}
+
+.xx-particles .xx-particle.xx-particle-cyan {
+    background: radial-gradient(circle, var(--lq-cyan) 0%, var(--lq-cyan-soft) 60%, transparent 100%);
+}
+
+@keyframes xxParticleBurst {
+    0%   { opacity: 0;   transform: translate(0, 0) scale(0.4); }
+    20%  { opacity: 1; }
+    100% { opacity: 0;   transform: translate(var(--xx-dx, 0), var(--xx-dy, 0)) scale(0.2); }
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * 4. Border Beam — linh khí hover ring around buttons / cards
+ * ──────────────────────────────────────────────────────────────── */
+
+.xx-beam,
+.btn,
+.card,
+.product-card,
+.post-card,
+.dashboard-card {
+    position: relative;
+    isolation: isolate;
+}
+
+.xx-beam::before,
+.btn::before,
+.card::before,
+.product-card::before,
+.post-card::before,
+.dashboard-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background:
+        conic-gradient(
+            from var(--xx-angle, 0deg),
+            transparent 0deg,
+            var(--lq-gold) 60deg,
+            var(--lq-cyan) 120deg,
+            transparent 180deg,
+            transparent 360deg
+        );
+    /* Mask trick: keep only a 1px ring, knock out the centre. */
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 220ms ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Make sure existing inner content stays above the beam ring. */
+.btn > *, .card > *, .product-card > *, .post-card > *, .dashboard-card > *,
+.xx-beam > * {
+    position: relative;
+    z-index: 1;
+}
+
+.xx-beam:hover::before,
+.btn:hover::before,
+.card:hover::before,
+.product-card:hover::before,
+.post-card:hover::before,
+.dashboard-card:hover::before {
+    opacity: 1;
+    animation: xxBeamSpin 3.6s linear infinite;
+}
+
+@keyframes xxBeamSpin {
+    to { --xx-angle: 360deg; }
+}
+
+/* Don't apply the beam to disabled controls or to buttons that already use
+   the beam mask in a custom way. */
+.btn[disabled]::before,
+.btn.btn-no-beam::before {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .xx-beam:hover::before,
+    .btn:hover::before,
+    .card:hover::before,
+    .product-card:hover::before,
+    .post-card:hover::before,
+    .dashboard-card:hover::before { animation: none; opacity: 0.6; }
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * 5. Chấn Động Linh Lực — click shockwave
+ * ──────────────────────────────────────────────────────────────── */
+
+/* All shockwave nodes are appended to a single fixed-position layer
+   anchored to the viewport, so host-level mutations (e.g. a button's own
+   click handler swapping its icon) cannot wipe them out. */
+.xx-shockwave-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.xx-shockwave {
+    position: absolute;
+    left: var(--xx-x, 50%);
+    top:  var(--xx-y, 50%);
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    background:
+        radial-gradient(circle,
+            rgba(255, 215, 0, 0.55) 0%,
+            rgba(127, 220, 255, 0.25) 40%,
+            transparent 65%);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.35);
+    animation: xxShockwave 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+@keyframes xxShockwave {
+    0%   { width: 0;     height: 0;     opacity: 0.85; }
+    60%  {                              opacity: 0.45; }
+    100% { width: 520px; height: 520px; opacity: 0;   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .xx-shockwave { display: none; }
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * 6. Brand text — adopt the calligraphy hint
+ * ──────────────────────────────────────────────────────────────── */
+
+.brand-name {
+    font-family: "Playfair Display", "Cinzel", "Times New Roman", serif;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--lq-gold) 0%, #fff7c8 50%, var(--lq-cyan) 110%);
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 18px rgba(255, 215, 0, 0.20);
+    letter-spacing: 0.04em;
+}
