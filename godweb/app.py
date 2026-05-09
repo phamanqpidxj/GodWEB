@@ -11,6 +11,12 @@ from flask_login import current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 from godweb.extensions import db, login_manager, csrf
 
+# Order rows are pruned ~once per ORDER_CLEANUP_INTERVAL_SECONDS by a
+# before_request hook. This keeps "Lịch sử đơn hàng" naturally limited to the
+# last ORDER_RETENTION_DAYS without needing an external cron/scheduler.
+ORDER_RETENTION_DAYS = 30
+ORDER_CLEANUP_INTERVAL_SECONDS = 3600
+
 def _init_sentry(is_prod_like: bool) -> None:
     """Wire Sentry up if SENTRY_DSN is set.
 
@@ -292,6 +298,42 @@ def create_app():
             'navbar_notifications': navbar_notifications,
             'unread_notification_count': unread_count
         }
+
+    # Sentinel of None means "never run yet" so the very first request after
+    # process start triggers cleanup immediately. Subsequent requests within
+    # the throttle window are skipped.
+    _last_order_cleanup = {'at': None}
+
+    def _prune_old_orders():
+        """Delete Order rows older than ORDER_RETENTION_DAYS.
+
+        Called from a before_request hook with a coarse time-based throttle so
+        the SQL only fires roughly once per ORDER_CLEANUP_INTERVAL_SECONDS even
+        under load. Both the user-facing "Lịch sử đơn hàng" and the admin
+        "Đơn hàng" page read from this table, so a single delete keeps both
+        in sync. Failures are swallowed and logged because order pruning must
+        never break a user request.
+        """
+        from datetime import datetime as _dt
+        from godweb.models import Order
+        cutoff = _dt.utcnow() - timedelta(days=ORDER_RETENTION_DAYS)
+        try:
+            Order.query.filter(Order.created_at < cutoff).delete(
+                synchronize_session=False
+            )
+            db.session.commit()
+        except Exception as exc:
+            db.session.rollback()
+            app.logger.warning('Order auto-cleanup skipped: %s', exc)
+
+    @app.before_request
+    def cleanup_old_orders_periodically():
+        now = time.monotonic()
+        last = _last_order_cleanup['at']
+        if last is not None and now - last < ORDER_CLEANUP_INTERVAL_SECONDS:
+            return
+        _last_order_cleanup['at'] = now
+        _prune_old_orders()
 
     @app.before_request
     def require_login_globally():
