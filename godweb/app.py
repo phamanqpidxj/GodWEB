@@ -299,7 +299,10 @@ def create_app():
             'unread_notification_count': unread_count
         }
 
-    _last_order_cleanup = {'at': 0.0}
+    # Sentinel of None means "never run yet" so the very first request after
+    # process start triggers cleanup immediately. Subsequent requests within
+    # the throttle window are skipped.
+    _last_order_cleanup = {'at': None}
 
     def _prune_old_orders():
         """Delete Order rows older than ORDER_RETENTION_DAYS.
@@ -326,7 +329,8 @@ def create_app():
     @app.before_request
     def cleanup_old_orders_periodically():
         now = time.monotonic()
-        if now - _last_order_cleanup['at'] < ORDER_CLEANUP_INTERVAL_SECONDS:
+        last = _last_order_cleanup['at']
+        if last is not None and now - last < ORDER_CLEANUP_INTERVAL_SECONDS:
             return
         _last_order_cleanup['at'] = now
         _prune_old_orders()

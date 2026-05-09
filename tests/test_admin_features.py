@@ -153,3 +153,47 @@ def test_old_orders_are_pruned(app):
         assert Order.query.count() == 1
         remaining = Order.query.first()
         assert remaining.account_info == 'new'
+
+
+def test_old_orders_pruned_by_first_request_hook(app, client):
+    """The before_request hook must clean up on the very first request after
+    process start, even though the in-memory throttle has not been seeded yet.
+    A previous bug initialized the throttle to ``0.0`` which, combined with
+    ``time.monotonic()`` (also small at process start), caused cleanup to be
+    skipped for the first ORDER_CLEANUP_INTERVAL_SECONDS of uptime.
+    """
+    from godweb.extensions import db
+    from godweb.models import Order, Product
+
+    user_id = _create_user(app)
+
+    with app.app_context():
+        product = Product(
+            name='Demo2', description='d', price=10,
+            stock=0, inventory_file='x', inventory_data='',
+            parse_mode='line', inventory_type='file',
+        )
+        db.session.add(product)
+        db.session.commit()
+        pid = product.id
+
+        db.session.add(Order(
+            user_id=user_id, product_id=pid,
+            account_info='ancient', price=10,
+            created_at=datetime.utcnow() - timedelta(days=45),
+        ))
+        db.session.add(Order(
+            user_id=user_id, product_id=pid,
+            account_info='fresh', price=10,
+            created_at=datetime.utcnow(),
+        ))
+        db.session.commit()
+        assert Order.query.count() == 2
+
+    # Any request triggers @app.before_request → cleanup_old_orders_periodically.
+    client.get('/auth/login')
+
+    with app.app_context():
+        remaining = Order.query.all()
+        assert len(remaining) == 1
+        assert remaining[0].account_info == 'fresh'
