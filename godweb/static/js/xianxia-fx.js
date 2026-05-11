@@ -25,7 +25,9 @@
 
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var stars = [];
+        var bokehs = [];                              // larger, blurred depth-of-field particles
         var STAR_COUNT_BASE = 130;
+        var BOKEH_COUNT_BASE = 18;                    // sparse and luxurious, not crowded
         var w = 0, h = 0;
         // Pointer-driven parallax target; smoothed in the render loop.
         var pxTarget = 0, pyTarget = 0;
@@ -44,6 +46,7 @@
 
         function seed() {
             stars = [];
+            bokehs = [];
             // Scale star count gently with viewport area, capped to keep mobile cheap.
             var density = Math.min(1.6, Math.max(0.6, (w * h) / (1280 * 720)));
             var count = Math.floor(STAR_COUNT_BASE * density);
@@ -57,6 +60,22 @@
                     tw: Math.random() * Math.PI * 2,      // twinkle phase
                     tws: 0.008 + Math.random() * 0.012,   // per-star twinkle speed
                     hue: Math.random() < 0.20 ? 'cyan' : 'gold'
+                });
+            }
+            // Bokeh particles: large, blurred, slow — give the page a real
+            // depth-of-field feel like the user's luxury reference image.
+            var bcount = Math.floor(BOKEH_COUNT_BASE * density);
+            for (var j = 0; j < bcount; j++) {
+                bokehs.push({
+                    x:  Math.random() * w,
+                    y:  Math.random() * h,
+                    r:  22 + Math.random() * 46,           // 22 – 68 px radius
+                    a:  0.04 + Math.random() * 0.10,       // very subtle alpha
+                    vx: (Math.random() - 0.5) * 0.022,
+                    vy: -0.018 - Math.random() * 0.030,    // drift up slowly
+                    tw: Math.random() * Math.PI * 2,
+                    tws: 0.004 + Math.random() * 0.008,
+                    hue: Math.random() < 0.30 ? 'cyan' : 'gold'
                 });
             }
         }
@@ -81,6 +100,23 @@
             ctx.fill();
         }
 
+        function drawBokeh(b, twinkle) {
+            // Large soft-edged orb. Two concentric gradient passes: outer
+            // diffuse halo + slightly brighter inner core. Twinkle gently
+            // modulates the alpha so the orb breathes.
+            var alpha = b.a * (0.7 + 0.3 * twinkle);
+            var rgb = b.hue === 'cyan' ? '127, 220, 255' : '255, 215, 0';
+            var g1 = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+            g1.addColorStop(0.00, 'rgba(' + rgb + ', ' + alpha.toFixed(3) + ')');
+            g1.addColorStop(0.35, 'rgba(' + rgb + ', ' + (alpha * 0.45).toFixed(3) + ')');
+            g1.addColorStop(0.75, 'rgba(' + rgb + ', ' + (alpha * 0.10).toFixed(3) + ')');
+            g1.addColorStop(1.00, 'rgba(' + rgb + ', 0)');
+            ctx.fillStyle = g1;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
         function tick() {
             // Smoothly approach the parallax target (low-pass filter).
             px += (pxTarget - px) * 0.06;
@@ -90,6 +126,21 @@
 
             ctx.clearRect(0, 0, w, h);
 
+            // Bokeh first (background depth layer).
+            for (var k = 0; k < bokehs.length; k++) {
+                var b = bokehs[k];
+                b.x += b.vx;
+                b.y += b.vy;
+                b.tw += b.tws;
+                // Wrap when fully off-screen including blur radius.
+                if (b.y + b.r < 0) { b.y = h + b.r; b.x = Math.random() * w; }
+                if (b.x + b.r < 0) b.x = w + b.r;
+                if (b.x - b.r > w) b.x = -b.r;
+                var btw = 0.6 + 0.4 * Math.sin(b.tw);
+                drawBokeh(b, btw);
+            }
+
+            // Sharp stars on top.
             for (var i = 0; i < stars.length; i++) {
                 var s = stars[i];
                 s.x += s.vx;
