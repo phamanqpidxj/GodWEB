@@ -1,8 +1,9 @@
 /* GodWeb · Xianxia FX overlay
- * Layered on top of style.css + theme-yinyang.css. Provides the cultivation /
- * tu-tiên feel: animated Taiji+Bagua logo, starfield void background, fog at
- * the footer, border-beam hovers, and click shockwaves. Strictly additive —
- * does not modify the existing structural rules.
+ * Layered on top of style.css + theme-yinyang.css. Luxury watch-face logo
+ * (yin-yang dial with 11 Roman numerals + glowing 12 o'clock sphere),
+ * starfield void background, footer fog, border-beam hovers, and click
+ * shockwaves. Strictly additive — does not modify the existing structural
+ * rules.
  * --------------------------------------------------------------- */
 
 :root {
@@ -107,7 +108,7 @@ canvas.xx-stars-canvas {
 }
 
 /* ────────────────────────────────────────────────────────────────
- * 3. Trận Pháp Âm Dương — Taiji + Bagua logo
+ * 3. Luxury Watch Face — yin-yang dial with Roman numerals + 12 o'clock sphere
  * ──────────────────────────────────────────────────────────────── */
 
 .xx-logo {
@@ -157,40 +158,94 @@ canvas.xx-stars-canvas {
 }
 
 .xx-logo .xx-logo-taiji {
-    /* transform-box: view-box pins the rotation origin to the centre of
-     * the SVG canvas (0, 0 in user units) regardless of the group's own
-     * bbox \u2014 critical for the bagua, whose glyph bbox is asymmetric. */
-    transform-box: view-box;
-    transform-origin: 50% 50%;
+    /* fill-box anchors the rotation origin to the centre of the Taiji's own
+     * (symmetric) bbox. This is robust across Chrome versions; with
+     * transform-box: view-box and percentage origins, Chrome resolves the
+     * percentage against the SVG element's CSS layout box, which makes
+     * the Taiji visibly orbit a point ~22px off-centre over each rotation. */
+    transform-box: fill-box;
+    transform-origin: center;
     animation: xxLogoSpin 26s linear infinite;
     will-change: transform;
 }
 
-.xx-logo .xx-logo-bagua {
-    transform-box: view-box;
-    transform-origin: 50% 50%;
-    animation: xxLogoCounterSpin 80s linear infinite;
-    will-change: transform;
-}
-
-.xx-logo .xx-bagua-trigram {
-    fill: var(--lq-gold);
-    opacity: 0.55;
+/* Clock face: the 11 Roman numerals around the dial. They stay upright
+ * (no rotation — a clock's numbers are always readable) but their fill has
+ * a subtle gold-metallic pulse that staggers around the dial like minute
+ * pips on an analog watch. */
+.xx-logo .xx-clock-face {
     transform-box: fill-box;
     transform-origin: center;
-    animation: xxTrigramPulse 5.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    will-change: filter;
+}
+
+.xx-logo .xx-clock-numeral {
+    font-family: "Cinzel", "Playfair Display", "Times New Roman", serif;
+    font-weight: 700;
+    fill: var(--lq-gold);
+    /* Subtle bevel: drop-shadow gives the numerals an embossed feel. */
+    filter: drop-shadow(0 0.4px 0 #7a5200) drop-shadow(0 0 1.2px rgba(255, 215, 0, 0.65));
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0.92;
+    animation: xxNumeralPulse 6.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    will-change: opacity, filter;
+}
+
+/* Stagger the 11 numerals so the dial "breathes" like absorbed linh khí. */
+.xx-logo .xx-clock-numeral:nth-child(1)  { animation-delay: 0s; }
+.xx-logo .xx-clock-numeral:nth-child(2)  { animation-delay: 0.55s; }
+.xx-logo .xx-clock-numeral:nth-child(3)  { animation-delay: 1.1s; }
+.xx-logo .xx-clock-numeral:nth-child(4)  { animation-delay: 1.65s; }
+.xx-logo .xx-clock-numeral:nth-child(5)  { animation-delay: 2.2s; }
+.xx-logo .xx-clock-numeral:nth-child(6)  { animation-delay: 2.75s; }
+.xx-logo .xx-clock-numeral:nth-child(7)  { animation-delay: 3.3s; }
+.xx-logo .xx-clock-numeral:nth-child(8)  { animation-delay: 3.85s; }
+.xx-logo .xx-clock-numeral:nth-child(9)  { animation-delay: 4.4s; }
+.xx-logo .xx-clock-numeral:nth-child(10) { animation-delay: 4.95s; }
+.xx-logo .xx-clock-numeral:nth-child(11) { animation-delay: 5.5s; }
+
+/* Tick marks: subtle pulse synced with the numerals. */
+.xx-logo .xx-clock-ticks {
+    opacity: 0.55;
+    animation: xxTicksPulse 7s ease-in-out infinite;
+    will-change: opacity;
+}
+
+/* The glowing 12 o'clock sphere — the "crown jewel" of the watch face.
+ * Pulses warmly so it reads as alive without distracting. */
+.xx-logo .xx-logo-sphere {
+    transform-box: fill-box;
+    transform-origin: center;
+    will-change: filter, opacity;
+    filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.55));
+}
+
+.xx-logo .xx-sphere-halo {
+    /* fill-box pins the breathing scale to the halo's own circle centre.
+     * The previous transform-box: view-box with transform-origin: 0px -38px
+     * actually resolved to viewBox (-50, -88), outside the visible area,
+     * which turned the scale animation into a translation that flung the
+     * sphere off the dial. */
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: xxSphereHalo 4.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     will-change: opacity, transform;
 }
 
-/* Stagger the 8 trigrams so they appear to absorb linh khí in waves. */
-.xx-logo .xx-bagua-trigram:nth-child(1) { animation-delay: 0s; }
-.xx-logo .xx-bagua-trigram:nth-child(2) { animation-delay: 0.6s; }
-.xx-logo .xx-bagua-trigram:nth-child(3) { animation-delay: 1.2s; }
-.xx-logo .xx-bagua-trigram:nth-child(4) { animation-delay: 1.8s; }
-.xx-logo .xx-bagua-trigram:nth-child(5) { animation-delay: 2.4s; }
-.xx-logo .xx-bagua-trigram:nth-child(6) { animation-delay: 3.0s; }
-.xx-logo .xx-bagua-trigram:nth-child(7) { animation-delay: 3.6s; }
-.xx-logo .xx-bagua-trigram:nth-child(8) { animation-delay: 4.2s; }
+.xx-logo .xx-sphere-core {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: xxSphereCore 4.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    will-change: filter, transform;
+}
+
+.xx-logo .xx-sphere-rays {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: xxSphereRays 4.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    will-change: opacity, transform;
+}
 
 .xx-logo:hover {
     filter: drop-shadow(0 0 16px var(--lq-gold)) drop-shadow(0 0 26px var(--lq-cyan-soft));
@@ -202,29 +257,54 @@ canvas.xx-stars-canvas {
     animation-duration: 12s;
 }
 
-.xx-logo:hover .xx-logo-bagua {
-    animation-duration: 22s;
+/* On hover, the numerals brighten and the bezel/halo intensify, like a
+ * watch under a stronger light source. */
+.xx-logo:hover .xx-clock-numeral {
+    opacity: 1;
+    fill: #fff4b8;
+    filter: drop-shadow(0 0.4px 0 #7a5200) drop-shadow(0 0 4px var(--lq-gold));
+    animation-duration: 3.2s;
 }
 
-.xx-logo:hover .xx-bagua-trigram {
-    opacity: 1;
-    animation-duration: 2.4s;
-    filter: drop-shadow(0 0 5px var(--lq-gold));
-}
+.xx-logo:hover .xx-clock-ticks { opacity: 0.95; }
+
+.xx-logo:hover .xx-sphere-halo { animation-duration: 2.0s; }
+.xx-logo:hover .xx-sphere-core { animation-duration: 2.0s; filter: drop-shadow(0 0 6px var(--lq-gold)); }
+.xx-logo:hover .xx-sphere-rays { animation-duration: 2.0s; opacity: 1; }
 
 @keyframes xxLogoSpin {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
 }
 
-@keyframes xxLogoCounterSpin {
-    from { transform: rotate(360deg); }
-    to   { transform: rotate(0deg); }
+/* Numeral pulse — subtle brightness shimmer, no scale change so the dial
+ * stays geometrically stable. */
+@keyframes xxNumeralPulse {
+    0%, 100% { opacity: 0.78; }
+    50%      { opacity: 1.00; }
 }
 
-@keyframes xxTrigramPulse {
-    0%, 100% { opacity: 0.42; transform: scale(0.95); }
-    50%      { opacity: 0.95; transform: scale(1.05); }
+@keyframes xxTicksPulse {
+    0%, 100% { opacity: 0.45; }
+    50%      { opacity: 0.85; }
+}
+
+/* Sphere halo: gentle breathing ring of golden light. */
+@keyframes xxSphereHalo {
+    0%, 100% { opacity: 0.55; transform: scale(0.92); }
+    50%      { opacity: 1.00; transform: scale(1.18); }
+}
+
+/* Sphere core: subtle 3D lift via filter brightness. */
+@keyframes xxSphereCore {
+    0%, 100% { filter: brightness(0.95); transform: scale(1);     }
+    50%      { filter: brightness(1.18); transform: scale(1.06);  }
+}
+
+/* Light rays: gentle expand/contract with the sphere. */
+@keyframes xxSphereRays {
+    0%, 100% { opacity: 0.55; transform: scale(0.94); }
+    50%      { opacity: 0.95; transform: scale(1.10); }
 }
 
 @keyframes xxLogoBreath {
@@ -236,8 +316,11 @@ canvas.xx-stars-canvas {
     .xx-logo,
     .xx-logo.brand-logo-svg,
     .xx-logo .xx-logo-taiji,
-    .xx-logo .xx-logo-bagua,
-    .xx-logo .xx-bagua-trigram { animation: none; }
+    .xx-logo .xx-clock-numeral,
+    .xx-logo .xx-clock-ticks,
+    .xx-logo .xx-sphere-halo,
+    .xx-logo .xx-sphere-core,
+    .xx-logo .xx-sphere-rays { animation: none; }
 }
 
 /* Particle layer — JS appends span elements during hover. */
