@@ -29,38 +29,58 @@
         <div class="container">
             <a href="{{ url_for('main.home') }}" class="navbar-brand">
                 <span class="xx-logo brand-logo-svg" aria-label="GodWeb · Trận pháp Âm Dương" role="img">
-                    <svg viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <svg viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
                         <defs>
                             <radialGradient id="xxTaijiGlow" cx="50%" cy="50%" r="55%">
-                                <stop offset="0%"  stop-color="#fff7c8" stop-opacity="0.55"/>
-                                <stop offset="60%" stop-color="#ffd700" stop-opacity="0.10"/>
+                                <stop offset="0%"  stop-color="#fff7c8" stop-opacity="0.65"/>
+                                <stop offset="55%" stop-color="#ffd700" stop-opacity="0.18"/>
                                 <stop offset="100%" stop-color="#ffd700" stop-opacity="0"/>
                             </radialGradient>
+                            <radialGradient id="xxTaijiRim" cx="50%" cy="50%" r="50%">
+                                <stop offset="92%"  stop-color="#ffd700" stop-opacity="0"/>
+                                <stop offset="97%"  stop-color="#ffd700" stop-opacity="0.75"/>
+                                <stop offset="100%" stop-color="#ffd700" stop-opacity="0"/>
+                            </radialGradient>
+                            <linearGradient id="xxTaijiYang" x1="0" y1="-22" x2="0" y2="22" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%"   stop-color="#ffffff"/>
+                                <stop offset="55%"  stop-color="#fff4b8"/>
+                                <stop offset="100%" stop-color="#fde68a"/>
+                            </linearGradient>
                         </defs>
-                        <!-- Bagua ring: 8 trigrams arranged radially. -->
+
+                        <!-- Outer rim halo, sits behind everything else. -->
+                        <circle cx="0" cy="0" r="46" fill="url(#xxTaijiRim)" opacity="0.55"/>
+
+                        <!-- Bagua ring: 8 trigrams arranged radially.
+                             Font size bumped from 11 → 13 so the trigrams are legible at 56 px. -->
                         <g class="xx-logo-bagua">
-                            <text class="xx-bagua-trigram" x="0" y="-40" text-anchor="middle" dominant-baseline="middle" font-size="11">☰</text>
-                            <text class="xx-bagua-trigram" x="28" y="-28" text-anchor="middle" dominant-baseline="middle" font-size="11">☱</text>
-                            <text class="xx-bagua-trigram" x="40" y="0"   text-anchor="middle" dominant-baseline="middle" font-size="11">☲</text>
-                            <text class="xx-bagua-trigram" x="28" y="28"  text-anchor="middle" dominant-baseline="middle" font-size="11">☳</text>
-                            <text class="xx-bagua-trigram" x="0" y="40"   text-anchor="middle" dominant-baseline="middle" font-size="11">☴</text>
-                            <text class="xx-bagua-trigram" x="-28" y="28" text-anchor="middle" dominant-baseline="middle" font-size="11">☵</text>
-                            <text class="xx-bagua-trigram" x="-40" y="0"  text-anchor="middle" dominant-baseline="middle" font-size="11">☶</text>
-                            <text class="xx-bagua-trigram" x="-28" y="-28" text-anchor="middle" dominant-baseline="middle" font-size="11">☷</text>
+                            <text class="xx-bagua-trigram" x="0"   y="-40" text-anchor="middle" dominant-baseline="central" font-size="13">☰</text>
+                            <text class="xx-bagua-trigram" x="28"  y="-28" text-anchor="middle" dominant-baseline="central" font-size="13">☱</text>
+                            <text class="xx-bagua-trigram" x="40"  y="0"   text-anchor="middle" dominant-baseline="central" font-size="13">☲</text>
+                            <text class="xx-bagua-trigram" x="28"  y="28"  text-anchor="middle" dominant-baseline="central" font-size="13">☳</text>
+                            <text class="xx-bagua-trigram" x="0"   y="40"  text-anchor="middle" dominant-baseline="central" font-size="13">☴</text>
+                            <text class="xx-bagua-trigram" x="-28" y="28"  text-anchor="middle" dominant-baseline="central" font-size="13">☵</text>
+                            <text class="xx-bagua-trigram" x="-40" y="0"   text-anchor="middle" dominant-baseline="central" font-size="13">☶</text>
+                            <text class="xx-bagua-trigram" x="-28" y="-28" text-anchor="middle" dominant-baseline="central" font-size="13">☷</text>
                         </g>
+
                         <!-- Halo behind taiji. -->
-                        <circle cx="0" cy="0" r="32" fill="url(#xxTaijiGlow)"/>
+                        <circle cx="0" cy="0" r="30" fill="url(#xxTaijiGlow)"/>
+
                         <!-- Taiji proper. -->
                         <g class="xx-logo-taiji">
-                            <circle cx="0" cy="0" r="22" fill="#0a0a0a" stroke="#ffd700" stroke-width="1.2"/>
-                            <!-- The classic yin-yang shape: a path that traces the S-curve. -->
+                            <!-- Outer disk: golden rim + black centre. -->
+                            <circle cx="0" cy="0" r="22" fill="#0a0a0a" stroke="#ffd700" stroke-width="1.4"/>
+                            <!-- Classic yin-yang S-curve: light (Dương) half. -->
                             <path d="M 0,-22
                                      A 22,22 0 0 1 0,22
                                      A 11,11 0 0 1 0,0
                                      A 11,11 0 0 0 0,-22 Z"
-                                  fill="#fff7c8"/>
-                            <circle cx="0" cy="-11" r="3.4" fill="#0a0a0a"/>
-                            <circle cx="0" cy="11"  r="3.4" fill="#fff7c8"/>
+                                  fill="url(#xxTaijiYang)"/>
+                            <!-- Yin dot inside Dương half (top). -->
+                            <circle cx="0" cy="-11" r="3.6" fill="#0a0a0a"/>
+                            <!-- Yang dot inside Âm half (bottom). -->
+                            <circle cx="0" cy="11"  r="3.6" fill="#fff7c8"/>
                         </g>
                     </svg>
                 </span>
