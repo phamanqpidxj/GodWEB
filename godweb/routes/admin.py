@@ -650,9 +650,19 @@ def delete_product(product_id):
     if getattr(product, 'inventory_folder_path', None):
         cleanup_inventory_folder(current_app.config['UPLOAD_FOLDER'], product.inventory_folder_path)
 
+    # Order.product_id is NOT NULL with no ON DELETE CASCADE, so existing orders
+    # would block the delete with an IntegrityError. Purchase records belong to
+    # the user (and are auto-pruned after 30 days anyway), so it's safe to drop
+    # the rows tied to this product as part of the same transaction.
+    deleted_orders = Order.query.filter_by(product_id=product.id).delete(synchronize_session=False)
+
     db.session.delete(product)
     db.session.commit()
-    flash('Xóa sản phẩm thành công!', 'success')
+
+    if deleted_orders:
+        flash(f'Xóa sản phẩm thành công! Đã xóa kèm {deleted_orders} đơn hàng liên quan.', 'success')
+    else:
+        flash('Xóa sản phẩm thành công!', 'success')
     return redirect(url_for('admin.products'))
 
 # Topup Management
