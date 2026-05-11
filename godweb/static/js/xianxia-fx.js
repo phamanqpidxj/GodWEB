@@ -25,8 +25,12 @@
 
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var stars = [];
-        var STAR_COUNT_BASE = 110;
+        var STAR_COUNT_BASE = 130;
         var w = 0, h = 0;
+        // Pointer-driven parallax target; smoothed in the render loop.
+        var pxTarget = 0, pyTarget = 0;
+        var px = 0, py = 0;
+        var PARALLAX_MAX = 8;
 
         function resize() {
             w = window.innerWidth;
@@ -47,49 +51,58 @@
                 stars.push({
                     x:  Math.random() * w,
                     y:  Math.random() * h,
-                    z:  0.4 + Math.random() * 1.6,        // depth, controls size + speed
-                    vx: (Math.random() - 0.5) * 0.04,
-                    vy: -0.05 - Math.random() * 0.05,     // gentle upward drift
+                    z:  0.4 + Math.random() * 1.8,        // depth, controls size + speed + parallax weight
+                    vx: (Math.random() - 0.5) * 0.035,
+                    vy: -0.04 - Math.random() * 0.05,     // gentle upward drift
                     tw: Math.random() * Math.PI * 2,      // twinkle phase
-                    hue: Math.random() < 0.18 ? 'cyan' : 'gold'
+                    tws: 0.008 + Math.random() * 0.012,   // per-star twinkle speed
+                    hue: Math.random() < 0.20 ? 'cyan' : 'gold'
                 });
             }
         }
 
-        function tick(t) {
+        function drawStar(s, twinkle) {
+            var radius = s.z * 1.05;
+            var alpha  = Math.min(1, twinkle * (s.z / 2));
+            var rgb = s.hue === 'cyan' ? '127, 220, 255' : '255, 215, 0';
+            // Soft halo via radial gradient gives stars a glow instead of a hard pixel.
+            var grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, radius * 4.5);
+            grad.addColorStop(0.00, 'rgba(' + rgb + ', ' + (alpha).toFixed(3) + ')');
+            grad.addColorStop(0.35, 'rgba(' + rgb + ', ' + (alpha * 0.32).toFixed(3) + ')');
+            grad.addColorStop(1.00, 'rgba(' + rgb + ', 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, radius * 4.5, 0, Math.PI * 2);
+            ctx.fill();
+            // Tight bright core on top of the halo.
+            ctx.fillStyle = 'rgba(255, 247, 220, ' + (alpha * 0.85).toFixed(3) + ')';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, Math.max(0.5, radius * 0.55), 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function tick() {
+            // Smoothly approach the parallax target (low-pass filter).
+            px += (pxTarget - px) * 0.06;
+            py += (pyTarget - py) * 0.06;
+            canvas.style.setProperty('--xx-px', px.toFixed(2) + 'px');
+            canvas.style.setProperty('--xx-py', py.toFixed(2) + 'px');
+
             ctx.clearRect(0, 0, w, h);
 
             for (var i = 0; i < stars.length; i++) {
                 var s = stars[i];
                 s.x += s.vx;
                 s.y += s.vy;
-                s.tw += 0.012;
+                s.tw += s.tws;
 
                 // Wrap toroidally so stars never disappear permanently.
-                if (s.y < -4) { s.y = h + 4; s.x = Math.random() * w; }
-                if (s.x < -4) s.x = w + 4;
-                if (s.x > w + 4) s.x = -4;
+                if (s.y < -8) { s.y = h + 8; s.x = Math.random() * w; }
+                if (s.x < -8) s.x = w + 8;
+                if (s.x > w + 8) s.x = -8;
 
                 var twinkle = 0.55 + 0.45 * Math.sin(s.tw);
-                var radius  = s.z * 0.9;
-                var alpha   = Math.min(1, twinkle * (s.z / 2));
-
-                if (s.hue === 'cyan') {
-                    ctx.fillStyle = 'rgba(127, 220, 255, ' + alpha.toFixed(3) + ')';
-                } else {
-                    ctx.fillStyle = 'rgba(255, 215, 0, ' + (alpha * 0.85).toFixed(3) + ')';
-                }
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, radius, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Occasional brighter "linh khí" glow on the larger stars.
-                if (s.z > 1.4) {
-                    ctx.fillStyle = 'rgba(255, 255, 255, ' + (alpha * 0.25).toFixed(3) + ')';
-                    ctx.beginPath();
-                    ctx.arc(s.x, s.y, radius * 2.4, 0, Math.PI * 2);
-                    ctx.fill();
-                }
+                drawStar(s, twinkle);
             }
 
             requestAnimationFrame(tick);
@@ -98,6 +111,15 @@
         resize();
         seed();
         window.addEventListener('resize', function () { resize(); seed(); });
+
+        // Parallax: subtle 8px max offset — reads as depth without nausea.
+        window.addEventListener('pointermove', function (ev) {
+            var nx = (ev.clientX / w - 0.5) * 2;     // -1 .. 1
+            var ny = (ev.clientY / h - 0.5) * 2;
+            pxTarget = -nx * PARALLAX_MAX;
+            pyTarget = -ny * PARALLAX_MAX;
+        }, { passive: true });
+
         requestAnimationFrame(tick);
     }
 
@@ -142,7 +164,8 @@
             logo.addEventListener('mouseenter', function () {
                 if (emitterId !== null) return;
                 emit();                                 // immediate first wave
-                emitterId = window.setInterval(emit, 140);
+                // Slightly slower cadence — looks more deliberate, less spammy.
+                emitterId = window.setInterval(emit, 180);
             });
             logo.addEventListener('mouseleave', function () {
                 if (emitterId !== null) {
@@ -203,14 +226,30 @@
 
     function spawnShockwave(ev) {
         var layer = ensureShockwaveLayer();
-        var wave = document.createElement('span');
-        wave.className = 'xx-shockwave';
-        wave.style.setProperty('--xx-x', ev.clientX + 'px');
-        wave.style.setProperty('--xx-y', ev.clientY + 'px');
-        layer.appendChild(wave);
-        wave.addEventListener('animationend', function () {
-            if (wave.parentNode === layer) layer.removeChild(wave);
+        var x = ev.clientX, y = ev.clientY;
+
+        // Primary ring — bright gold/cyan rim, ~820ms.
+        var primary = document.createElement('span');
+        primary.className = 'xx-shockwave';
+        primary.style.setProperty('--xx-x', x + 'px');
+        primary.style.setProperty('--xx-y', y + 'px');
+        layer.appendChild(primary);
+        primary.addEventListener('animationend', function () {
+            if (primary.parentNode === layer) layer.removeChild(primary);
         });
+
+        // Echo ring — slimmer cyan/violet, spawned 120ms later. Gives the
+        // "linh khí" ripple double-pulse feel instead of a single flash.
+        window.setTimeout(function () {
+            var echo = document.createElement('span');
+            echo.className = 'xx-shockwave xx-shockwave-echo';
+            echo.style.setProperty('--xx-x', x + 'px');
+            echo.style.setProperty('--xx-y', y + 'px');
+            layer.appendChild(echo);
+            echo.addEventListener('animationend', function () {
+                if (echo.parentNode === layer) layer.removeChild(echo);
+            });
+        }, 120);
     }
 
     // ────────────────────────────────────────────────────────────
