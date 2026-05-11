@@ -158,11 +158,13 @@ canvas.xx-stars-canvas {
 }
 
 .xx-logo .xx-logo-taiji {
-    /* transform-box: view-box pins the rotation origin to the centre of
-     * the SVG canvas (0, 0 in user units) regardless of the group's own
-     * bbox \u2014 critical for the bagua, whose glyph bbox is asymmetric. */
-    transform-box: view-box;
-    transform-origin: 50% 50%;
+    /* fill-box anchors the rotation origin to the centre of the Taiji's own
+     * (symmetric) bbox. This is robust across Chrome versions; with
+     * transform-box: view-box and percentage origins, Chrome resolves the
+     * percentage against the SVG element's CSS layout box, which makes
+     * the Taiji visibly orbit a point ~22px off-centre over each rotation. */
+    transform-box: fill-box;
+    transform-origin: center;
     animation: xxLogoSpin 26s linear infinite;
     will-change: transform;
 }
@@ -172,8 +174,8 @@ canvas.xx-stars-canvas {
  * a subtle gold-metallic pulse that staggers around the dial like minute
  * pips on an analog watch. */
 .xx-logo .xx-clock-face {
-    transform-box: view-box;
-    transform-origin: 50% 50%;
+    transform-box: fill-box;
+    transform-origin: center;
     will-change: filter;
 }
 
@@ -213,29 +215,34 @@ canvas.xx-stars-canvas {
 /* The glowing 12 o'clock sphere — the "crown jewel" of the watch face.
  * Pulses warmly so it reads as alive without distracting. */
 .xx-logo .xx-logo-sphere {
-    transform-box: view-box;
-    transform-origin: 50% 50%;
+    transform-box: fill-box;
+    transform-origin: center;
     will-change: filter, opacity;
     filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.55));
 }
 
 .xx-logo .xx-sphere-halo {
-    transform-box: view-box;
-    transform-origin: 0px -38px;          /* SVG units: sphere centre */
+    /* fill-box pins the breathing scale to the halo's own circle centre.
+     * The previous transform-box: view-box with transform-origin: 0px -38px
+     * actually resolved to viewBox (-50, -88), outside the visible area,
+     * which turned the scale animation into a translation that flung the
+     * sphere off the dial. */
+    transform-box: fill-box;
+    transform-origin: center;
     animation: xxSphereHalo 4.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     will-change: opacity, transform;
 }
 
 .xx-logo .xx-sphere-core {
-    transform-box: view-box;
-    transform-origin: 0px -38px;
+    transform-box: fill-box;
+    transform-origin: center;
     animation: xxSphereCore 4.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     will-change: filter, transform;
 }
 
 .xx-logo .xx-sphere-rays {
-    transform-box: view-box;
-    transform-origin: 0px -38px;
+    transform-box: fill-box;
+    transform-origin: center;
     animation: xxSphereRays 4.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     will-change: opacity, transform;
 }
