@@ -75,3 +75,72 @@ body.light-mode .premium-card-text { color: #3d3d5c; }
 body.light-mode .card-price, body.light-mode .card-price span { color: #d4a017; }
 body.light-mode .stock-badge.in-stock { color: #16a34a; }
 body.light-mode .stock-badge.out-of-stock { color: #dc2626; }
+
+/* ================================================================
+ * Additional dark-on-dark fixes: elements in style.css that hard-code
+ * color: var(--dark-color) which resolves to near-black under the
+ * xianxia dark palette, leaving them invisible on dark surfaces.
+ * Loads last, so these override style.css without touching it.
+ * ================================================================ */
+
+/* Dark theme overrides */
+.notification-menu-header,
+.notification-menu-header strong {
+    color: var(--amber-100, #fde68a);
+    background: transparent;
+}
+
+.section-title h2 {
+    color: var(--amber-100, #fde68a);
+}
+
+.stat-card .value {
+    color: var(--amber-100, #fde68a);
+}
+
+.table th {
+    color: #e8e4d9;
+}
+
+.form-label {
+    color: #e8e4d9;
+}
+
+.mobile-menu-header .brand-name {
+    color: var(--amber-100, #fde68a);
+}
+
+.product-title {
+    color: var(--amber-100, #fde68a);
+}
+
+/* Light-mode restorations: fall back to the legacy near-black ink. */
+body.light-mode .notification-menu-header,
+body.light-mode .notification-menu-header strong {
+    color: #1a1a2e;
+}
+
+body.light-mode .section-title h2 {
+    color: #1a1a2e;
+}
+
+body.light-mode .stat-card .value {
+    color: #1a1a2e;
+}
+
+body.light-mode .table th {
+    color: #1a1a2e;
+}
+
+body.light-mode .form-label {
+    color: #1a1a2e;
+}
+
+body.light-mode .mobile-menu-header .brand-name {
+    /* Mobile header already has a dark gradient; keep text light there. */
+    color: #ffffff;
+}
+
+body.light-mode .product-title {
+    color: #1a1a2e;
+}

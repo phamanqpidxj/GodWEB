@@ -405,30 +405,47 @@ function calculateGodCoin(vnd) {
 
 // ========================================
 // DARK MODE / LIGHT MODE TOGGLE
-// Default state (no class) = DARK. Class "light-mode" on body = LIGHT.
-// localStorage key: "siteTheme" with values "light" or "dark"
+// Default state = DARK. localStorage key: "siteTheme" with values "light"|"dark".
+// <html> carries theme-light / theme-dark (modern selectors) and the legacy
+// "light-mode" class is mirrored to <html> and <body> so existing CSS keeps
+// matching. Icon visibility is CSS-driven - both SVGs are always in the DOM.
 // ========================================
 
-function updateThemeIcons(isLight) {
-    var themeBtn = document.getElementById('toggleSiteTheme');
-    var mobileThemeBtn = document.getElementById('mobileThemeToggle');
-
-    if (isLight) {
-        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
-        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-moon"></i> Ch\u1ebf \u0111\u1ed9 t\u1ed1i';
-    } else {
-        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
-        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-sun"></i> Ch\u1ebf \u0111\u1ed9 s\u00e1ng';
+function _syncThemeA11yLabels(isLight) {
+    // User-facing label describes the ACTION the click will take.
+    var btn = document.getElementById('toggleSiteTheme');
+    var mBtn = document.getElementById('mobileThemeToggle');
+    var nextLabel = isLight ? 'Chuy\u1ec3n sang ch\u1ebf \u0111\u1ed9 t\u1ed1i'
+                            : 'Chuy\u1ec3n sang ch\u1ebf \u0111\u1ed9 s\u00e1ng';
+    if (btn) {
+        btn.setAttribute('aria-label', nextLabel);
+        btn.setAttribute('title', nextLabel);
+    }
+    if (mBtn) {
+        mBtn.setAttribute('aria-label', nextLabel);
     }
 }
 
 function toggleSiteTheme() {
+    var root = document.documentElement;
     var body = document.body;
-    body.classList.toggle('light-mode');
+    var wasLight = root.classList.contains('theme-light');
+    var isLight = !wasLight;
 
-    var isLight = body.classList.contains('light-mode');
-    localStorage.setItem('siteTheme', isLight ? 'light' : 'dark');
-    updateThemeIcons(isLight);
+    root.classList.toggle('theme-light', isLight);
+    root.classList.toggle('theme-dark', !isLight);
+    root.classList.toggle('light-mode', isLight);
+    if (body) {
+        body.classList.toggle('light-mode', isLight);
+    }
+
+    try {
+        localStorage.setItem('siteTheme', isLight ? 'light' : 'dark');
+    } catch (e) {
+        /* private mode / storage disabled - swallow */
+    }
+
+    _syncThemeA11yLabels(isLight);
 }
 
 function toggleSiteThemeFromMobile() {
@@ -437,8 +454,8 @@ function toggleSiteThemeFromMobile() {
 
 document.addEventListener('DOMContentLoaded', function() {
     var themeBtn = document.getElementById('toggleSiteTheme');
-    var isLight = document.body.classList.contains('light-mode');
-    updateThemeIcons(isLight);
+    var isLight = document.documentElement.classList.contains('theme-light');
+    _syncThemeA11yLabels(isLight);
     if (themeBtn) {
         themeBtn.addEventListener('click', toggleSiteTheme);
     }
