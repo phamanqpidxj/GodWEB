@@ -11,8 +11,8 @@
     --lq-void:    #0a0a0a;
     --lq-gold:    #ffd700;
     --lq-gold-soft: rgba(255, 215, 0, 0.55);
-    --lq-cyan:    #7fdcff;
-    --lq-cyan-soft: rgba(127, 220, 255, 0.55);
+    --lq-cyan:    #2dd4a0;
+    --lq-cyan-soft: rgba(45, 212, 160, 0.55);
     --lq-violet:  #8a5cff;
 }
 
@@ -398,8 +398,8 @@ canvas.xx-stars-canvas {
             transparent              0deg,
             rgba(255, 215, 0, 0.05)  20deg,
             var(--lq-gold)           70deg,
-            var(--lq-cyan)          130deg,
-            var(--lq-violet)        160deg,
+            var(--lq-cyan)           130deg,
+            var(--lq-cyan)           160deg,
             transparent             210deg,
             transparent             360deg
         );

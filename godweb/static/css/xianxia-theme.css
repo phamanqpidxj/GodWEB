@@ -1,0 +1,353 @@
+/* GodWeb - Xianxia / Celestial Theme
+ * Oriental Fantasy / Ink Wash Painting aesthetic.
+ * Replaces theme-yinyang.css in the cascade.
+ * Ethereal, celestial, mythical, and ancient.
+ * --------------------------------------------------------------- */
+
+:root {
+    /* ─── Xianxia Palette ─── */
+    --xianxia-ink: #0a0a12;
+    --xianxia-ink-deep: #050510;
+    --xianxia-jade: #2dd4a0;
+    --xianxia-jade-dark: #10b981;
+    --xianxia-jade-glow: rgba(45, 212, 160, 0.4);
+    --xianxia-gold: #fbbf24;
+    --xianxia-gold-deep: #d4a017;
+    --xianxia-gold-glow: rgba(251, 191, 36, 0.4);
+    --xianxia-mist: rgba(255, 255, 255, 0.85);
+    --xianxia-parchment: #1a1a2e;
+    --xianxia-parchment-light: #242438;
+
+    /* ─── Override base style.css variables ─── */
+    --primary-color: var(--xianxia-jade);
+    --secondary-color: var(--xianxia-gold);
+    --dark-color: var(--xianxia-ink);
+    --light-color: #0d0d18;
+    --text-color: #e8e4d9;
+    --text-light: #9ca3af;
+    --border-color: rgba(45, 212, 160, 0.15);
+    --surface-color: var(--xianxia-parchment);
+    --surface-muted: var(--xianxia-ink-deep);
+
+    /* ─── Typography ─── */
+    --font-display: "Cinzel Decorative", "Cinzel", "Ma Shan Zheng", serif;
+    --font-body: "Noto Serif", "Source Serif 4", "Georgia", serif;
+
+    /* ─── Gradients ─── */
+    --gradient-primary: linear-gradient(135deg, #10b981 0%, #2dd4a0 50%, #6ee7b7 100%);
+    --gradient-gold: linear-gradient(135deg, #d4a017 0%, #fbbf24 60%, #fde68a 100%);
+    --gradient-night: linear-gradient(140deg, #050510 0%, #0a0a12 45%, #1a1a2e 100%);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Body & Background - Deep ink with jade/gold nebula
+ * ──────────────────────────────────────────────────────────────── */
+
+html, body {
+    background: var(--gradient-night);
+    color: var(--text-color);
+}
+
+body {
+    background:
+        radial-gradient(1100px 700px at 12% -10%, rgba(45, 212, 160, 0.12), transparent 60%),
+        radial-gradient(900px 600px at 95% 110%, rgba(251, 191, 36, 0.08), transparent 60%),
+        radial-gradient(700px 500px at 50% 50%, rgba(10, 10, 18, 0.4), transparent 70%),
+        var(--gradient-night);
+    background-attachment: fixed;
+    font-family: var(--font-body);
+    cursor: url('../img/cursor-sword.svg') 4 4, auto;
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Navbar - Deep ink with jade border glow
+ * ──────────────────────────────────────────────────────────────── */
+
+.navbar {
+    background: linear-gradient(180deg, rgba(5, 5, 16, 0.9) 0%, rgba(10, 10, 18, 0.8) 100%);
+    backdrop-filter: blur(18px) saturate(140%);
+    border-bottom: 1px solid rgba(45, 212, 160, 0.25);
+    box-shadow: 0 0 30px rgba(45, 212, 160, 0.08);
+}
+
+.navbar a,
+.navbar .btn-outline {
+    color: var(--text-color) !important;
+}
+
+.navbar a:hover {
+    color: var(--xianxia-jade) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Typography - Calligraphy headings with jade/gold gradient
+ * ──────────────────────────────────────────────────────────────── */
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: #e8e4d9;
+    text-shadow: 0 2px 18px rgba(45, 212, 160, 0.15);
+}
+
+.section-title h2 {
+    background: linear-gradient(120deg, #6ee7b7, #2dd4a0 50%, #fbbf24);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Cards - Silk/parchment texture with jade borders
+ * ──────────────────────────────────────────────────────────────── */
+
+.card,
+.feature-card,
+.post-card,
+.product-card,
+.dashboard-content {
+    background: linear-gradient(160deg, rgba(26, 26, 46, 0.9), rgba(10, 10, 18, 0.95));
+    border: 1px solid rgba(45, 212, 160, 0.12);
+    border-radius: 18px;
+    box-shadow: 0 8px 28px -16px rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+}
+
+.card:hover,
+.feature-card:hover,
+.post-card:hover,
+.product-card:hover {
+    border-color: rgba(45, 212, 160, 0.35);
+    box-shadow:
+        0 8px 28px -16px rgba(0, 0, 0, 0.85),
+        0 0 20px rgba(45, 212, 160, 0.1);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Logo - Gold + jade aura glow
+ * ──────────────────────────────────────────────────────────────── */
+
+.xx-logo {
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4)) drop-shadow(0 0 16px rgba(45, 212, 160, 0.3));
+}
+
+.xx-logo:hover {
+    filter: drop-shadow(0 0 18px rgba(251, 191, 36, 0.7)) drop-shadow(0 0 28px rgba(45, 212, 160, 0.5));
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Buttons - Jade/gold styling
+ * ──────────────────────────────────────────────────────────────── */
+
+.btn-primary,
+.btn-secondary {
+    background: var(--gradient-primary);
+    color: #050510 !important;
+    font-weight: 700;
+    border: none;
+    text-shadow: none;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #2dd4a0 0%, #6ee7b7 50%, #a7f3d0 100%);
+    box-shadow: 0 0 20px rgba(45, 212, 160, 0.4);
+}
+
+/* Special bloom class for GodCoin topup button */
+.xx-bloom {
+    position: relative;
+    animation: xxBloomPulse 2.8s ease-in-out infinite;
+}
+
+.xx-bloom::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    background: transparent;
+    box-shadow:
+        0 0 12px rgba(45, 212, 160, 0.4),
+        0 0 24px rgba(251, 191, 36, 0.2);
+    opacity: 0.6;
+    animation: xxBloomGlow 2.8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes xxBloomPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+@keyframes xxBloomGlow {
+    0%, 100% {
+        box-shadow:
+            0 0 12px rgba(45, 212, 160, 0.4),
+            0 0 24px rgba(251, 191, 36, 0.2);
+        opacity: 0.6;
+    }
+    50% {
+        box-shadow:
+            0 0 20px rgba(45, 212, 160, 0.6),
+            0 0 40px rgba(251, 191, 36, 0.35);
+        opacity: 1;
+    }
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Hero Section - Deep ink with jade/gold radial accents
+ * ──────────────────────────────────────────────────────────────── */
+
+.hero {
+    background:
+        radial-gradient(800px 500px at 30% 40%, rgba(45, 212, 160, 0.1), transparent 60%),
+        radial-gradient(600px 400px at 70% 60%, rgba(251, 191, 36, 0.06), transparent 60%),
+        var(--gradient-night);
+}
+
+.hero h1,
+.hero .hero-title {
+    font-family: var(--font-display);
+    background: linear-gradient(120deg, #6ee7b7, #2dd4a0 40%, #fbbf24 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+}
+
+.hero p,
+.hero .hero-subtitle {
+    color: var(--text-light);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Footer - Jade mist fog gradient, deep ink background
+ * ──────────────────────────────────────────────────────────────── */
+
+.footer {
+    background: linear-gradient(180deg, var(--xianxia-ink-deep) 0%, #030308 100%);
+    border-top: 1px solid rgba(45, 212, 160, 0.15);
+    color: var(--text-light);
+}
+
+.footer h4 {
+    color: var(--xianxia-jade);
+    text-shadow: 0 0 12px rgba(45, 212, 160, 0.2);
+}
+
+.footer a {
+    color: var(--text-light);
+}
+
+.footer a:hover {
+    color: var(--xianxia-jade);
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(45, 212, 160, 0.1);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Misc overrides - forms, alerts, dropdowns
+ * ──────────────────────────────────────────────────────────────── */
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    background: var(--xianxia-parchment);
+    border-color: rgba(45, 212, 160, 0.15);
+    color: var(--text-color);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: var(--xianxia-jade);
+    box-shadow: 0 0 12px rgba(45, 212, 160, 0.2);
+}
+
+.alert {
+    background: var(--xianxia-parchment);
+    border: 1px solid rgba(45, 212, 160, 0.2);
+    color: var(--text-color);
+}
+
+.dropdown-menu {
+    background: var(--xianxia-parchment);
+    border: 1px solid rgba(45, 212, 160, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.dropdown-menu a {
+    color: var(--text-color);
+}
+
+.dropdown-menu a:hover {
+    background: rgba(45, 212, 160, 0.1);
+    color: var(--xianxia-jade);
+}
+
+/* Mobile menu */
+.mobile-menu {
+    background: var(--xianxia-ink-deep);
+    border-left: 1px solid rgba(45, 212, 160, 0.2);
+}
+
+.mobile-menu-header {
+    border-bottom: 1px solid rgba(45, 212, 160, 0.15);
+}
+
+.mobile-menu-links a {
+    color: var(--text-color);
+    border-bottom: 1px solid rgba(45, 212, 160, 0.08);
+}
+
+.mobile-menu-links a:hover {
+    color: var(--xianxia-jade);
+    background: rgba(45, 212, 160, 0.05);
+}
+
+/* GodCoin balance */
+.godcoin-balance {
+    color: var(--xianxia-gold);
+}
+
+/* Notification styling */
+.notification-badge {
+    background: var(--xianxia-jade);
+    color: #050510;
+}
+
+/* Site ticker */
+.site-ticker {
+    background: var(--xianxia-ink-deep);
+    border-bottom: 1px solid rgba(45, 212, 160, 0.1);
+}
+
+.site-ticker-label {
+    color: var(--xianxia-gold);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--xianxia-ink-deep);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(45, 212, 160, 0.25);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(45, 212, 160, 0.4);
+}
+
+/* Selection */
+::selection {
+    background: rgba(45, 212, 160, 0.3);
+    color: #e8e4d9;
+}
