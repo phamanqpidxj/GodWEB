@@ -13,9 +13,30 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/xianxia-fx.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/xianxia-celestial.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/xianxia-theme-light.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/card-contrast-fix.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% if request.path.startswith('/admin') %}admin-page{% endif %}">
+    <script>
+    (function() {
+        var isLight = localStorage.getItem('siteTheme') === 'light';
+        if (isLight) {
+            document.body.classList.add('light-mode');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('toggleSiteTheme');
+            var mBtn = document.getElementById('mobileThemeToggle');
+            if (isLight) {
+                if (btn) btn.innerHTML = '<i class="fas fa-moon"></i>';
+                if (mBtn) mBtn.innerHTML = '<i class="fas fa-moon"></i> Ch\u1ebf \u0111\u1ed9 t\u1ed1i';
+            } else {
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i>';
+                if (mBtn) mBtn.innerHTML = '<i class="fas fa-sun"></i> Ch\u1ebf \u0111\u1ed9 s\u00e1ng';
+            }
+        });
+    })();
+    </script>
     <div class="xx-stars" aria-hidden="true"></div>
     <canvas class="xx-stars-canvas" aria-hidden="true"></canvas>
 
@@ -195,7 +216,7 @@
                 <a href="{{ url_for('wallet.topup') }}" class="xx-bloom"><i class="fas fa-coins"></i> Nạp GodCoin</a>
                 {% endif %}
                 <button type="button" id="toggleSiteTheme" class="theme-toggle-btn" title="Đổi màu nền">
-                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-sun"></i>
                 </button>
                 {% if current_user.is_authenticated %}
                 <div class="dropdown notification-dropdown" id="notificationDropdown">
@@ -290,7 +311,7 @@
                 <a href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
                 <a href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> Đăng ký</a>
                 {% endif %}
-                <a href="#" onclick="toggleSiteThemeFromMobile(); return false;" id="mobileThemeToggle"><i class="fas fa-moon"></i> Chế độ tối</a>
+                <a href="#" onclick="toggleSiteThemeFromMobile(); return false;" id="mobileThemeToggle"><i class="fas fa-sun"></i> Chế độ sáng</a>
             </div>
             <div class="mobile-menu-contact">
                 <a href="https://t.me/+THBiUkl2JmRmMzM1" target="_blank"><i class="fab fa-telegram"></i> Telegram</a>

@@ -404,44 +404,41 @@ function calculateGodCoin(vnd) {
 }
 
 // ========================================
-// DARK MODE TOGGLE
+// DARK MODE / LIGHT MODE TOGGLE
+// Default state (no class) = DARK. Class "light-mode" on body = LIGHT.
+// localStorage key: "siteTheme" with values "light" or "dark"
 // ========================================
-function toggleSiteTheme() {
-    const body = document.body;
-    const themeBtn = document.getElementById('toggleSiteTheme');
-    const mobileThemeBtn = document.getElementById('mobileThemeToggle');
 
-    body.classList.toggle('dark-mode');
+function updateThemeIcons(isLight) {
+    var themeBtn = document.getElementById('toggleSiteTheme');
+    var mobileThemeBtn = document.getElementById('mobileThemeToggle');
 
-    if (body.classList.contains('dark-mode')) {
-        localStorage.setItem('siteTheme', 'dark');
-        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
-        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-sun"></i> Chế độ sáng';
-    } else {
-        localStorage.setItem('siteTheme', 'light');
+    if (isLight) {
         if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
-        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-moon"></i> Chế độ tối';
+        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-moon"></i> Ch\u1ebf \u0111\u1ed9 t\u1ed1i';
+    } else {
+        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
+        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-sun"></i> Ch\u1ebf \u0111\u1ed9 s\u00e1ng';
     }
 }
 
-// Function for mobile menu theme toggle
+function toggleSiteTheme() {
+    var body = document.body;
+    body.classList.toggle('light-mode');
+
+    var isLight = body.classList.contains('light-mode');
+    localStorage.setItem('siteTheme', isLight ? 'light' : 'dark');
+    updateThemeIcons(isLight);
+}
+
 function toggleSiteThemeFromMobile() {
     toggleSiteTheme();
 }
 
-// Initialize theme on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const savedTheme = localStorage.getItem('siteTheme');
-    const themeBtn = document.getElementById('toggleSiteTheme');
-    const mobileThemeBtn = document.getElementById('mobileThemeToggle');
-
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
-        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-sun"></i> Chế độ sáng';
-    }
-
-    // Add click event to desktop theme toggle button
+    var themeBtn = document.getElementById('toggleSiteTheme');
+    var isLight = document.body.classList.contains('light-mode');
+    updateThemeIcons(isLight);
     if (themeBtn) {
         themeBtn.addEventListener('click', toggleSiteTheme);
     }

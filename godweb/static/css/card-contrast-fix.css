@@ -1,0 +1,77 @@
+/* GodWeb - Card Text Contrast Fix
+ * Ensures card text is readable in BOTH dark and light modes.
+ * Loads last for specificity.
+ * ---------------------------------------------------------------- */
+
+/* ================================================================
+ * Dark mode (default) - warm gold headings, warm cream text
+ * ================================================================ */
+.card h3, .card h4, .card-title,
+.feature-card h3, .post-card h3, .product-card h3 {
+    color: var(--amber-100, #fde68a);
+}
+
+.card p, .card-body p, .card-text,
+.feature-card p, .post-card p, .product-card p {
+    color: var(--text-color, #f4ecd9);
+}
+
+.card-meta, .card-meta span {
+    color: var(--text-light, #b8a787);
+}
+
+.section-title p, .page-header p {
+    color: var(--text-light, #b8a787);
+}
+
+.empty-state h3 { color: var(--amber-100, #fde68a); }
+.empty-state p { color: var(--text-light, #b8a787); }
+
+.comment p, .comment-author { color: var(--text-color, #f4ecd9); }
+
+.post-content, .post-content p, .post-content li { color: var(--text-color, #f4ecd9); }
+.post-content h2, .post-content h3, .post-content h4 { color: var(--amber-100, #fde68a); }
+
+.premium-card-title { color: var(--amber-100, #fde68a); }
+.premium-card-text { color: var(--text-color, #f4ecd9); }
+
+.card-price, .card-price span { color: var(--amber-400, #fbbf24); }
+.stock-badge.in-stock { color: #4ade80; }
+.stock-badge.out-of-stock { color: #ef4444; }
+
+/* ================================================================
+ * Light mode overrides
+ * ================================================================ */
+body.light-mode .card h3, body.light-mode .card h4, body.light-mode .card-title,
+body.light-mode .feature-card h3, body.light-mode .post-card h3, body.light-mode .product-card h3 {
+    color: #1a1a2e;
+}
+
+body.light-mode .card p, body.light-mode .card-body p, body.light-mode .card-text,
+body.light-mode .feature-card p, body.light-mode .post-card p, body.light-mode .product-card p {
+    color: #3d3d5c;
+}
+
+body.light-mode .card-meta, body.light-mode .card-meta span {
+    color: #5a5a7a;
+}
+
+body.light-mode .section-title p, body.light-mode .page-header p {
+    color: #4a4a6a;
+}
+
+body.light-mode .empty-state h3 { color: #1a1a2e; }
+body.light-mode .empty-state p { color: #4a4a6a; }
+
+body.light-mode .comment p { color: #2d2d44; }
+body.light-mode .comment-author { color: #1a1a2e; }
+
+body.light-mode .post-content, body.light-mode .post-content p, body.light-mode .post-content li { color: #2d2d44; }
+body.light-mode .post-content h2, body.light-mode .post-content h3, body.light-mode .post-content h4 { color: #1a1a2e; }
+
+body.light-mode .premium-card-title { color: #1a1a2e; }
+body.light-mode .premium-card-text { color: #3d3d5c; }
+
+body.light-mode .card-price, body.light-mode .card-price span { color: #d4a017; }
+body.light-mode .stock-badge.in-stock { color: #16a34a; }
+body.light-mode .stock-badge.out-of-stock { color: #dc2626; }

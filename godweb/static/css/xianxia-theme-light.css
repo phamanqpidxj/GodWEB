@@ -1,0 +1,819 @@
+/* GodWeb - Xianxia Light Mode Overrides
+ * Applied when body.light-mode is present.
+ * Default (no class) = dark xianxia theme.
+ * ---------------------------------------------------------------- */
+
+/* ================================================================
+ * CSS Variables - Light palette
+ * ================================================================ */
+body.light-mode {
+    --xianxia-ink: #faf8f3;
+    --xianxia-ink-deep: #f5f0e8;
+    --xianxia-jade: #0d9373;
+    --xianxia-jade-dark: #087a5e;
+    --xianxia-jade-glow: rgba(13, 147, 115, 0.2);
+    --xianxia-gold: #b8860b;
+    --xianxia-gold-deep: #996b08;
+    --xianxia-gold-glow: rgba(184, 134, 11, 0.2);
+    --xianxia-parchment: #ffffff;
+    --xianxia-parchment-light: #f9f7f2;
+
+    --primary-color: #0d9373;
+    --secondary-color: #b8860b;
+    --dark-color: #1a1a2e;
+    --light-color: #faf8f3;
+    --text-color: #1a1a2e;
+    --text-light: #4a4a6a;
+    --border-color: rgba(13, 147, 115, 0.2);
+    --surface-color: #ffffff;
+    --surface-muted: #f5f0e8;
+
+    --gradient-primary: linear-gradient(135deg, #087a5e 0%, #0d9373 50%, #34d399 100%);
+    --gradient-gold: linear-gradient(135deg, #996b08 0%, #b8860b 60%, #d4a017 100%);
+    --gradient-night: linear-gradient(140deg, #faf8f3 0%, #f5f0e8 45%, #ede8dc 100%);
+}
+
+/* ================================================================
+ * Body & Background
+ * ================================================================ */
+body.light-mode {
+    background:
+        radial-gradient(1100px 700px at 12% -10%, rgba(13, 147, 115, 0.06), transparent 60%),
+        radial-gradient(900px 600px at 95% 110%, rgba(184, 134, 11, 0.04), transparent 60%),
+        linear-gradient(140deg, #faf8f3 0%, #f5f0e8 45%, #ede8dc 100%);
+    background-attachment: fixed;
+    color: #1a1a2e;
+}
+
+/* ================================================================
+ * Navbar
+ * ================================================================ */
+body.light-mode .navbar {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 248, 243, 0.9) 100%);
+    backdrop-filter: blur(18px) saturate(140%);
+    border-bottom: 1px solid rgba(13, 147, 115, 0.2);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .navbar a,
+body.light-mode .navbar .btn-outline {
+    color: #1a1a2e !important;
+}
+
+body.light-mode .navbar a:hover {
+    color: #0d9373 !important;
+}
+
+body.light-mode .navbar .brand-name {
+    color: #1a1a2e;
+}
+
+body.light-mode .navbar .brand-name span {
+    color: #0d9373;
+}
+
+body.light-mode .navbar-auth .btn-outline {
+    color: #1a1a2e !important;
+    border-color: #1a1a2e !important;
+}
+
+body.light-mode .navbar-auth .btn-outline:hover {
+    color: #0d9373 !important;
+    border-color: #0d9373 !important;
+}
+
+/* ================================================================
+ * Typography
+ * ================================================================ */
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode h5,
+body.light-mode h6 {
+    color: #1a1a2e;
+    text-shadow: none;
+}
+
+body.light-mode .section-title h2 {
+    background: linear-gradient(120deg, #087a5e, #0d9373 50%, #b8860b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+body.light-mode p,
+body.light-mode span,
+body.light-mode li {
+    color: #2d2d44;
+}
+
+/* ================================================================
+ * Cards
+ * ================================================================ */
+body.light-mode .card,
+body.light-mode .feature-card,
+body.light-mode .post-card,
+body.light-mode .product-card,
+body.light-mode .dashboard-content {
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(249, 247, 242, 0.98));
+    border: 1px solid rgba(13, 147, 115, 0.15);
+    box-shadow: 0 4px 16px -8px rgba(0, 0, 0, 0.1);
+    backdrop-filter: none;
+}
+
+body.light-mode .card:hover,
+body.light-mode .feature-card:hover,
+body.light-mode .post-card:hover,
+body.light-mode .product-card:hover {
+    border-color: rgba(13, 147, 115, 0.35);
+    box-shadow:
+        0 8px 24px -12px rgba(0, 0, 0, 0.12),
+        0 0 12px rgba(13, 147, 115, 0.08);
+}
+
+/* ================================================================
+ * Stat Cards
+ * ================================================================ */
+body.light-mode .stat-card {
+    background: #ffffff;
+    border: 1px solid rgba(13, 147, 115, 0.12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .stat-card h3,
+body.light-mode .stat-card .stat-value {
+    color: #1a1a2e;
+}
+
+body.light-mode .stat-card p,
+body.light-mode .stat-card .stat-label {
+    color: #4a4a6a;
+}
+
+/* ================================================================
+ * Hero Section
+ * ================================================================ */
+body.light-mode .hero {
+    background:
+        radial-gradient(800px 500px at 30% 40%, rgba(13, 147, 115, 0.06), transparent 60%),
+        radial-gradient(600px 400px at 70% 60%, rgba(184, 134, 11, 0.04), transparent 60%),
+        linear-gradient(140deg, #faf8f3 0%, #f5f0e8 45%, #ede8dc 100%);
+}
+
+body.light-mode .hero h1,
+body.light-mode .hero .hero-title {
+    background: linear-gradient(120deg, #087a5e, #0d9373 40%, #b8860b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+}
+
+body.light-mode .hero p,
+body.light-mode .hero .hero-subtitle {
+    color: #4a4a6a;
+}
+
+/* ================================================================
+ * Forms & Inputs
+ * ================================================================ */
+body.light-mode .form-group input,
+body.light-mode .form-group textarea,
+body.light-mode .form-group select,
+body.light-mode .form-control {
+    background: #ffffff;
+    border-color: rgba(13, 147, 115, 0.2);
+    color: #1a1a2e;
+}
+
+body.light-mode .form-group input:focus,
+body.light-mode .form-group textarea:focus,
+body.light-mode .form-group select:focus,
+body.light-mode .form-control:focus {
+    border-color: #0d9373;
+    box-shadow: 0 0 8px rgba(13, 147, 115, 0.15);
+    background: #ffffff;
+}
+
+body.light-mode .form-group input::placeholder,
+body.light-mode .form-group textarea::placeholder,
+body.light-mode .form-control::placeholder {
+    color: #8a8aa0;
+}
+
+body.light-mode .form-label,
+body.light-mode label {
+    color: #2d2d44;
+}
+
+/* ================================================================
+ * Tables
+ * ================================================================ */
+body.light-mode table,
+body.light-mode .table {
+    background: #ffffff;
+    color: #1a1a2e;
+}
+
+body.light-mode table th,
+body.light-mode .table th {
+    background: #f5f0e8;
+    color: #1a1a2e;
+    border-color: rgba(13, 147, 115, 0.15);
+}
+
+body.light-mode table td,
+body.light-mode .table td {
+    border-color: rgba(13, 147, 115, 0.1);
+    color: #2d2d44;
+}
+
+body.light-mode table tr:hover td,
+body.light-mode .table tr:hover td {
+    background: rgba(13, 147, 115, 0.04);
+}
+
+/* ================================================================
+ * Footer
+ * ================================================================ */
+body.light-mode .footer {
+    background: linear-gradient(180deg, #f5f0e8 0%, #ede8dc 100%);
+    border-top: 1px solid rgba(13, 147, 115, 0.15);
+    color: #4a4a6a;
+}
+
+body.light-mode .footer h4 {
+    color: #0d9373;
+    text-shadow: none;
+}
+
+body.light-mode .footer a {
+    color: #4a4a6a;
+}
+
+body.light-mode .footer a:hover {
+    color: #0d9373;
+}
+
+body.light-mode .footer p {
+    color: #4a4a6a;
+}
+
+body.light-mode .footer-bottom {
+    border-top: 1px solid rgba(13, 147, 115, 0.12);
+}
+
+body.light-mode .footer-bottom p {
+    color: #5a5a7a;
+}
+
+/* ================================================================
+ * Alerts
+ * ================================================================ */
+body.light-mode .alert {
+    background: #ffffff;
+    border: 1px solid rgba(13, 147, 115, 0.2);
+    color: #1a1a2e;
+}
+
+body.light-mode .alert-success {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.06);
+}
+
+body.light-mode .alert-error,
+body.light-mode .alert-danger {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.06);
+}
+
+body.light-mode .alert-warning {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.06);
+}
+
+body.light-mode .alert-info {
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.06);
+}
+
+/* ================================================================
+ * Dropdowns
+ * ================================================================ */
+body.light-mode .dropdown-menu {
+    background: #ffffff;
+    border: 1px solid rgba(13, 147, 115, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .dropdown-menu a {
+    color: #2d2d44;
+}
+
+body.light-mode .dropdown-menu a:hover {
+    background: rgba(13, 147, 115, 0.06);
+    color: #0d9373;
+}
+
+body.light-mode .dropdown-divider {
+    border-color: rgba(13, 147, 115, 0.1);
+}
+
+/* ================================================================
+ * Sidebar
+ * ================================================================ */
+body.light-mode .sidebar,
+body.light-mode .admin-sidebar {
+    background: #ffffff;
+    border-right: 1px solid rgba(13, 147, 115, 0.12);
+}
+
+body.light-mode .sidebar a,
+body.light-mode .admin-sidebar a {
+    color: #2d2d44;
+}
+
+body.light-mode .sidebar a:hover,
+body.light-mode .admin-sidebar a:hover,
+body.light-mode .sidebar a.active,
+body.light-mode .admin-sidebar a.active {
+    color: #0d9373;
+    background: rgba(13, 147, 115, 0.06);
+}
+
+/* ================================================================
+ * Blog Content
+ * ================================================================ */
+body.light-mode .blog-content,
+body.light-mode .post-content {
+    color: #2d2d44;
+}
+
+body.light-mode .blog-content h2,
+body.light-mode .blog-content h3,
+body.light-mode .blog-content h4 {
+    color: #1a1a2e;
+}
+
+body.light-mode .blog-content p,
+body.light-mode .blog-content li {
+    color: #2d2d44;
+}
+
+body.light-mode .blog-content a {
+    color: #0d9373;
+}
+
+body.light-mode .blog-content blockquote {
+    border-left-color: #0d9373;
+    background: rgba(13, 147, 115, 0.04);
+    color: #3d3d5c;
+}
+
+body.light-mode .blog-content code {
+    background: #f5f0e8;
+    color: #b8860b;
+}
+
+body.light-mode .blog-content pre {
+    background: #1a1a2e;
+    color: #e8e4d9;
+}
+
+/* ================================================================
+ * Search Bar
+ * ================================================================ */
+body.light-mode .search-bar,
+body.light-mode .search-box {
+    background: #ffffff;
+    border: 1px solid rgba(13, 147, 115, 0.2);
+}
+
+body.light-mode .search-bar input,
+body.light-mode .search-box input {
+    background: transparent;
+    color: #1a1a2e;
+}
+
+body.light-mode .search-bar input::placeholder,
+body.light-mode .search-box input::placeholder {
+    color: #8a8aa0;
+}
+
+body.light-mode .search-bar button,
+body.light-mode .search-box button {
+    color: #0d9373;
+}
+
+/* ================================================================
+ * Pagination
+ * ================================================================ */
+body.light-mode .pagination a,
+body.light-mode .pagination span {
+    background: #ffffff;
+    color: #2d2d44;
+    border: 1px solid rgba(13, 147, 115, 0.15);
+}
+
+body.light-mode .pagination a:hover {
+    background: rgba(13, 147, 115, 0.08);
+    color: #0d9373;
+    border-color: #0d9373;
+}
+
+body.light-mode .pagination .active,
+body.light-mode .pagination .current {
+    background: #0d9373;
+    color: #ffffff;
+    border-color: #0d9373;
+}
+
+/* ================================================================
+ * Filter Tags
+ * ================================================================ */
+body.light-mode .filter-tag,
+body.light-mode .category-tag {
+    background: #f5f0e8;
+    color: #2d2d44;
+    border: 1px solid rgba(13, 147, 115, 0.15);
+}
+
+body.light-mode .filter-tag:hover,
+body.light-mode .category-tag:hover,
+body.light-mode .filter-tag.active,
+body.light-mode .category-tag.active {
+    background: #0d9373;
+    color: #ffffff;
+    border-color: #0d9373;
+}
+
+/* ================================================================
+ * Mobile Menu
+ * ================================================================ */
+body.light-mode .mobile-menu {
+    background: #ffffff;
+    border-left: 1px solid rgba(13, 147, 115, 0.15);
+}
+
+body.light-mode .mobile-menu-header {
+    border-bottom: 1px solid rgba(13, 147, 115, 0.12);
+}
+
+body.light-mode .mobile-menu-header .brand-name {
+    color: #1a1a2e;
+}
+
+body.light-mode .mobile-menu-links a {
+    color: #2d2d44;
+    border-bottom: 1px solid rgba(13, 147, 115, 0.06);
+}
+
+body.light-mode .mobile-menu-links a:hover {
+    color: #0d9373;
+    background: rgba(13, 147, 115, 0.04);
+}
+
+body.light-mode .mobile-menu-close {
+    color: #2d2d44;
+}
+
+body.light-mode .mobile-menu-contact a {
+    color: #4a4a6a;
+}
+
+/* ================================================================
+ * Notifications
+ * ================================================================ */
+body.light-mode .notification-menu {
+    background: #ffffff;
+    border: 1px solid rgba(13, 147, 115, 0.15);
+}
+
+body.light-mode .notification-menu-header {
+    border-bottom: 1px solid rgba(13, 147, 115, 0.1);
+    color: #1a1a2e;
+}
+
+body.light-mode .notification-item {
+    color: #2d2d44;
+    border-bottom: 1px solid rgba(13, 147, 115, 0.06);
+}
+
+body.light-mode .notification-item.unread {
+    background: rgba(13, 147, 115, 0.04);
+}
+
+body.light-mode .notification-item-time {
+    color: #8a8aa0;
+}
+
+body.light-mode .notification-empty {
+    color: #8a8aa0;
+}
+
+body.light-mode .notification-badge {
+    background: #0d9373;
+    color: #ffffff;
+}
+
+/* ================================================================
+ * Site Ticker
+ * ================================================================ */
+body.light-mode .site-ticker {
+    background: #f5f0e8;
+    border-bottom: 1px solid rgba(13, 147, 115, 0.1);
+}
+
+body.light-mode .site-ticker-label {
+    color: #b8860b;
+}
+
+body.light-mode .site-ticker-item {
+    color: #2d2d44;
+}
+
+body.light-mode .site-ticker-sep {
+    color: #8a8aa0;
+}
+
+/* ================================================================
+ * GodCoin Balance
+ * ================================================================ */
+body.light-mode .godcoin-balance {
+    color: #b8860b;
+}
+
+/* ================================================================
+ * Buttons
+ * ================================================================ */
+body.light-mode .btn-primary,
+body.light-mode .btn-secondary {
+    background: var(--gradient-primary);
+    color: #ffffff !important;
+}
+
+body.light-mode .btn-primary:hover,
+body.light-mode .btn-secondary:hover {
+    background: linear-gradient(135deg, #087a5e 0%, #0d9373 50%, #34d399 100%);
+    box-shadow: 0 4px 12px rgba(13, 147, 115, 0.3);
+}
+
+body.light-mode .btn-outline {
+    border-color: #0d9373;
+    color: #0d9373;
+}
+
+body.light-mode .btn-outline:hover {
+    background: #0d9373;
+    color: #ffffff;
+}
+
+/* ================================================================
+ * FX Effects - Reduced opacity in light mode
+ * ================================================================ */
+body.light-mode .fx-bg {
+    opacity: 0.15;
+}
+
+body.light-mode .fx-orb {
+    opacity: 0.08;
+}
+
+body.light-mode .xx-stars,
+body.light-mode .xx-stars-canvas {
+    opacity: 0;
+}
+
+body.light-mode .xx-parallax-layer {
+    opacity: 0.08;
+}
+
+body.light-mode .xx-floating-layer {
+    opacity: 0.15;
+}
+
+body.light-mode #xx-petals-canvas {
+    opacity: 0.4;
+}
+
+body.light-mode #xx-mist-transition {
+    opacity: 0.3;
+}
+
+body.light-mode .xx-fog {
+    opacity: 0.2;
+}
+
+body.light-mode .xx-bloom::after {
+    box-shadow:
+        0 0 8px rgba(13, 147, 115, 0.3),
+        0 0 16px rgba(184, 134, 11, 0.15);
+}
+
+/* ================================================================
+ * Logo adjustments
+ * ================================================================ */
+body.light-mode .xx-logo {
+    filter: drop-shadow(0 0 4px rgba(184, 134, 11, 0.3)) drop-shadow(0 0 8px rgba(13, 147, 115, 0.2));
+}
+
+body.light-mode .xx-logo:hover {
+    filter: drop-shadow(0 0 10px rgba(184, 134, 11, 0.5)) drop-shadow(0 0 16px rgba(13, 147, 115, 0.35));
+}
+
+/* ================================================================
+ * Page Header
+ * ================================================================ */
+body.light-mode .page-header {
+    background: linear-gradient(160deg, rgba(245, 240, 232, 0.9), rgba(237, 232, 220, 0.95));
+}
+
+body.light-mode .page-header h1 {
+    color: #1a1a2e;
+}
+
+body.light-mode .page-header p {
+    color: #4a4a6a;
+}
+
+/* ================================================================
+ * Comments
+ * ================================================================ */
+body.light-mode .comment,
+body.light-mode .comments-section {
+    background: #ffffff;
+    border: 1px solid rgba(13, 147, 115, 0.1);
+}
+
+body.light-mode .comment-author {
+    color: #1a1a2e;
+}
+
+body.light-mode .comment p {
+    color: #2d2d44;
+}
+
+body.light-mode .comment-date {
+    color: #8a8aa0;
+}
+
+/* ================================================================
+ * Wallet & Topup
+ * ================================================================ */
+body.light-mode .wallet-card,
+body.light-mode .topup-card {
+    background: #ffffff;
+    border: 1px solid rgba(13, 147, 115, 0.12);
+}
+
+body.light-mode .wallet-balance {
+    color: #0d9373;
+}
+
+/* ================================================================
+ * Admin Page
+ * ================================================================ */
+body.light-mode.admin-page .dashboard-content {
+    background: #ffffff;
+}
+
+body.light-mode .admin-header {
+    background: #ffffff;
+    border-bottom: 1px solid rgba(13, 147, 115, 0.12);
+}
+
+/* ================================================================
+ * Scrollbar - Light mode
+ * ================================================================ */
+body.light-mode ::-webkit-scrollbar-track {
+    background: #f5f0e8;
+}
+
+body.light-mode ::-webkit-scrollbar-thumb {
+    background: rgba(13, 147, 115, 0.25);
+}
+
+body.light-mode ::-webkit-scrollbar-thumb:hover {
+    background: rgba(13, 147, 115, 0.4);
+}
+
+/* ================================================================
+ * Selection - Light mode
+ * ================================================================ */
+body.light-mode ::selection {
+    background: rgba(13, 147, 115, 0.2);
+    color: #1a1a2e;
+}
+
+/* ================================================================
+ * Theme Toggle Button
+ * ================================================================ */
+body.light-mode .theme-toggle-btn {
+    color: #1a1a2e !important;
+}
+
+body.light-mode .theme-toggle-btn:hover {
+    color: #0d9373 !important;
+}
+
+/* ================================================================
+ * Contact page
+ * ================================================================ */
+body.light-mode .contact-card {
+    background: #ffffff;
+}
+
+body.light-mode .contact-card h3 {
+    color: #1a1a2e;
+}
+
+body.light-mode .contact-list p {
+    color: #2d2d44;
+}
+
+body.light-mode .social-link {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ================================================================
+ * Profile pages
+ * ================================================================ */
+body.light-mode .profile-card,
+body.light-mode .profile-header {
+    background: #ffffff;
+    border: 1px solid rgba(13, 147, 115, 0.12);
+}
+
+body.light-mode .profile-card h3 {
+    color: #1a1a2e;
+}
+
+body.light-mode .profile-card p {
+    color: #2d2d44;
+}
+
+/* ================================================================
+ * Store pages
+ * ================================================================ */
+body.light-mode .product-detail {
+    background: #ffffff;
+}
+
+body.light-mode .product-detail h1,
+body.light-mode .product-detail h2 {
+    color: #1a1a2e;
+}
+
+body.light-mode .product-detail p {
+    color: #2d2d44;
+}
+
+body.light-mode .product-price {
+    color: #b8860b;
+}
+
+/* ================================================================
+ * Empty state
+ * ================================================================ */
+body.light-mode .empty-state {
+    color: #4a4a6a;
+}
+
+body.light-mode .empty-state h3 {
+    color: #1a1a2e;
+}
+
+body.light-mode .empty-state p {
+    color: #4a4a6a;
+}
+
+body.light-mode .empty-state i {
+    color: #8a8aa0;
+}
+
+/* ================================================================
+ * Badges & Tags
+ * ================================================================ */
+body.light-mode .badge {
+    color: #ffffff;
+}
+
+body.light-mode .tag {
+    background: #f5f0e8;
+    color: #2d2d44;
+}
+
+/* ================================================================
+ * Reveal animations - keep working in light mode
+ * ================================================================ */
+body.light-mode .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+body.light-mode .reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
