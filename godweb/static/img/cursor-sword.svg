@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Xianxia spiritual sword cursor -->
+  <defs>
+    <linearGradient id="blade" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ee7b7"/>
+      <stop offset="50%" stop-color="#2dd4a0"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="guard" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d4a017"/>
+    </linearGradient>
+  </defs>
+  <!-- Blade -->
+  <line x1="4" y1="4" x2="22" y2="22" stroke="url(#blade)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Blade edge glow -->
+  <line x1="4" y1="4" x2="22" y2="22" stroke="#6ee7b7" stroke-width="0.8" stroke-linecap="round" opacity="0.5"/>
+  <!-- Tip -->
+  <line x1="2" y1="2" x2="5" y2="5" stroke="#e8e4d9" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Guard (cross piece) -->
+  <line x1="18" y1="26" x2="26" y2="18" stroke="url(#guard)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Handle -->
+  <line x1="24" y1="24" x2="30" y2="30" stroke="#d4a017" stroke-width="2" stroke-linecap="round"/>
+  <!-- Pommel -->
+  <circle cx="30" cy="30" r="1.2" fill="#fbbf24"/>
+</svg>
