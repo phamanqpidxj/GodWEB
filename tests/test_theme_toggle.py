@@ -103,3 +103,67 @@ def test_localstorage_key_name_is_preserved(client):
     assert "'siteTheme'" in head_html, (
         "anti-flash script must reference localStorage key 'siteTheme'"
     )
+
+
+def test_body_light_mode_mirror_runs_before_descendants(client):
+    """A second inline script at the top of <body> mirrors the theme-light
+    state onto body.classList so the many body.light-mode CSS rules match
+    on the FIRST frame for returning light-mode users. This must live
+    between the opening <body> tag and the first body descendant, otherwise
+    the DOMContentLoaded hop it replaces reintroduces a dark-flash FOUC.
+    """
+    html = _rendered_login_html(client)
+
+    body_open_match = re.search(r'<body\s+class="[^"]*">', html)
+    assert body_open_match, 'missing <body>'
+    body_open_end = body_open_match.end()
+
+    # The mirror script touches body.classList and references 'light-mode'.
+    mirror_idx = html.find("document.body.classList.add('light-mode')")
+    assert mirror_idx != -1, (
+        'body-level light-mode mirror script missing from base.html'
+    )
+    assert mirror_idx > body_open_end, (
+        'mirror script must live inside <body>, not <head>'
+    )
+
+    # Nothing other than whitespace/script tags should come between the
+    # opening <body> tag and the mirror script - if a descendant element
+    # were rendered first, it would paint with the wrong theme class.
+    between = html[body_open_end:mirror_idx]
+    # Allow only whitespace + the opening <script> tag and its preamble.
+    assert '<div' not in between.lower(), (
+        'mirror script must run before the first <div> descendant'
+    )
+    assert '<nav' not in between.lower(), (
+        'mirror script must run before <nav>'
+    )
+
+
+def test_initial_aria_label_describes_next_action(client):
+    """Before DOMContentLoaded, the toggle's inline aria-label is the only
+    accessible name a screen-reader user hears. The dark theme is the
+    default, so the name should describe the next action ("switch to
+    light mode") rather than a generic "change appearance" string.
+    """
+    html = _rendered_login_html(client)
+
+    btn_match = re.search(
+        r'<button[^>]*id="toggleSiteTheme"[^>]*>',
+        html,
+    )
+    assert btn_match, '#toggleSiteTheme not rendered'
+    open_tag = btn_match.group(0)
+    assert 'aria-label="Chuy\u1ec3n sang ch\u1ebf \u0111\u1ed9 s\u00e1ng"' in open_tag, (
+        'desktop toggle should advertise the next action before JS runs'
+    )
+
+    mobile_match = re.search(
+        r'<a[^>]*id="mobileThemeToggle"[^>]*>',
+        html,
+    )
+    assert mobile_match, '#mobileThemeToggle not rendered'
+    mobile_open = mobile_match.group(0)
+    assert 'aria-label="Chuy\u1ec3n sang ch\u1ebf \u0111\u1ed9 s\u00e1ng"' in mobile_open, (
+        'mobile toggle should advertise the next action before JS runs'
+    )

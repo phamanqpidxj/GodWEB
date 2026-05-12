@@ -90,9 +90,13 @@ body.light-mode .stock-badge.out-of-stock { color: #dc2626; }
     background: transparent;
 }
 
-.section-title h2 {
-    color: var(--amber-100, #fde68a);
-}
+/* `.section-title h2` is intentionally NOT restyled here.
+ * xianxia-theme.css paints it with a jade/gold -webkit-background-clip
+ * text gradient (color: transparent). Adding a flat color would clobber
+ * the gradient and render section headings as flat amber on every page.
+ * The gradient already has sufficient contrast against the dark palette,
+ * and xianxia-theme-light.css supplies a parallel gradient for light
+ * mode. */
 
 .stat-card .value {
     color: var(--amber-100, #fde68a);
@@ -117,10 +121,6 @@ body.light-mode .stock-badge.out-of-stock { color: #dc2626; }
 /* Light-mode restorations: fall back to the legacy near-black ink. */
 body.light-mode .notification-menu-header,
 body.light-mode .notification-menu-header strong {
-    color: #1a1a2e;
-}
-
-body.light-mode .section-title h2 {
     color: #1a1a2e;
 }
 

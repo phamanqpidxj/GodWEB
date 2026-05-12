@@ -406,9 +406,10 @@ function calculateGodCoin(vnd) {
 // ========================================
 // DARK MODE / LIGHT MODE TOGGLE
 // Default state = DARK. localStorage key: "siteTheme" with values "light"|"dark".
-// <html> carries theme-light / theme-dark (modern selectors) and the legacy
-// "light-mode" class is mirrored to <html> and <body> so existing CSS keeps
-// matching. Icon visibility is CSS-driven - both SVGs are always in the DOM.
+// <html> carries theme-light / theme-dark (modern selectors). The legacy
+// "light-mode" class is kept on <body> only (that is where every existing
+// body.light-mode CSS rule matches). Icon visibility is CSS-driven - both
+// SVGs are always in the DOM.
 // ========================================
 
 function _syncThemeA11yLabels(isLight) {
@@ -434,7 +435,6 @@ function toggleSiteTheme() {
 
     root.classList.toggle('theme-light', isLight);
     root.classList.toggle('theme-dark', !isLight);
-    root.classList.toggle('light-mode', isLight);
     if (body) {
         body.classList.toggle('light-mode', isLight);
     }
