@@ -351,3 +351,13 @@ h1, h2, h3, h4, h5, h6 {
     background: rgba(45, 212, 160, 0.3);
     color: #e8e4d9;
 }
+
+/* ────────────────────────────────────────────────────────────────
+ * Custom cursor overrides for interactive elements
+ * ──────────────────────────────────────────────────────────────── */
+
+a, button, [role="button"], input, select, textarea, label[for],
+.btn, .dropdown-toggle, .notification-toggle, .theme-toggle-btn,
+.mobile-menu-btn, .filter-tag {
+    cursor: pointer;
+}

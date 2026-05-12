@@ -93,3 +93,9 @@
         display: none;
     }
 }
+
+/* Fallback: ensure content is visible if GSAP fails to reveal */
+.card, .feature-card, .section-title, .stat-card, .hero-content,
+.product-card, .post-card, .dashboard-card {
+    opacity: 1;
+}

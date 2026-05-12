@@ -26,6 +26,8 @@
         var PETAL_COUNT = 30;
         var colors = ['#ffb7c5', '#ffc8d6', '#ffd4e0'];
         var time = 0;
+        var animId = null;
+        var running = true;
 
         function resize() {
             w = window.innerWidth;
@@ -75,6 +77,7 @@
         }
 
         function tick() {
+            if (!running) return;
             time += 0.016;
             ctx.clearRect(0, 0, w, h);
 
@@ -95,13 +98,27 @@
                 drawPetal(p);
             }
 
-            requestAnimationFrame(tick);
+            animId = requestAnimationFrame(tick);
         }
+
+        // Pause/resume on tab visibility change to save battery
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) {
+                running = false;
+                if (animId) {
+                    cancelAnimationFrame(animId);
+                    animId = null;
+                }
+            } else {
+                running = true;
+                animId = requestAnimationFrame(tick);
+            }
+        });
 
         resize();
         seed();
         window.addEventListener('resize', function () { resize(); });
-        requestAnimationFrame(tick);
+        animId = requestAnimationFrame(tick);
     }
 
     // ────────────────────────────────────────────────────────────
@@ -193,6 +210,17 @@
             y: 40,
             filter: 'blur(8px)'
         });
+
+        // Fallback: if after 3 seconds any element still has opacity 0, force visible
+        setTimeout(function () {
+            targets.forEach(function (el) {
+                if (getComputedStyle(el).opacity === '0') {
+                    el.style.opacity = '1';
+                    el.style.filter = 'none';
+                    el.style.transform = 'none';
+                }
+            });
+        }, 3000);
 
         // Animate grid items with stagger
         var grids = document.querySelectorAll('.grid, .products-grid, .blog-grid, .stats-grid');
@@ -338,11 +366,21 @@
             delay: 0.1
         });
 
+        // Track active tween so rapid clicks don't stack
+        var activeTween = null;
+
         // On internal link clicks, show mist then navigate
         document.addEventListener('click', function (ev) {
+            // Only handle left-clicks (button === 0)
+            if (ev.button !== 0) return;
+
             var link = ev.target.closest('a');
             if (!link) return;
             if (link.hasAttribute('data-no-transition')) return;
+            if (link.hasAttribute('download')) return;
+
+            // Skip links inside form elements
+            if (link.closest('form')) return;
 
             var href = link.getAttribute('href');
             if (!href) return;
@@ -360,11 +398,18 @@
             }
 
             ev.preventDefault();
-            gsap.to(overlay, {
+
+            // Kill any running transition tween before starting a new one
+            if (activeTween) {
+                activeTween.kill();
+            }
+
+            activeTween = gsap.to(overlay, {
                 opacity: 1,
                 duration: 0.3,
                 ease: 'power2.in',
                 onComplete: function () {
+                    activeTween = null;
                     window.location = href;
                 }
             });
