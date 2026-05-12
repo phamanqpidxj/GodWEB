@@ -167,3 +167,44 @@ def test_initial_aria_label_describes_next_action(client):
     assert 'aria-label="Chuy\u1ec3n sang ch\u1ebf \u0111\u1ed9 s\u00e1ng"' in mobile_open, (
         'mobile toggle should advertise the next action before JS runs'
     )
+
+
+def test_main_js_preserves_theme_toggle_contract():
+    """Pytest-only regression guard for the JS contract in main.js.
+
+    Rather than introducing a Node toolchain (JSDOM/Playwright) just to
+    exercise four lines of script, we read ``main.js`` as source text and
+    assert the key contract lines are present. If ``toggleSiteTheme`` were
+    silently gutted or someone swapped the persistence key / root-class
+    name, this test would catch it.
+    """
+    from pathlib import Path
+
+    main_js = Path(__file__).resolve().parent.parent / 'godweb' / 'static' / 'js' / 'main.js'
+    source = main_js.read_text(encoding='utf-8')
+
+    # Persistence line: value is written to localStorage under the
+    # existing 'siteTheme' key (single-quoted form as in current main.js).
+    assert "localStorage.setItem('siteTheme'" in source, (
+        "main.js must persist the theme choice under the 'siteTheme' key"
+    )
+
+    # Root-class toggle: <html> carries theme-light / theme-dark.
+    assert "classList.toggle('theme-light'" in source, (
+        "main.js must toggle the 'theme-light' class on <html>"
+    )
+
+    # Body-class mirror: the legacy body.light-mode selectors depend on
+    # this. The previous revision pass removed the html-level light-mode
+    # toggle, but the body mirror must stay.
+    assert "classList.toggle('light-mode'" in source, (
+        "main.js must mirror the light state onto body.classList as "
+        "'light-mode' for the legacy body.light-mode CSS selectors"
+    )
+
+    # Click wiring: toggleSiteTheme must be attached as a click listener
+    # so the button actually does anything.
+    assert "addEventListener('click', toggleSiteTheme)" in source, (
+        "main.js must attach toggleSiteTheme as a click listener"
+    )
+
