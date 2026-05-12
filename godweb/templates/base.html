@@ -11,12 +11,28 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/xianxia-theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/xianxia-fx.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/xianxia-celestial.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% if request.path.startswith('/admin') %}admin-page{% endif %}">
     <div class="xx-stars" aria-hidden="true"></div>
     <canvas class="xx-stars-canvas" aria-hidden="true"></canvas>
+
+    <!-- Parallax mountain silhouettes -->
+    <div class="xx-parallax-layer" aria-hidden="true">
+        <div class="xx-mountain-far"></div>
+        <div class="xx-mountain-near"></div>
+    </div>
+
+    <!-- Floating swords and clouds -->
+    <div class="xx-floating-layer" id="xxFloatingLayer" aria-hidden="true"></div>
+
+    <!-- Cherry blossom canvas -->
+    <canvas id="xx-petals-canvas" aria-hidden="true"></canvas>
+
+    <!-- Mist transition overlay -->
+    <div id="xx-mist-transition" aria-hidden="true"></div>
 
     <div class="fx-bg" aria-hidden="true">
         <span class="fx-orb fx-orb-1"></span>
@@ -358,8 +374,11 @@
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/xianxia-fx.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/xianxia-celestial.js') }}"></script>
     {% if current_user.is_authenticated and current_user.is_admin() and request.path.startswith('/admin') %}
     <script src="{{ url_for('static', filename='js/admin-notifier.js') }}"></script>
     {% endif %}
