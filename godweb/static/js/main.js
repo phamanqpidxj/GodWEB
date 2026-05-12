@@ -404,23 +404,24 @@ function calculateGodCoin(vnd) {
 }
 
 // ========================================
-// DARK MODE TOGGLE
+// DARK MODE / LIGHT MODE TOGGLE
+// Default is DARK (xianxia theme). Toggle switches to light-mode.
 // ========================================
 function toggleSiteTheme() {
     const body = document.body;
     const themeBtn = document.getElementById('toggleSiteTheme');
     const mobileThemeBtn = document.getElementById('mobileThemeToggle');
 
-    body.classList.toggle('dark-mode');
+    body.classList.toggle('light-mode');
 
-    if (body.classList.contains('dark-mode')) {
-        localStorage.setItem('siteTheme', 'dark');
-        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
-        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-sun"></i> Chế độ sáng';
-    } else {
+    if (body.classList.contains('light-mode')) {
         localStorage.setItem('siteTheme', 'light');
         if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
-        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-moon"></i> Chế độ tối';
+        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-moon"></i> Ch\u1ebf \u0111\u1ed9 t\u1ed1i';
+    } else {
+        localStorage.setItem('siteTheme', 'dark');
+        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
+        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-sun"></i> Ch\u1ebf \u0111\u1ed9 s\u00e1ng';
     }
 }
 
@@ -435,10 +436,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const themeBtn = document.getElementById('toggleSiteTheme');
     const mobileThemeBtn = document.getElementById('mobileThemeToggle');
 
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
+        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-moon"></i> Ch\u1ebf \u0111\u1ed9 t\u1ed1i';
+    } else {
+        // Dark is default - no class needed, but update icons
         if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
-        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-sun"></i> Chế độ sáng';
+        if (mobileThemeBtn) mobileThemeBtn.innerHTML = '<i class="fas fa-sun"></i> Ch\u1ebf \u0111\u1ed9 s\u00e1ng';
     }
 
     // Add click event to desktop theme toggle button
