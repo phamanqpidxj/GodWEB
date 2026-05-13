@@ -23,7 +23,7 @@
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var w = 0, h = 0;
         var petals = [];
-        var PETAL_COUNT = 35;
+        var PETAL_COUNT = 20;
         // Enhanced color palette with more variety
         var colors = [
             '#ffb7c5', '#ffc8d6', '#ffd4e0',
@@ -100,8 +100,15 @@
             ctx.restore();
         }
 
-        function tick() {
+        var lastFrame = 0;
+        var FRAME_INTERVAL = 1000 / 30;
+
+        function tick(now) {
             if (!running) return;
+            animId = requestAnimationFrame(tick);
+            if (now - lastFrame < FRAME_INTERVAL) return;
+            lastFrame = now;
+
             time += 0.016;
             ctx.clearRect(0, 0, w, h);
 
@@ -119,8 +126,6 @@
 
                 drawPetal(p);
             }
-
-            animId = requestAnimationFrame(tick);
         }
 
         document.addEventListener('visibilitychange', function () {

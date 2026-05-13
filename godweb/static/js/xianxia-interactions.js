@@ -41,8 +41,8 @@
                 if (splash.parentNode === layer) layer.removeChild(splash);
             });
 
-            // Scatter 4-6 ink droplets
-            var dropletCount = 4 + Math.floor(Math.random() * 3);
+            // Scatter 2-3 ink droplets
+            var dropletCount = 2 + Math.floor(Math.random() * 2);
             for (var i = 0; i < dropletCount; i++) {
                 var droplet = document.createElement('span');
                 droplet.className = 'xx-ink-droplet';
@@ -211,7 +211,7 @@
             if (!badge) return;
 
             // Emit 4-6 smoke particles
-            var count = 4 + Math.floor(Math.random() * 3);
+            var count = 2 + Math.floor(Math.random() * 2);
             for (var i = 0; i < count; i++) {
                 var smoke = document.createElement('span');
                 smoke.className = 'xx-vip-smoke';
