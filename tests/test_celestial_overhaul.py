@@ -379,7 +379,16 @@ def test_reduced_motion_disables_immortal_aura_spin():
 def test_main_js_pauses_off_screen_immortal_auras():
     """The CSS pauses aura when `.xx-aura-paused` is present.
     `main.js` must wire up an IntersectionObserver to toggle that
-    class so off-screen cards stop driving the paint loop."""
+    class so off-screen cards stop driving the paint loop.
+
+    Specificity guard: the realm-scoped rules
+    (`html.theme-dark .card.xx-immortal-card::before` and
+    `body.light-mode ...`) compute to (0,3,2) and re-declare the
+    `animation:` shorthand, which silently resets `animation-play-state`
+    to `running`. The pause hook must therefore include realm-prefixed
+    variants — otherwise the IntersectionObserver fires, the class is
+    added, and yet the aura keeps painting because the cascade strips
+    `animation-play-state: paused` right back out."""
     source = MAIN_JS_PATH.read_text(encoding='utf-8')
     assert 'initializeImmortalAuraVisibility' in source
     assert 'IntersectionObserver' in source
@@ -388,6 +397,27 @@ def test_main_js_pauses_off_screen_immortal_auras():
     css = CSS_PATH.read_text(encoding='utf-8')
     assert 'xx-aura-paused' in css
     assert 'animation-play-state: paused' in css
+    # Specificity guard: the pause rule MUST be scoped under every
+    # realm prefix used elsewhere in the file. If you only ship the
+    # un-prefixed selector, the realm rule wins on specificity and the
+    # perf optimisation silently no-ops.
+    assert (
+        'html.theme-dark .card.xx-immortal-card.xx-aura-paused::before'
+        in css
+    ), (
+        'pause rule must be scoped under html.theme-dark to beat the '
+        'realm-scoped aura animation shorthand'
+    )
+    assert (
+        'body.light-mode .card.xx-immortal-card.xx-aura-paused::before'
+        in css
+        or 'html.theme-light .card.xx-immortal-card.xx-aura-paused::before'
+        in css
+    ), (
+        'pause rule must be scoped under body.light-mode or '
+        'html.theme-light to beat the realm-scoped aura animation '
+        'shorthand'
+    )
 
 
 def test_floating_clouds_skip_on_narrow_viewports():

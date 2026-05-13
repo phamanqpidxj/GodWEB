@@ -1051,9 +1051,23 @@ html.theme-dark .xx-bagua-ripple::after {
 }
 
 /* Pause the aura animations while the card is scrolled out of view.
- * `IntersectionObserver` in xianxia-celestial.js toggles
- * `.xx-aura-paused` on the card. */
+ * `IntersectionObserver` in main.js toggles `.xx-aura-paused` on the
+ * card.
+ *
+ * Specificity note: the realm-scoped rules above
+ * (`html.theme-dark .card.xx-immortal-card::before` and
+ * `body.light-mode .card.xx-immortal-card::before`) compute to (0,3,2)
+ * and re-set the full `animation:` shorthand — which silently resets
+ * `animation-play-state` back to `running`. So the pause rule MUST
+ * match or beat the realm rules on specificity AND mention the realm
+ * prefix to win the cascade. We list all three variants explicitly. */
 .card.xx-immortal-card.xx-aura-paused::before,
-.xx-immortal-card.xx-aura-paused::before {
+.xx-immortal-card.xx-aura-paused::before,
+html.theme-dark .card.xx-immortal-card.xx-aura-paused::before,
+html.theme-dark .xx-immortal-card.xx-aura-paused::before,
+html.theme-light .card.xx-immortal-card.xx-aura-paused::before,
+html.theme-light .xx-immortal-card.xx-aura-paused::before,
+body.light-mode .card.xx-immortal-card.xx-aura-paused::before,
+body.light-mode .xx-immortal-card.xx-aura-paused::before {
     animation-play-state: paused;
 }
