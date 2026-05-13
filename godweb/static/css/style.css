@@ -54,6 +54,14 @@ html.theme-light, html.theme-light body { background-color: #faf8f3; }
     --border-color: #e2e8f0;
     --surface-color: #ffffff;
     --surface-muted: #f1f5f9;
+    --navbar-bg: linear-gradient(135deg, #0b1120 0%, #111827 60%, #0f172a 100%);
+    --hero-bg: radial-gradient(circle at top, rgba(14, 165, 164, 0.35), transparent 55%),
+        linear-gradient(135deg, #0b1120 0%, #111827 55%, #1e293b 100%);
+    --card-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.92));
+    --dropdown-bg: #ffffff;
+    --control-bg: rgba(255, 255, 255, 0.08);
+    --control-border: rgba(255, 255, 255, 0.3);
+    --control-color: #ffffff;
     --gradient-primary: linear-gradient(135deg, #0ea5a4 0%, #2563eb 100%);
     --gradient-gold: linear-gradient(135deg, #f97316 0%, #facc15 100%);
     --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.06);
@@ -62,6 +70,31 @@ html.theme-light, html.theme-light body { background-color: #faf8f3; }
     --shadow-lg: 0 30px 60px -30px rgb(15 23 42 / 0.45);
     --font-display: "Space Grotesk", "Segoe UI", sans-serif;
     --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+    --body-bg: radial-gradient(circle at top, #eef2ff 0%, #f8fafc 40%, #ffffff 100%);
+}
+
+/* Dark mode variable overrides when `body.dark-mode` is present */
+body.dark-mode {
+    --primary-color: #2dd4bf;
+    --primary-dark: #14b8a6;
+    --secondary-color: #fb923c;
+    --accent-color: #60a5fa;
+    --dark-color: #e6eef8;
+    --light-color: #0b1220;
+    --text-color: #e6eef8;
+    --text-light: #9fb0c8;
+    --border-color: rgba(255,255,255,0.06);
+    --surface-color: #0b1220;
+    --surface-muted: #071126;
+    --navbar-bg: linear-gradient(135deg, #071029 0%, #071126 60%, #041022 100%);
+    --hero-bg: radial-gradient(circle at top, rgba(45, 212, 191, 0.08), transparent 55%),
+        linear-gradient(135deg, #071029 0%, #071126 55%, #081424 100%);
+    --card-bg: linear-gradient(160deg, rgba(8, 18, 36, 0.85), rgba(10, 20, 36, 0.72));
+    --dropdown-bg: #071126;
+    --body-bg: radial-gradient(circle at top, #0b1120 0%, #0f172a 45%, #111827 100%);
+    --control-bg: rgba(255,255,255,0.04);
+    --control-border: rgba(255,255,255,0.06);
+    --control-color: #e6eef8;
 }
 
 html {
@@ -76,7 +109,7 @@ html {
 
 body {
     font-family: var(--font-body);
-    background: radial-gradient(circle at top, #eef2ff 0%, #f8fafc 40%, #ffffff 100%);
+    background: var(--body-bg);
     color: var(--text-color);
     line-height: 1.6;
     text-rendering: optimizeLegibility;
@@ -185,7 +218,7 @@ select:focus-visible,
 
 /* Navbar */
 .navbar {
-    background: linear-gradient(135deg, #0b1120 0%, #111827 60%, #0f172a 100%);
+    background: var(--navbar-bg);
     padding: 18px 0;
     position: sticky;
     top: 0;
@@ -259,9 +292,9 @@ select:focus-visible,
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    border: 1px solid var(--control-border);
+    background: var(--control-bg);
+    color: var(--control-color);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -764,7 +797,7 @@ select:focus-visible,
 
 /* Cards */
 .card {
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.92));
+    background: var(--card-bg);
     border-radius: 18px;
     box-shadow: var(--shadow);
     overflow: hidden;
