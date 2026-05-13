@@ -330,7 +330,14 @@ body.light-mode .xx-mortal-card::after {
 
 /* Spiritual aura: a conic-gradient border that slowly rotates around
  * the card edge. The mask makes it look like a ring of qi rather than
- * a solid filled rectangle. */
+ * a solid filled rectangle.
+ *
+ * Specificity note: legacy `.card:has(.premium-badge)::before` in
+ * xianxia-theme.css computes to (0,2,0). We use `.card.xx-immortal-card`
+ * here so we match it on specificity AND win on order (this file loads
+ * after xianxia-theme.css), ensuring the conic aura replaces the older
+ * linear-gradient pulse. */
+.card.xx-immortal-card::before,
 .xx-immortal-card::before {
     content: "";
     position: absolute;
@@ -363,6 +370,7 @@ body.light-mode .xx-mortal-card::after {
 
 /* Faint inner radial halo so the aura feels like it's emanating
  * outward from the card content. */
+.card.xx-immortal-card::after,
 .xx-immortal-card::after {
     content: "";
     position: absolute;
@@ -390,6 +398,7 @@ body.light-mode .xx-mortal-card::after {
         inset 0 0 0 1px rgba(251, 191, 36, 0.18);
 }
 
+.card.xx-immortal-card:hover::before,
 .xx-immortal-card:hover::before {
     opacity: 1;
     animation-duration: 3.5s;
@@ -467,7 +476,6 @@ body.light-mode .xx-mortal-card::after {
  * hover — uses CSS only so it works even if xianxia-interactions.js
  * hasn't initialised yet. The JS module already emits richer
  * particles for richer browsers. */
-.xx-immortal-card::before { z-index: 0; }
 
 .xx-immortal-card .xx-immortal-mist {
     position: absolute;
@@ -504,6 +512,7 @@ body.light-mode .xx-immortal-card {
         inset 0 0 0 1px rgba(255, 215, 0, 0.18);
 }
 
+body.light-mode .card.xx-immortal-card::before,
 body.light-mode .xx-immortal-card::before {
     background: conic-gradient(
         from 0deg,
@@ -515,6 +524,7 @@ body.light-mode .xx-immortal-card::before {
     );
 }
 
+body.light-mode .card.xx-immortal-card::after,
 body.light-mode .xx-immortal-card::after {
     background: radial-gradient(ellipse at 30% 20%,
         rgba(255, 215, 0, 0.18),

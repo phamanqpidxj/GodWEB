@@ -135,6 +135,28 @@ def test_yinyang_rotation_rule_exists():
     )
 
 
+def test_immortal_aura_overrides_legacy_premium_pulse():
+    """The legacy ``.card:has(.premium-badge)::before`` rule in
+    ``xianxia-theme.css`` has specificity (0,2,0). Our Celestial Path
+    aura must match that with the compound ``.card.xx-immortal-card``
+    selector so the new conic ``xxImmortalAura`` actually wins —
+    otherwise the rotating Linh-Khí ring silently degrades to the old
+    static opacity pulse.
+    """
+    source = CSS_PATH.read_text(encoding='utf-8')
+    assert '.card.xx-immortal-card::before' in source, (
+        'aura ::before rule must use .card.xx-immortal-card to match '
+        'the legacy :has(.premium-badge) selector specificity'
+    )
+    assert '.card.xx-immortal-card::after' in source, (
+        'aura ::after halo must match the legacy specificity too'
+    )
+    assert 'animation: xxImmortalAura' in source, (
+        'the conic-gradient aura must be driven by xxImmortalAura, '
+        'not the legacy xxVipAuraPulse'
+    )
+
+
 # ────────────────────────────────────────────────────────────────────
 # 4. Mortal / Immortal post cards on the blog index
 # ────────────────────────────────────────────────────────────────────
