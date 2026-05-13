@@ -398,10 +398,15 @@ body.light-mode .xx-mortal-card::after {
         inset 0 0 0 1px rgba(251, 191, 36, 0.18);
 }
 
+/* Dark-mode hover speed-up — must use the shorthand `animation:` so
+ * we override the legacy `.card:has(.premium-badge):hover::before
+ * { animation: none; }` rule in xianxia-theme.css (same specificity,
+ * but we load after). If we only set animation-duration, animation-name
+ * stays "none" from the legacy rule and the aura stops spinning. */
 .card.xx-immortal-card:hover::before,
 .xx-immortal-card:hover::before {
     opacity: 1;
-    animation-duration: 3.5s;
+    animation: xxImmortalAura 3.5s linear infinite;
 }
 
 /* Light-mode hover override — same speed-up + opacity boost as dark

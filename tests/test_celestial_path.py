@@ -172,6 +172,23 @@ def test_immortal_aura_overrides_legacy_premium_pulse():
         'xxImmortalAura so it does not fall back to xxVipAuraPulseLight'
     )
 
+    # In dark mode the legacy ``.card:has(.premium-badge):hover::before``
+    # rule in ``xianxia-theme.css`` sets ``animation: none``. Our hover
+    # override must use the shorthand ``animation:`` (not the
+    # ``animation-duration`` longhand) so the rotating aura keeps spinning
+    # and just speeds up on hover.
+    hover_idx = source.find('.card.xx-immortal-card:hover::before')
+    assert hover_idx != -1, (
+        'dark-mode hover speed-up must use .card.xx-immortal-card to '
+        'match legacy :hover specificity'
+    )
+    hover_block = source[hover_idx:hover_idx + 400]
+    assert 'animation: xxImmortalAura' in hover_block, (
+        'hover ::before block must use the `animation:` shorthand to '
+        'override the legacy `animation: none` rule; otherwise the aura '
+        'silently stops rotating on hover'
+    )
+
 
 # ────────────────────────────────────────────────────────────────────
 # 4. Mortal / Immortal post cards on the blog index
