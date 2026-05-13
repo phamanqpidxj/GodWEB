@@ -584,7 +584,7 @@ h1, h2, h3, h4, h5, h6 {
     50% { box-shadow: 0 0 16px rgba(251, 191, 36, 0.5), 0 0 32px rgba(251, 191, 36, 0.2), 0 0 48px rgba(167, 139, 250, 0.1); }
 }
 
-/* VIP cards - animated "Linh khí bao quanh" aura */
+/* VIP cards - "Linh khí bao quanh" aura (gold pulse) */
 .card:has(.premium-badge),
 .card.xx-vip-card {
     border: 1px solid rgba(251, 191, 36, 0.25);
@@ -596,57 +596,39 @@ h1, h2, h3, h4, h5, h6 {
 .card.xx-vip-card::before {
     content: "";
     position: absolute;
-    inset: -2px;
+    inset: -1px;
     border-radius: inherit;
-    padding: 2px;
-    background: conic-gradient(
-        from var(--xx-angle, 0deg),
-        transparent 0deg,
-        rgba(251, 191, 36, 0.05) 30deg,
-        rgba(251, 191, 36, 0.5) 80deg,
-        rgba(167, 139, 250, 0.4) 140deg,
-        rgba(251, 191, 36, 0.3) 200deg,
-        transparent 250deg,
-        transparent 360deg
-    );
-    -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-    mask-composite: exclude;
-    animation: xxVipAuraSpin 6s linear infinite;
-    opacity: 0.7;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(167, 139, 250, 0.12), rgba(251, 191, 36, 0.15));
+    opacity: 0;
+    animation: xxVipAuraPulse 3s ease-in-out infinite;
     z-index: 0;
     pointer-events: none;
 }
 
-@keyframes xxVipAuraSpin {
-    to { --xx-angle: 360deg; }
+@keyframes xxVipAuraPulse {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 0.6; }
 }
 
 .card:has(.premium-badge):hover,
 .card.xx-vip-card:hover {
     border-color: rgba(251, 191, 36, 0.5);
-    box-shadow:
-        0 0 30px rgba(251, 191, 36, 0.12),
-        0 0 60px rgba(167, 139, 250, 0.06);
-    transform: translateY(-6px);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.1), 0 0 40px rgba(167, 139, 250, 0.05);
+    transform: translateY(-3px);
 }
 
 .card:has(.premium-badge):hover::before,
 .card.xx-vip-card:hover::before {
-    opacity: 1;
+    opacity: 0.7;
+    animation: none;
 }
 
 /* Decorative rune corner for VIP cards */
 .card:has(.premium-badge)::after,
 .card.xx-vip-card::after {
     content: "☯";
-    color: rgba(251, 191, 36, 0.3);
-    text-shadow: 0 0 8px rgba(251, 191, 36, 0.2);
+    color: rgba(251, 191, 36, 0.25);
+    text-shadow: 0 0 6px rgba(251, 191, 36, 0.15);
     font-size: 14px;
 }
 

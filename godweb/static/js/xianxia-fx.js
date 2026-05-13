@@ -26,8 +26,8 @@
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var stars = [];
         var bokehs = [];                              // larger, blurred depth-of-field particles
-        var STAR_COUNT_BASE = 130;
-        var BOKEH_COUNT_BASE = 18;                    // sparse and luxurious, not crowded
+        var STAR_COUNT_BASE = 80;
+        var BOKEH_COUNT_BASE = 10;
         var w = 0, h = 0;
         // Pointer-driven parallax target; smoothed in the render loop.
         var pxTarget = 0, pyTarget = 0;
@@ -84,41 +84,40 @@
             var radius = s.z * 1.05;
             var alpha  = Math.min(1, twinkle * (s.z / 2));
             var rgb = s.hue === 'cyan' ? '127, 220, 255' : s.hue === 'violet' ? '167, 139, 250' : s.hue === 'cinnabar' ? '248, 113, 113' : '255, 215, 0';
-            // Soft halo via radial gradient gives stars a glow instead of a hard pixel.
-            var grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, radius * 4.5);
-            grad.addColorStop(0.00, 'rgba(' + rgb + ', ' + (alpha).toFixed(3) + ')');
-            grad.addColorStop(0.35, 'rgba(' + rgb + ', ' + (alpha * 0.32).toFixed(3) + ')');
-            grad.addColorStop(1.00, 'rgba(' + rgb + ', 0)');
-            ctx.fillStyle = grad;
+            // Simple circle with glow — much cheaper than radialGradient per star
+            ctx.globalAlpha = alpha * 0.3;
+            ctx.fillStyle = 'rgb(' + rgb + ')';
             ctx.beginPath();
-            ctx.arc(s.x, s.y, radius * 4.5, 0, Math.PI * 2);
+            ctx.arc(s.x, s.y, radius * 3, 0, Math.PI * 2);
             ctx.fill();
-            // Tight bright core on top of the halo.
-            ctx.fillStyle = 'rgba(255, 247, 220, ' + (alpha * 0.85).toFixed(3) + ')';
+            ctx.globalAlpha = alpha * 0.85;
+            ctx.fillStyle = 'rgba(255, 247, 220, 1)';
             ctx.beginPath();
             ctx.arc(s.x, s.y, Math.max(0.5, radius * 0.55), 0, Math.PI * 2);
             ctx.fill();
+            ctx.globalAlpha = 1;
         }
 
         function drawBokeh(b, twinkle) {
-            // Large soft-edged orb. Two concentric gradient passes: outer
-            // diffuse halo + slightly brighter inner core. Twinkle gently
-            // modulates the alpha so the orb breathes.
             var alpha = b.a * (0.7 + 0.3 * twinkle);
             var rgb = b.hue === 'cyan' ? '127, 220, 255' : b.hue === 'violet' ? '167, 139, 250' : '255, 215, 0';
-            var g1 = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
-            g1.addColorStop(0.00, 'rgba(' + rgb + ', ' + alpha.toFixed(3) + ')');
-            g1.addColorStop(0.35, 'rgba(' + rgb + ', ' + (alpha * 0.45).toFixed(3) + ')');
-            g1.addColorStop(0.75, 'rgba(' + rgb + ', ' + (alpha * 0.10).toFixed(3) + ')');
-            g1.addColorStop(1.00, 'rgba(' + rgb + ', 0)');
-            ctx.fillStyle = g1;
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = 'rgb(' + rgb + ')';
             ctx.beginPath();
-            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            ctx.arc(b.x, b.y, b.r * 0.6, 0, Math.PI * 2);
             ctx.fill();
+            ctx.globalAlpha = 1;
         }
 
-        function tick() {
-            // Smoothly approach the parallax target (low-pass filter).
+        var lastFrame = 0;
+        var TARGET_FPS = 30;
+        var FRAME_INTERVAL = 1000 / TARGET_FPS;
+
+        function tick(now) {
+            requestAnimationFrame(tick);
+            if (now - lastFrame < FRAME_INTERVAL) return;
+            lastFrame = now;
+
             px += (pxTarget - px) * 0.06;
             py += (pyTarget - py) * 0.06;
             canvas.style.setProperty('--xx-px', px.toFixed(2) + 'px');
@@ -126,13 +125,11 @@
 
             ctx.clearRect(0, 0, w, h);
 
-            // Bokeh first (background depth layer).
             for (var k = 0; k < bokehs.length; k++) {
                 var b = bokehs[k];
                 b.x += b.vx;
                 b.y += b.vy;
                 b.tw += b.tws;
-                // Wrap when fully off-screen including blur radius.
                 if (b.y + b.r < 0) { b.y = h + b.r; b.x = Math.random() * w; }
                 if (b.x + b.r < 0) b.x = w + b.r;
                 if (b.x - b.r > w) b.x = -b.r;
@@ -140,23 +137,17 @@
                 drawBokeh(b, btw);
             }
 
-            // Sharp stars on top.
             for (var i = 0; i < stars.length; i++) {
                 var s = stars[i];
                 s.x += s.vx;
                 s.y += s.vy;
                 s.tw += s.tws;
-
-                // Wrap toroidally so stars never disappear permanently.
                 if (s.y < -8) { s.y = h + 8; s.x = Math.random() * w; }
                 if (s.x < -8) s.x = w + 8;
                 if (s.x > w + 8) s.x = -8;
-
                 var twinkle = 0.55 + 0.45 * Math.sin(s.tw);
                 drawStar(s, twinkle);
             }
-
-            requestAnimationFrame(tick);
         }
 
         resize();
