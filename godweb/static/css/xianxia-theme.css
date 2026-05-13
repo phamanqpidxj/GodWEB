@@ -13,10 +13,14 @@
     --xianxia-gold: #fbbf24;
     --xianxia-gold-deep: #d4a017;
     --xianxia-gold-glow: rgba(251, 191, 36, 0.4);
+    --xianxia-crimson: #b91c1c;
     --xianxia-cinnabar: #dc2626;
     --xianxia-cinnabar-glow: rgba(220, 38, 38, 0.3);
+    --xianxia-blood: #7f1d1d;
     --xianxia-spirit: #a78bfa;
     --xianxia-spirit-glow: rgba(167, 139, 250, 0.3);
+    --xianxia-spirit-deep: #7c3aed;
+    --xianxia-neon-fire: #67e8f9;
     --xianxia-mist: rgba(255, 255, 255, 0.85);
     --xianxia-parchment: #12121e;
     --xianxia-parchment-light: #1a1a2e;
@@ -465,11 +469,39 @@ h1, h2, h3, h4, h5, h6 {
     text-shadow: 0 0 8px rgba(45, 212, 160, 0.2);
 }
 
-/* GodCoin balance */
+/* GodCoin balance - Linh Thạch (Spirit Stone) */
 .godcoin-balance {
     color: var(--xianxia-gold);
     border-color: rgba(251, 191, 36, 0.25);
-    background: rgba(251, 191, 36, 0.08);
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.10), rgba(167, 139, 250, 0.05));
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.godcoin-balance::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.15), transparent);
+    transform: translateX(-100%);
+    animation: xxCoinShimmer 4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes xxCoinShimmer {
+    0%, 70% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.godcoin-balance:hover {
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.15);
+}
+
+.godcoin-balance i {
+    color: var(--xianxia-gold);
+    animation: xxCoinPulse 2s ease-in-out infinite;
 }
 
 /* Notification styling */
@@ -532,12 +564,107 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ────────────────────────────────────────────────────────────────
- * Premium/special content badges - cinnabar seals
+ * Premium/VIP content - Tiên Nhân / Pháp Bảo styling
  * ──────────────────────────────────────────────────────────────── */
 
 .premium-badge {
-    background: var(--gradient-cinnabar);
-    box-shadow: 0 0 12px rgba(220, 38, 38, 0.2);
+    background: var(--gradient-gold);
+    color: #1a0800 !important;
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.3), 0 0 24px rgba(251, 191, 36, 0.1);
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    animation: xxTalismanGlow 3s ease-in-out infinite;
+    position: relative;
+}
+
+@keyframes xxTalismanGlow {
+    0%, 100% { box-shadow: 0 0 8px rgba(251, 191, 36, 0.3), 0 0 16px rgba(251, 191, 36, 0.1); }
+    50% { box-shadow: 0 0 16px rgba(251, 191, 36, 0.5), 0 0 32px rgba(251, 191, 36, 0.2), 0 0 48px rgba(167, 139, 250, 0.1); }
+}
+
+/* VIP cards - animated "Linh khí bao quanh" aura */
+.card:has(.premium-badge),
+.card.xx-vip-card {
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    position: relative;
+    overflow: visible;
+}
+
+.card:has(.premium-badge)::before,
+.card.xx-vip-card::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: conic-gradient(
+        from var(--xx-angle, 0deg),
+        transparent 0deg,
+        rgba(251, 191, 36, 0.05) 30deg,
+        rgba(251, 191, 36, 0.5) 80deg,
+        rgba(167, 139, 250, 0.4) 140deg,
+        rgba(251, 191, 36, 0.3) 200deg,
+        transparent 250deg,
+        transparent 360deg
+    );
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    animation: xxVipAuraSpin 6s linear infinite;
+    opacity: 0.7;
+    z-index: 0;
+    pointer-events: none;
+}
+
+@keyframes xxVipAuraSpin {
+    to { --xx-angle: 360deg; }
+}
+
+.card:has(.premium-badge):hover,
+.card.xx-vip-card:hover {
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow:
+        0 0 30px rgba(251, 191, 36, 0.12),
+        0 0 60px rgba(167, 139, 250, 0.06);
+    transform: translateY(-6px);
+}
+
+.card:has(.premium-badge):hover::before,
+.card.xx-vip-card:hover::before {
+    opacity: 1;
+}
+
+/* Decorative rune corner for VIP cards */
+.card:has(.premium-badge)::after,
+.card.xx-vip-card::after {
+    content: "☯";
+    color: rgba(251, 191, 36, 0.3);
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.2);
+    font-size: 14px;
+}
+
+/* Card price with spirit stone styling */
+.card-price {
+    color: var(--xianxia-gold) !important;
+    font-weight: 700;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.15);
+}
+
+.card-price i {
+    color: var(--xianxia-gold) !important;
+    animation: xxCoinPulse 2s ease-in-out infinite;
+}
+
+@keyframes xxCoinPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(251, 191, 36, 0.3)); }
+    50% { transform: scale(1.15); filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.5)); }
 }
 
 /* ────────────────────────────────────────────────────────────────
