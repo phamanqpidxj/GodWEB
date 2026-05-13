@@ -308,6 +308,13 @@ body.light-mode .xx-mortal-card::after {
  *    The Talisman Badge takes over from `.premium-badge` and adds the
  *    paper-charm look with a pulsating glow + corner stamp.
  * ════════════════════════════════════════════════════════════════ */
+/* Compound `.card.xx-immortal-card` matches the legacy
+ * `.card:has(.premium-badge)` specificity (0,2,0) so the `overflow:
+ * hidden` actually wins over `xianxia-theme.css`' `overflow: visible`
+ * — otherwise the rotating conic-gradient aura sweeps outside the
+ * card and reads as red "ghosting" diagonals around each VIP post
+ * (the original bug this overhaul shipped to kill). */
+.card.xx-immortal-card,
 .xx-immortal-card {
     position: relative;
     isolation: isolate;
@@ -322,30 +329,39 @@ body.light-mode .xx-mortal-card::after {
         0 16px 42px -18px rgba(124, 58, 237, 0.45),
         0 8px 22px -10px rgba(251, 191, 36, 0.18),
         inset 0 0 0 1px rgba(251, 191, 36, 0.08);
+    overflow: hidden;
     transition:
         transform 0.45s cubic-bezier(0.2, 0.8, 0.3, 1),
         box-shadow 0.45s,
         border-color 0.45s;
 }
 
-/* Spiritual aura: a conic-gradient border that slowly rotates around
- * the card edge. The mask makes it look like a ring of qi rather than
- * a solid filled rectangle.
+/* Spiritual aura: a conic-gradient border that spins via its
+ * `from <angle>` parameter — NOT a `transform: rotate` on the whole
+ * pseudo-element. Rotating the rectangle itself made the bounding box
+ * sweep outside the card and read as red "ghosting" diagonals; spinning
+ * just the gradient's start angle keeps the pseudo's geometry fixed.
  *
  * Specificity note: legacy `.card:has(.premium-badge)::before` in
  * xianxia-theme.css computes to (0,2,0). We use `.card.xx-immortal-card`
  * here so we match it on specificity AND win on order (this file loads
  * after xianxia-theme.css), ensuring the conic aura replaces the older
  * linear-gradient pulse. */
+@property --xx-aura-spin {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
 .card.xx-immortal-card::before,
 .xx-immortal-card::before {
     content: "";
     position: absolute;
-    inset: -2px;
+    inset: 0;
     border-radius: inherit;
     padding: 2px;
     background: conic-gradient(
-        from 0deg,
+        from var(--xx-aura-spin),
         rgba(251, 191, 36, 0.75),
         rgba(167, 139, 250, 0.55),
         rgba(45, 212, 160, 0.45),
@@ -364,8 +380,18 @@ body.light-mode .xx-mortal-card::after {
 }
 
 @keyframes xxImmortalAura {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from { --xx-aura-spin: 0deg; }
+    to   { --xx-aura-spin: 360deg; }
+}
+
+/* Older browsers without @property support can't animate the gradient
+ * angle. Hold a static aura rather than fall back to the old transform
+ * rotation, which is what caused the diagonal bleed. */
+@supports not (background: paint(none)) {
+    .card.xx-immortal-card::before,
+    .xx-immortal-card::before {
+        animation: none;
+    }
 }
 
 /* Faint inner radial halo so the aura feels like it's emanating
@@ -529,7 +555,7 @@ body.light-mode .xx-immortal-card {
 body.light-mode .card.xx-immortal-card::before,
 body.light-mode .xx-immortal-card::before {
     background: conic-gradient(
-        from 0deg,
+        from var(--xx-aura-spin),
         rgba(255, 215, 0, 0.85),
         rgba(124, 58, 237, 0.5),
         rgba(0, 168, 107, 0.55),
@@ -729,7 +755,7 @@ body.light-mode #xx-mist-transition {
 html.theme-dark .card.xx-immortal-card::before,
 html.theme-dark .xx-immortal-card::before {
     background: conic-gradient(
-        from 0deg,
+        from var(--xx-aura-spin),
         rgba(220, 38, 38, 0.85) 0deg,
         rgba(153, 0, 0, 0.65) 90deg,
         rgba(60, 0, 0, 0.45) 180deg,
@@ -768,7 +794,7 @@ html.theme-light .xx-immortal-card::before,
 body.light-mode .card.xx-immortal-card::before,
 body.light-mode .xx-immortal-card::before {
     background: conic-gradient(
-        from 0deg,
+        from var(--xx-aura-spin),
         rgba(255, 215, 0, 0.85) 0deg,
         rgba(255, 244, 196, 0.65) 90deg,
         rgba(255, 250, 205, 0.85) 180deg,
@@ -971,4 +997,63 @@ html.theme-dark .xx-bagua-ripple {
 html.theme-dark .xx-bagua-ripple::after {
     color: rgba(220, 38, 38, 0.80);
     text-shadow: 0 0 8px rgba(178, 34, 52, 0.45);
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 18. Performance — off-screen paint skip + reduced-motion guards
+ *     The blog grid can hold dozens of `.card`s, each with a conic
+ *     gradient + drop-shadow filter on `::before`. Repainting them
+ *     all every frame is the main cause of perceived lag on mid-tier
+ *     hardware. Three mitigations:
+ *
+ *       a) `content-visibility: auto` on `.card` so the browser skips
+ *          layout + paint for cards outside the viewport entirely.
+ *          A `contain-intrinsic-size` placeholder keeps the scroll
+ *          position stable as cards scroll in/out.
+ *       b) `prefers-reduced-motion` short-circuits every aura, pulse,
+ *          and floating-cloud animation. The static colours still
+ *          carry the realm identity; the spin is just decoration.
+ *       c) `.xx-floating-cloud`s collapse to `display: none` on
+ *          narrow viewports where they cost the most and the user
+ *          is most likely to be on a battery-powered device.
+ * ════════════════════════════════════════════════════════════════ */
+.card,
+.post-card,
+.product-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 480px 360px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card.xx-immortal-card::before,
+    .xx-immortal-card::before,
+    html.theme-dark .card.xx-immortal-card::before,
+    html.theme-dark .xx-immortal-card::before,
+    html.theme-light .card.xx-immortal-card::before,
+    html.theme-light .xx-immortal-card::before,
+    body.light-mode .card.xx-immortal-card::before,
+    body.light-mode .xx-immortal-card::before,
+    .card.xx-immortal-card:hover::before,
+    .xx-immortal-card:hover::before,
+    body.light-mode .card.xx-immortal-card:hover::before,
+    body.light-mode .xx-immortal-card:hover::before,
+    .xx-immortal-card .premium-badge::after,
+    .xx-floating-cloud {
+        animation: none !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .xx-floating-cloud,
+    #xxFloatingLayer .xx-floating-cloud {
+        display: none !important;
+    }
+}
+
+/* Pause the aura animations while the card is scrolled out of view.
+ * `IntersectionObserver` in xianxia-celestial.js toggles
+ * `.xx-aura-paused` on the card. */
+.card.xx-immortal-card.xx-aura-paused::before,
+.xx-immortal-card.xx-aura-paused::before {
+    animation-play-state: paused;
 }

@@ -500,3 +500,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ────────────────────────────────────────────────────────────
+// Pause Immortal-card auras while they're scrolled off-screen.
+// Each `.xx-immortal-card::before` runs a conic-gradient rotation
+// AND a drop-shadow filter pulse. With a dozen VIP posts on a
+// listing page, that's a measurable paint cost every frame even
+// when the user is looking at the footer. IntersectionObserver
+// flips a class that pins `animation-play-state: paused` so the
+// browser can skip the work.
+// ────────────────────────────────────────────────────────────
+function initializeImmortalAuraVisibility() {
+    if (!('IntersectionObserver' in window)) return;
+
+    var cards = document.querySelectorAll('.xx-immortal-card');
+    if (!cards.length) return;
+
+    // Start paused; observer will un-pause anything actually visible.
+    cards.forEach(function (card) { card.classList.add('xx-aura-paused'); });
+
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            entry.target.classList.toggle('xx-aura-paused', !entry.isIntersecting);
+        });
+    }, { rootMargin: '120px 0px' });
+
+    cards.forEach(function (card) { observer.observe(card); });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeImmortalAuraVisibility);
+} else {
+    initializeImmortalAuraVisibility();
+}
+
