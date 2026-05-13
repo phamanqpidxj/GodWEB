@@ -1,5 +1,6 @@
-/* GodWeb - Card Text Contrast Fix
+/* GodWeb - Card Text Contrast Fix (Enhanced)
  * Ensures card text is readable in BOTH dark and light modes.
+ * Aligned with enhanced Xianxia palette.
  * Loads last for specificity.
  * ---------------------------------------------------------------- */
 
@@ -8,32 +9,32 @@
  * ================================================================ */
 .card h3, .card h4, .card-title,
 .feature-card h3, .post-card h3, .product-card h3 {
-    color: var(--amber-100, #fde68a);
+    color: var(--amber-100, #e8e4d9);
 }
 
 .card p, .card-body p, .card-text,
 .feature-card p, .post-card p, .product-card p {
-    color: var(--text-color, #f4ecd9);
+    color: var(--text-color, #e8e4d9);
 }
 
 .card-meta, .card-meta span {
-    color: var(--text-light, #b8a787);
+    color: var(--text-light, #9ca3af);
 }
 
 .section-title p, .page-header p {
-    color: var(--text-light, #b8a787);
+    color: var(--text-light, #9ca3af);
 }
 
-.empty-state h3 { color: var(--amber-100, #fde68a); }
-.empty-state p { color: var(--text-light, #b8a787); }
+.empty-state h3 { color: var(--amber-100, #e8e4d9); }
+.empty-state p { color: var(--text-light, #9ca3af); }
 
-.comment p, .comment-author { color: var(--text-color, #f4ecd9); }
+.comment p, .comment-author { color: var(--text-color, #e8e4d9); }
 
-.post-content, .post-content p, .post-content li { color: var(--text-color, #f4ecd9); }
-.post-content h2, .post-content h3, .post-content h4 { color: var(--amber-100, #fde68a); }
+.post-content, .post-content p, .post-content li { color: var(--text-color, #e8e4d9); }
+.post-content h2, .post-content h3, .post-content h4 { color: var(--amber-100, #e8e4d9); }
 
-.premium-card-title { color: var(--amber-100, #fde68a); }
-.premium-card-text { color: var(--text-color, #f4ecd9); }
+.premium-card-title { color: var(--amber-100, #e8e4d9); }
+.premium-card-text { color: var(--text-color, #e8e4d9); }
 
 .card-price, .card-price span { color: var(--amber-400, #fbbf24); }
 .stock-badge.in-stock { color: #4ade80; }
@@ -86,7 +87,7 @@ body.light-mode .stock-badge.out-of-stock { color: #dc2626; }
 /* Dark theme overrides */
 .notification-menu-header,
 .notification-menu-header strong {
-    color: var(--amber-100, #fde68a);
+    color: var(--amber-100, #e8e4d9);
     background: transparent;
 }
 
@@ -99,7 +100,7 @@ body.light-mode .stock-badge.out-of-stock { color: #dc2626; }
  * mode. */
 
 .stat-card .value {
-    color: var(--amber-100, #fde68a);
+    color: var(--amber-100, #e8e4d9);
 }
 
 .table th {
@@ -111,11 +112,11 @@ body.light-mode .stock-badge.out-of-stock { color: #dc2626; }
 }
 
 .mobile-menu-header .brand-name {
-    color: var(--amber-100, #fde68a);
+    color: var(--amber-100, #e8e4d9);
 }
 
 .product-title {
-    color: var(--amber-100, #fde68a);
+    color: var(--amber-100, #e8e4d9);
 }
 
 /* Light-mode restorations: fall back to the legacy near-black ink. */
