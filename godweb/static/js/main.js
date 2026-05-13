@@ -427,11 +427,50 @@ function _syncThemeA11yLabels(isLight) {
     }
 }
 
+// "World Shift" transition: pulse the existing #xx-mist-transition
+// overlay so flipping between the Heavenly Court and the Blood Mist
+// Underworld feels like an ink-wash dissolving the realm. The CSS
+// hook (`html.xx-world-shifting`) lives in xianxia-celestial-path.css
+// §15. Self-clears via animationend so re-toggles always re-trigger.
+function _triggerWorldShift() {
+    var root = document.documentElement;
+    if (!root) return;
+    var reduceMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
+
+    if (root.classList.contains('xx-world-shifting')) {
+        root.classList.remove('xx-world-shifting');
+        /* force a reflow so the animation re-runs */
+        // eslint-disable-next-line no-unused-expressions
+        void root.offsetWidth;
+    }
+    root.classList.add('xx-world-shifting');
+    var overlay = document.getElementById('xx-mist-transition');
+    if (!overlay) {
+        window.setTimeout(function () {
+            root.classList.remove('xx-world-shifting');
+        }, 950);
+        return;
+    }
+    var clear = function () {
+        root.classList.remove('xx-world-shifting');
+        overlay.removeEventListener('animationend', clear);
+    };
+    overlay.addEventListener('animationend', clear, { once: true });
+    /* Safety net in case animationend never fires (e.g. display:none
+     * overlay in a partial template) — clears the hook after the
+     * keyframe's nominal duration. */
+    window.setTimeout(clear, 1100);
+}
+
 function toggleSiteTheme() {
     var root = document.documentElement;
     var body = document.body;
     var wasLight = root.classList.contains('theme-light');
     var isLight = !wasLight;
+
+    _triggerWorldShift();
 
     root.classList.toggle('theme-light', isLight);
     root.classList.toggle('theme-dark', !isLight);

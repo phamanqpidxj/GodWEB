@@ -608,3 +608,367 @@ body.light-mode .site-ticker::after {
         animation: none;
     }
 }
+
+/* ════════════════════════════════════════════════════════════════
+ * 8. Dual-Realm Palette Tokens — Heavenly Court ↔ Blood Mist
+ *    Brief's canonical colour tokens (Radiant Gold, Ivory, Jade for
+ *    the Heavenly Court; Deep Obsidian, Blood Red, Charcoal for the
+ *    Blood Mist Underworld). Exposed as CSS variables so the rest of
+ *    the realm-specific rules below stay readable.
+ * ════════════════════════════════════════════════════════════════ */
+:root {
+    /* Heavenly Court — Light Mode anchor palette */
+    --hc-radiant-gold: #FFD700;
+    --hc-ivory-white: #FFFFF0;
+    --hc-celestial-yellow: #FFFACD;
+    --hc-jade-green: #00A86B;
+    --hc-pure-white: #FFFFFF;
+
+    /* Blood Mist Underworld — Dark Mode anchor palette */
+    --bm-deepest-black: #050505;
+    --bm-blood-red: #990000;
+    --bm-blood-red-deep: #8B0000;
+    --bm-crimson-glow: #B22222;
+    --bm-charcoal: #1A1A1A;
+    --bm-pale-gold: #F5E1A4;
+    --bm-silver: #C0C0C0;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 9. Heavenly Court — Anti-Veil + Auspicious Cloud Background
+ *    Kill every fixed-position dark element that bleeds through the
+ *    Light Mode body gradient and replaces it with a soft Auspicious
+ *    Cloud (Tường Vân) glow. This is the fix for the "grey veil"
+ *    bug — the legacy `.xx-stars` div lives at `z-index:-3` and its
+ *    `--lq-void` (#080810) base colour was dimming the entire Heavenly
+ *    Court palette to ash.
+ * ════════════════════════════════════════════════════════════════ */
+html.theme-light .xx-stars,
+body.light-mode .xx-stars {
+    /* Strip the deep-void base colour and replace the radial nebulae
+     * with auspicious-cloud gold/jade glows. */
+    background:
+        radial-gradient(1100px 700px at 50% 18%, rgba(255, 215, 0, 0.10), transparent 65%),
+        radial-gradient(900px  650px at 12% 80%, rgba(0, 168, 107, 0.08), transparent 65%),
+        radial-gradient(900px  650px at 88% 80%, rgba(255, 250, 205, 0.18), transparent 65%),
+        radial-gradient(600px  500px at 50% 50%, rgba(255, 255, 255, 0.30), transparent 70%),
+        #FFFFF0;
+}
+
+html.theme-light canvas.xx-stars-canvas,
+body.light-mode canvas.xx-stars-canvas {
+    /* The animated star canvas was authored for the void. Hide it
+     * outright in the Heavenly Court so it can't blend down to grey. */
+    display: none !important;
+}
+
+html.theme-light .xx-mountain-far,
+html.theme-light .xx-mountain-near,
+body.light-mode .xx-mountain-far,
+body.light-mode .xx-mountain-near {
+    /* Mountain silhouettes drawn with dark jade clip-paths read as
+     * heavy grey blobs on white. Suppress them in the Heavenly Court. */
+    display: none !important;
+}
+
+html.theme-light .fx-bg .fx-orb,
+body.light-mode .fx-bg .fx-orb {
+    /* The legacy fx-orbs are dark amber blurs anchored to the corners.
+     * Re-tint them to a soft gold halo so they read as celestial qi. */
+    background: radial-gradient(circle,
+        rgba(255, 215, 0, 0.18),
+        rgba(255, 250, 205, 0.10) 45%,
+        transparent 70%) !important;
+    opacity: 0.45;
+}
+
+/* The dark mist transition overlay defaults to a near-black gradient.
+ * Swap it for an ivory ink-wash in the Heavenly Court so the World
+ * Shift transition reads as a Heavenly mist rather than fog. */
+html.theme-light #xx-mist-transition,
+body.light-mode #xx-mist-transition {
+    background:
+        radial-gradient(ellipse at 30% 40%, rgba(255, 215, 0, 0.18), transparent 55%),
+        radial-gradient(ellipse at 70% 60%, rgba(0, 168, 107, 0.12), transparent 55%),
+        radial-gradient(ellipse at 50% 50%, rgba(255, 250, 205, 0.20), transparent 55%),
+        linear-gradient(to bottom, rgba(255, 255, 240, 0.96), rgba(255, 255, 255, 0.98));
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 10. Kill the "Ghosting Blocks" — floating swords + rune circles
+ *     The translucent rotated rectangles the user spotted around the
+ *     post cards came from `.xx-floating-sword` (a 60×8 px clipped
+ *     gradient bar rotated via GSAP). They cluttered the layout in
+ *     both realms — remove them and the orbiting rune discs entirely
+ *     so the cards stand alone, replaced by their own contained
+ *     animated borders (handled in section 11).
+ * ════════════════════════════════════════════════════════════════ */
+.xx-floating-sword,
+.xx-floating-rune {
+    display: none !important;
+}
+
+/* Keep the floating clouds but soften them further so they read as
+ * Auspicious Vapour rather than literal blobs. */
+.xx-floating-cloud {
+    opacity: 0.05 !important;
+    filter: blur(46px) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 11. Immortal Card aura — Halo (Heavenly) ↔ Soul Mist (Demonic)
+ *     Re-paints the conic-gradient border so it transforms between
+ *     a pulsating gold halo in Light Mode and a flowing red/black
+ *     soul-mist in Dark Mode. The aura still uses the existing
+ *     `xxImmortalAura` keyframe (tests assert it stays present) so
+ *     the rotation contract is preserved.
+ * ════════════════════════════════════════════════════════════════ */
+
+/* Dark Realm: pulsating crimson "Soul Mist" — drop the multicolour
+ * spectrum and stay in the blood-red / soul-purple register. */
+html.theme-dark .card.xx-immortal-card::before,
+html.theme-dark .xx-immortal-card::before {
+    background: conic-gradient(
+        from 0deg,
+        rgba(220, 38, 38, 0.85) 0deg,
+        rgba(153, 0, 0, 0.65) 90deg,
+        rgba(60, 0, 0, 0.45) 180deg,
+        rgba(178, 34, 52, 0.75) 270deg,
+        rgba(220, 38, 38, 0.85) 360deg
+    );
+    filter: drop-shadow(0 0 6px rgba(178, 34, 52, 0.35));
+    animation: xxImmortalAura 7s linear infinite, xxSoulMistPulse 3.4s ease-in-out infinite;
+}
+
+html.theme-dark .card.xx-immortal-card,
+html.theme-dark .xx-immortal-card {
+    border-color: rgba(178, 34, 52, 0.45);
+    box-shadow:
+        0 18px 44px -18px rgba(153, 0, 0, 0.55),
+        0 8px 20px -10px rgba(178, 34, 52, 0.32),
+        inset 0 0 0 1px rgba(178, 34, 52, 0.18);
+}
+
+html.theme-dark .card.xx-immortal-card::after,
+html.theme-dark .xx-immortal-card::after {
+    background: radial-gradient(ellipse at 30% 20%,
+        rgba(178, 34, 52, 0.18),
+        rgba(60, 0, 0, 0.05) 50%,
+        transparent 70%);
+}
+
+@keyframes xxSoulMistPulse {
+    0%, 100% { opacity: 0.75; filter: drop-shadow(0 0 4px rgba(178, 34, 52, 0.30)); }
+    50%      { opacity: 1.00; filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.55)); }
+}
+
+/* Heavenly Realm: golden "Halo" — soft pulsing pure-gold ring. */
+html.theme-light .card.xx-immortal-card::before,
+html.theme-light .xx-immortal-card::before,
+body.light-mode .card.xx-immortal-card::before,
+body.light-mode .xx-immortal-card::before {
+    background: conic-gradient(
+        from 0deg,
+        rgba(255, 215, 0, 0.85) 0deg,
+        rgba(255, 244, 196, 0.65) 90deg,
+        rgba(255, 250, 205, 0.85) 180deg,
+        rgba(255, 215, 0, 0.75) 270deg,
+        rgba(255, 215, 0, 0.85) 360deg
+    );
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.45));
+    /* Re-pin the rotation animation because xianxia-theme-light.css
+     * already injects `xxVipAuraPulseLight` on this same ::before
+     * pseudo-element — without the explicit `animation:` shorthand,
+     * the cascade strips xxImmortalAura back to the opacity pulse. */
+    animation: xxImmortalAura 7s linear infinite, xxHaloPulse 3.4s ease-in-out infinite;
+}
+
+body.light-mode .card.xx-immortal-card,
+body.light-mode .xx-immortal-card {
+    border-color: rgba(255, 215, 0, 0.55);
+    box-shadow:
+        0 16px 38px -18px rgba(192, 139, 0, 0.40),
+        0 8px 18px -10px rgba(192, 139, 0, 0.25),
+        inset 0 0 0 1px rgba(255, 215, 0, 0.25);
+}
+
+@keyframes xxHaloPulse {
+    0%, 100% { opacity: 0.70; filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.40)); }
+    50%      { opacity: 1.00; filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.70)); }
+}
+
+/* Smooth realm-shift between Halo gold and Soul Mist crimson: animate
+ * the static colours (border, shadow) so they crossfade rather than
+ * snap. The conic gradient itself swaps instantly (browsers can't
+ * interpolate gradients) but the surrounding cues sell the morph. */
+.card.xx-immortal-card,
+.xx-immortal-card,
+.card.xx-immortal-card::before,
+.xx-immortal-card::before,
+.card.xx-immortal-card::after,
+.xx-immortal-card::after {
+    transition:
+        border-color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow   700ms cubic-bezier(0.22, 1, 0.36, 1),
+        background   700ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter       700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 12. Mortal Card — Parchment Border refinement
+ *     Light Mode: thin ivory / aged-parchment edge (existing).
+ *     Dark Mode: thin charcoal edge with hairline crimson glow.
+ *     Adds a smooth crossfade for the realm-shift.
+ * ════════════════════════════════════════════════════════════════ */
+.xx-mortal-card,
+.xx-mortal-card::before,
+.xx-mortal-card::after {
+    transition:
+        border-color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow   700ms cubic-bezier(0.22, 1, 0.36, 1),
+        background   700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.theme-dark .xx-mortal-card {
+    border-color: rgba(178, 34, 52, 0.22);
+    box-shadow:
+        0 6px 20px -10px rgba(0, 0, 0, 0.65),
+        0 2px 6px -3px rgba(60, 0, 0, 0.35),
+        inset 0 0 0 1px rgba(178, 34, 52, 0.06);
+}
+
+html.theme-dark .xx-mortal-card::before,
+html.theme-dark .xx-mortal-card::after {
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(178, 34, 52, 0.28) 20%,
+        rgba(220, 38, 38, 0.42) 50%,
+        rgba(178, 34, 52, 0.28) 80%,
+        transparent);
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 13. Heavenly Court ambient body tint — push contrast to 11
+ *     The Light Mode body gradient was sliding to a muted slate
+ *     #f1f5f9 at the foot of the viewport, which paired with the
+ *     legacy fixed dark layers to read as a grey wash. Replace with
+ *     pure ivory → celestial yellow.
+ * ════════════════════════════════════════════════════════════════ */
+html.theme-light,
+html.theme-light body,
+body.light-mode {
+    background: linear-gradient(180deg,
+        var(--hc-pure-white) 0%,
+        var(--hc-ivory-white) 50%,
+        var(--hc-celestial-yellow) 100%) !important;
+    background-attachment: fixed !important;
+}
+
+/* Soft gold/jade Auspicious-Cloud halo behind the content layer. */
+html.theme-light body::before,
+body.light-mode::before {
+    background:
+        radial-gradient(ellipse 380px 160px at 12% 12%, rgba(255, 215, 0, 0.10), transparent 70%),
+        radial-gradient(ellipse 320px 140px at 84% 28%, rgba(0, 168, 107, 0.06), transparent 70%),
+        radial-gradient(ellipse 260px 110px at 50% 78%, rgba(255, 250, 205, 0.18), transparent 70%) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 14. Blood Mist Underworld ambient body tint
+ *     Push the Dark Mode body to the deepest obsidian and seed the
+ *     viewport corners with crimson glow. Keeps the existing
+ *     starfield/fog layers intact — this only adjusts the base.
+ * ════════════════════════════════════════════════════════════════ */
+html.theme-dark .xx-stars {
+    background:
+        radial-gradient(1400px 900px at 50% 25%, rgba(220, 38, 38, 0.10), transparent 65%),
+        radial-gradient(1100px 800px at 88% 92%, rgba(153, 0, 0, 0.10), transparent 65%),
+        radial-gradient(900px  700px at 8% 78%,  rgba(60, 0, 0, 0.10),  transparent 65%),
+        radial-gradient(600px  500px at 60% 55%, rgba(178, 34, 52, 0.06), transparent 65%),
+        var(--bm-deepest-black);
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 15. World Shift — full-viewport ink-wash transition fired on
+ *     every theme toggle. The overlay element (#xx-mist-transition)
+ *     already exists in base.html; we add a `.xx-world-shifting`
+ *     hook on <html> that pulses it for ~900ms. Backed by JS in
+ *     main.js#toggleSiteTheme.
+ * ════════════════════════════════════════════════════════════════ */
+#xx-mist-transition {
+    transition: opacity 220ms ease-out;
+}
+
+html.xx-world-shifting #xx-mist-transition {
+    animation: xxWorldShift 900ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes xxWorldShift {
+    0%   { opacity: 0; }
+    20%  { opacity: 0.85; }
+    60%  { opacity: 0.55; }
+    100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.xx-world-shifting #xx-mist-transition {
+        animation: none;
+        opacity: 0;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 16. Dark-mode text safety net — supplement the section-2 rules
+ *     for elements that style.css hard-coded against a near-black
+ *     `--dark-color`. Without these, anchors/tag labels can render
+ *     as black-on-charcoal in the Blood Mist Underworld.
+ * ════════════════════════════════════════════════════════════════ */
+html.theme-dark a:not(.btn):not(.premium-badge):not(.pin-badge):not(.filter-tag.active) {
+    color: var(--bm-pale-gold);
+}
+
+html.theme-dark .filter-tag,
+html.theme-dark .category-tag,
+html.theme-dark .card-meta,
+html.theme-dark .card-meta * {
+    color: var(--bm-silver) !important;
+}
+
+html.theme-dark .filter-tag.active {
+    /* active filter chip already paints its own foreground in the
+     * theme — keep that. */
+    color: inherit !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 17. Magic Circle (Trận Pháp) button ripple — keeps the existing
+ *     xx-bagua-ripple but re-tints it per realm so the click feedback
+ *     stays consistent with the active palette.
+ * ════════════════════════════════════════════════════════════════ */
+html.theme-light .xx-bagua-ripple,
+body.light-mode .xx-bagua-ripple {
+    background: radial-gradient(circle,
+        rgba(255, 215, 0, 0.35) 0%,
+        rgba(255, 250, 205, 0.25) 35%,
+        rgba(0, 168, 107, 0.10)  55%,
+        transparent 70%);
+}
+
+html.theme-light .xx-bagua-ripple::after,
+body.light-mode .xx-bagua-ripple::after {
+    color: rgba(192, 139, 0, 0.85);
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.55);
+}
+
+html.theme-dark .xx-bagua-ripple {
+    background: radial-gradient(circle,
+        rgba(220, 38, 38, 0.30) 0%,
+        rgba(153, 0, 0, 0.20)   35%,
+        rgba(60, 0, 0, 0.10)    55%,
+        transparent 70%);
+}
+
+html.theme-dark .xx-bagua-ripple::after {
+    color: rgba(220, 38, 38, 0.80);
+    text-shadow: 0 0 8px rgba(178, 34, 52, 0.45);
+}

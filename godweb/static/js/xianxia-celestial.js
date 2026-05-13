@@ -157,26 +157,13 @@
         var container = document.getElementById('xxFloatingLayer');
         if (!container) return;
 
-        // Create floating swords with light trails
-        var swordCount = 5;
-        for (var i = 0; i < swordCount; i++) {
-            var sword = document.createElement('div');
-            sword.className = 'xx-floating-sword';
-            sword.style.top = (10 + Math.random() * 70) + '%';
-            sword.style.left = (5 + Math.random() * 80) + '%';
-            sword.style.width = (35 + Math.random() * 45) + 'px';
-            container.appendChild(sword);
-
-            gsap.to(sword, {
-                x: (Math.random() - 0.5) * 250,
-                y: (Math.random() - 0.5) * 100,
-                rotation: (Math.random() - 0.5) * 25,
-                duration: 25 + Math.random() * 25,
-                repeat: -1,
-                yoyo: true,
-                ease: 'sine.inOut'
-            });
-        }
+        // NOTE: Floating swords and rune circles were removed in the
+        // Celestial vs Demonic Realm overhaul — they registered as
+        // "ghosting blocks" rotating around the post cards. The Mortal
+        // and Immortal cards now carry their own contained animated
+        // borders (see xianxia-celestial-path.css §10–§11) instead.
+        // The CSS also pins `.xx-floating-sword` and `.xx-floating-rune`
+        // to `display: none` as a belt-and-braces guard.
 
         // Create floating clouds
         var cloudCount = 6;
@@ -210,28 +197,7 @@
             });
         }
 
-        // Create floating rune circles
-        var runeCount = 3;
-        for (var k = 0; k < runeCount; k++) {
-            var rune = document.createElement('div');
-            rune.className = 'xx-floating-rune';
-            rune.style.top = (20 + Math.random() * 50) + '%';
-            rune.style.left = (10 + Math.random() * 70) + '%';
-            var runeSize = 50 + Math.random() * 60;
-            rune.style.width = runeSize + 'px';
-            rune.style.height = runeSize + 'px';
-            rune.style.animationDuration = (20 + Math.random() * 20) + 's';
-            container.appendChild(rune);
-
-            gsap.to(rune, {
-                x: (Math.random() - 0.5) * 120,
-                y: (Math.random() - 0.5) * 80,
-                duration: 25 + Math.random() * 20,
-                repeat: -1,
-                yoyo: true,
-                ease: 'sine.inOut'
-            });
-        }
+        // Rune circles disabled — see note above.
     }
 
     // ────────────────────────────────────────────────────────────
