@@ -2,6 +2,25 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <script>
+    /* Anti-flash: runs synchronously BEFORE any stylesheet so the browser
+       paints the correct background on the very first frame. Preserves the
+       legacy localStorage key 'siteTheme' (values 'light' | 'dark') so
+       already-opted-in users stay opted in. Applies theme-light/theme-dark
+       on the root element. A sibling inline script at the top of <body>
+       mirrors the legacy body.light-mode class BEFORE any body descendant
+       paints, so existing body.light-mode CSS keeps matching without a
+       separate DOMContentLoaded hop (which was a FOUC source). */
+    (function() {
+        try {
+            var stored = localStorage.getItem('siteTheme');
+            var isLight = stored === 'light';
+            document.documentElement.classList.add(isLight ? 'theme-light' : 'theme-dark');
+        } catch (e) {
+            document.documentElement.classList.add('theme-dark');
+        }
+    })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}GodWeb{% endblock %}</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo.svg') }}">
@@ -19,22 +38,17 @@
 </head>
 <body class="{% if request.path.startswith('/admin') %}admin-page{% endif %}">
     <script>
+    /* Mirror the theme-light state onto <body> BEFORE any descendants
+       paint, so the many existing body.light-mode CSS rules match on the
+       very first frame for returning light-mode users. This closes the
+       FOUC window that a deferred DOMContentLoaded handler would leave
+       open. */
     (function() {
-        var isLight = localStorage.getItem('siteTheme') === 'light';
-        if (isLight) {
-            document.body.classList.add('light-mode');
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            var btn = document.getElementById('toggleSiteTheme');
-            var mBtn = document.getElementById('mobileThemeToggle');
-            if (isLight) {
-                if (btn) btn.innerHTML = '<i class="fas fa-moon"></i>';
-                if (mBtn) mBtn.innerHTML = '<i class="fas fa-moon"></i> Ch\u1ebf \u0111\u1ed9 t\u1ed1i';
-            } else {
-                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i>';
-                if (mBtn) mBtn.innerHTML = '<i class="fas fa-sun"></i> Ch\u1ebf \u0111\u1ed9 s\u00e1ng';
+        try {
+            if (document.documentElement.classList.contains('theme-light')) {
+                document.body.classList.add('light-mode');
             }
-        });
+        } catch (e) { /* noop */ }
     })();
     </script>
     <div class="xx-stars" aria-hidden="true"></div>
@@ -215,8 +229,9 @@
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('wallet.topup') }}" class="xx-bloom"><i class="fas fa-coins"></i> Nạp GodCoin</a>
                 {% endif %}
-                <button type="button" id="toggleSiteTheme" class="theme-toggle-btn" title="Đổi màu nền">
-                    <i class="fas fa-sun"></i>
+                <button type="button" id="toggleSiteTheme" class="theme-toggle-btn" title="Chuyển sang chế độ sáng" aria-label="Chuyển sang chế độ sáng">
+                    <span class="theme-icon-moon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+                    <span class="theme-icon-sun" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
                 </button>
                 {% if current_user.is_authenticated %}
                 <div class="dropdown notification-dropdown" id="notificationDropdown">
@@ -311,7 +326,12 @@
                 <a href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
                 <a href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> Đăng ký</a>
                 {% endif %}
-                <a href="#" onclick="toggleSiteThemeFromMobile(); return false;" id="mobileThemeToggle"><i class="fas fa-sun"></i> Chế độ sáng</a>
+                <a href="#" onclick="toggleSiteThemeFromMobile(); return false;" id="mobileThemeToggle" aria-label="Chuyển sang chế độ sáng">
+                    <span class="theme-icon-moon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+                    <span class="theme-icon-sun" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
+                    <span class="theme-toggle-label-light">Chế độ sáng</span>
+                    <span class="theme-toggle-label-dark">Chế độ tối</span>
+                </a>
             </div>
             <div class="mobile-menu-contact">
                 <a href="https://t.me/+THBiUkl2JmRmMzM1" target="_blank"><i class="fab fa-telegram"></i> Telegram</a>
