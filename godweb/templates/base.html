@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/xianxia-celestial.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/xianxia-theme-light.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/xianxia-interactions.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/card-contrast-fix.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -420,6 +421,7 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/xianxia-fx.js') }}"></script>
     <script src="{{ url_for('static', filename='js/xianxia-celestial.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/xianxia-interactions.js') }}"></script>
     {% if current_user.is_authenticated and current_user.is_admin() and request.path.startswith('/admin') %}
     <script src="{{ url_for('static', filename='js/admin-notifier.js') }}"></script>
     {% endif %}

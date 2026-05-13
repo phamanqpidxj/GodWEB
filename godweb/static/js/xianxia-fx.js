@@ -1,7 +1,7 @@
-// GodWeb · Xianxia FX
-// Drives three runtime effects on top of xianxia-fx.css:
-//   1. starfield canvas (Thiên Địa Linh Khí)
-//   2. logo hover particle burst (Linh Lực)
+// GodWeb · Xianxia FX (Enhanced)
+// Drives runtime effects on top of xianxia-fx.css:
+//   1. starfield canvas (Thiên Địa Linh Khí) with spirit purple & cinnabar stars
+//   2. logo hover particle burst (Linh Lực) with violet particles
 //   3. global click shockwave (Chấn Động Linh Lực)
 //
 // All effects auto-disable when the user prefers reduced motion. The script
@@ -59,7 +59,7 @@
                     vy: -0.04 - Math.random() * 0.05,     // gentle upward drift
                     tw: Math.random() * Math.PI * 2,      // twinkle phase
                     tws: 0.008 + Math.random() * 0.012,   // per-star twinkle speed
-                    hue: Math.random() < 0.20 ? 'cyan' : 'gold'
+                    hue: Math.random() < 0.20 ? 'cyan' : Math.random() < 0.08 ? 'violet' : Math.random() < 0.04 ? 'cinnabar' : 'gold'
                 });
             }
             // Bokeh particles: large, blurred, slow — give the page a real
@@ -75,7 +75,7 @@
                     vy: -0.018 - Math.random() * 0.030,    // drift up slowly
                     tw: Math.random() * Math.PI * 2,
                     tws: 0.004 + Math.random() * 0.008,
-                    hue: Math.random() < 0.30 ? 'cyan' : 'gold'
+                    hue: Math.random() < 0.30 ? 'cyan' : Math.random() < 0.15 ? 'violet' : 'gold'
                 });
             }
         }
@@ -83,7 +83,7 @@
         function drawStar(s, twinkle) {
             var radius = s.z * 1.05;
             var alpha  = Math.min(1, twinkle * (s.z / 2));
-            var rgb = s.hue === 'cyan' ? '127, 220, 255' : '255, 215, 0';
+            var rgb = s.hue === 'cyan' ? '127, 220, 255' : s.hue === 'violet' ? '167, 139, 250' : s.hue === 'cinnabar' ? '248, 113, 113' : '255, 215, 0';
             // Soft halo via radial gradient gives stars a glow instead of a hard pixel.
             var grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, radius * 4.5);
             grad.addColorStop(0.00, 'rgba(' + rgb + ', ' + (alpha).toFixed(3) + ')');
@@ -105,7 +105,7 @@
             // diffuse halo + slightly brighter inner core. Twinkle gently
             // modulates the alpha so the orb breathes.
             var alpha = b.a * (0.7 + 0.3 * twinkle);
-            var rgb = b.hue === 'cyan' ? '127, 220, 255' : '255, 215, 0';
+            var rgb = b.hue === 'cyan' ? '127, 220, 255' : b.hue === 'violet' ? '167, 139, 250' : '255, 215, 0';
             var g1 = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
             g1.addColorStop(0.00, 'rgba(' + rgb + ', ' + alpha.toFixed(3) + ')');
             g1.addColorStop(0.35, 'rgba(' + rgb + ', ' + (alpha * 0.45).toFixed(3) + ')');
@@ -197,7 +197,9 @@
                 var count = 2 + Math.floor(Math.random() * 2);
                 for (var i = 0; i < count; i++) {
                     var p = document.createElement('span');
-                    p.className = 'xx-particle' + (Math.random() < 0.25 ? ' xx-particle-cyan' : '');
+                    var rnd = Math.random();
+                    var particleClass = rnd < 0.25 ? ' xx-particle-cyan' : rnd < 0.35 ? ' xx-particle-violet' : '';
+                    p.className = 'xx-particle' + particleClass;
                     var angle = Math.random() * Math.PI * 2;
                     var dist  = 38 + Math.random() * 36;
                     p.style.setProperty('--xx-dx', Math.cos(angle) * dist + 'px');

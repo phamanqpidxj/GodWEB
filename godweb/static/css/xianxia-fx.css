@@ -1,19 +1,20 @@
-/* GodWeb · Xianxia FX overlay
- * Layered on top of style.css + theme-yinyang.css. Luxury watch-face logo
+/* GodWeb · Xianxia FX overlay (Enhanced)
+ * Layered on top of style.css + xianxia-theme.css. Luxury watch-face logo
  * (yin-yang dial with 11 Roman numerals + glowing 12 o'clock sphere),
- * starfield void background, footer fog, border-beam hovers, and click
- * shockwaves. Strictly additive — does not modify the existing structural
- * rules.
+ * starfield void background, footer fog, border-beam hovers, click
+ * shockwaves, and enhanced qi energy effects.
  * --------------------------------------------------------------- */
 
 :root {
     /* Linh khí palette --- supplements the existing amber theme. */
-    --lq-void:    #0a0a0a;
+    --lq-void:    #080810;
     --lq-gold:    #ffd700;
     --lq-gold-soft: rgba(255, 215, 0, 0.55);
     --lq-cyan:    #2dd4a0;
     --lq-cyan-soft: rgba(45, 212, 160, 0.55);
     --lq-violet:  #8a5cff;
+    --lq-cinnabar: #dc2626;
+    --lq-spirit:   #a78bfa;
 }
 
 /* @property allows --xx-angle to be animated as a real number, which is
@@ -36,8 +37,9 @@
     /* Soft layered nebula glow — sits behind the canvas of moving stars. */
     background:
         radial-gradient(1400px 900px at 50% 25%, rgba(255, 215, 0, 0.06), transparent 65%),
-        radial-gradient(1100px 800px at 88% 92%, rgba(127, 220, 255, 0.05), transparent 65%),
-        radial-gradient(900px 700px at 8% 78%,  rgba(138, 92, 255, 0.035), transparent 65%),
+        radial-gradient(1100px 800px at 88% 92%, rgba(45, 212, 160, 0.06), transparent 65%),
+        radial-gradient(900px 700px at 8% 78%,  rgba(167, 139, 250, 0.04), transparent 65%),
+        radial-gradient(600px 500px at 60% 55%, rgba(220, 38, 38, 0.025), transparent 65%),
         var(--lq-void);
     will-change: transform;
 }
@@ -80,9 +82,9 @@ canvas.xx-stars-canvas {
     position: absolute;
     inset: -30px -12% 0 -12%;
     background:
-        radial-gradient(ellipse 60% 100% at 25% 100%, rgba(255, 215, 0, 0.12), transparent 70%),
-        radial-gradient(ellipse 70% 100% at 70% 100%, rgba(127, 220, 255, 0.10), transparent 70%),
-        radial-gradient(ellipse 50% 90%  at 50% 95%, rgba(138, 92, 255, 0.06), transparent 70%),
+        radial-gradient(ellipse 60% 100% at 25% 100%, rgba(45, 212, 160, 0.12), transparent 70%),
+        radial-gradient(ellipse 70% 100% at 70% 100%, rgba(251, 191, 36, 0.10), transparent 70%),
+        radial-gradient(ellipse 50% 90%  at 50% 95%, rgba(167, 139, 250, 0.06), transparent 70%),
         radial-gradient(ellipse 80% 100% at 50% 90%, rgba(255, 255, 255, 0.06), transparent 70%);
     filter: blur(22px);
     animation: xxFogDrift 28s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
@@ -356,6 +358,15 @@ canvas.xx-stars-canvas {
         var(--lq-cyan-soft) 65%,
         transparent 100%);
     box-shadow: 0 0 8px rgba(127, 220, 255, 0.6);
+}
+
+.xx-particles .xx-particle.xx-particle-violet {
+    background: radial-gradient(circle,
+        rgba(230, 220, 255, 0.95) 0%,
+        var(--lq-spirit) 35%,
+        rgba(167, 139, 250, 0.55) 65%,
+        transparent 100%);
+    box-shadow: 0 0 8px rgba(167, 139, 250, 0.6);
 }
 
 @keyframes xxParticleBurst {

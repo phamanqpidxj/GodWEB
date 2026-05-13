@@ -1,0 +1,295 @@
+/* GodWeb - Xianxia Interaction Effects
+ * Ink splashes, rune glows, qi ripples, sword-flash hover effects.
+ * ---------------------------------------------------------------- */
+
+/* ════════════════════════════════════════════════════════════════
+ * 1. Ink Splash Click Effect
+ * ════════════════════════════════════════════════════════════════ */
+
+.xx-ink-splash-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9997;
+    overflow: hidden;
+}
+
+.xx-ink-splash {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle,
+        rgba(45, 212, 160, 0.25) 0%,
+        rgba(45, 212, 160, 0.08) 35%,
+        rgba(167, 139, 250, 0.04) 55%,
+        transparent 70%);
+    animation: xxInkSplash 800ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+    will-change: width, height, opacity;
+}
+
+@keyframes xxInkSplash {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 0.9;
+        filter: blur(0px);
+    }
+    40% {
+        opacity: 0.6;
+    }
+    100% {
+        width: 200px;
+        height: 200px;
+        opacity: 0;
+        filter: blur(8px);
+    }
+}
+
+/* Ink droplets that scatter from the splash point */
+.xx-ink-droplet {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(45, 212, 160, 0.6);
+    pointer-events: none;
+    animation: xxInkDroplet 600ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes xxInkDroplet {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--xx-drop-x, 20px), var(--xx-drop-y, -20px)) scale(0.3);
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 2. Glowing Rune Hover Effect on Cards
+ * ════════════════════════════════════════════════════════════════ */
+
+.xx-rune-glow {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+    z-index: 0;
+}
+
+.xx-rune-glow::before {
+    content: "☯";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: rgba(45, 212, 160, 0.15);
+    animation: xxRuneSpin 12s linear infinite;
+    text-shadow: 0 0 12px rgba(45, 212, 160, 0.2);
+}
+
+.card:hover .xx-rune-glow,
+.product-card:hover .xx-rune-glow {
+    opacity: 1;
+}
+
+@keyframes xxRuneSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 3. Sword Flash Hover on Links/Buttons
+ * ════════════════════════════════════════════════════════════════ */
+
+.navbar-menu a,
+.mobile-menu-links a,
+.footer a {
+    position: relative;
+    overflow: hidden;
+}
+
+.navbar-menu a::after,
+.footer a::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -100%;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(45, 212, 160, 0.6) 30%,
+        rgba(251, 191, 36, 0.5) 70%,
+        transparent);
+    transform: translateY(-50%);
+    transition: left 0.5s cubic-bezier(0.2, 0.8, 0.3, 1);
+    pointer-events: none;
+}
+
+.navbar-menu a:hover::after,
+.footer a:hover::after {
+    left: 100%;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 4. Qi Flow Line Animation
+ * ════════════════════════════════════════════════════════════════ */
+
+.xx-qi-flow {
+    position: fixed;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.25;
+}
+
+.xx-qi-line {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(45, 212, 160, 0.3) 20%,
+        rgba(251, 191, 36, 0.2) 50%,
+        rgba(167, 139, 250, 0.15) 80%,
+        transparent);
+    animation: xxQiFlowLine var(--xx-qi-duration, 8s) linear infinite;
+    will-change: transform, opacity;
+    opacity: 0;
+}
+
+@keyframes xxQiFlowLine {
+    0% {
+        opacity: 0;
+        transform: translateX(-100%) scaleX(0.5);
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100vw) scaleX(0.5);
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 5. Spiritual Energy Cursor Trail
+ * ════════════════════════════════════════════════════════════════ */
+
+.xx-cursor-trail {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9996;
+    background: radial-gradient(circle,
+        rgba(45, 212, 160, 0.5) 0%,
+        rgba(45, 212, 160, 0.15) 50%,
+        transparent 100%);
+    animation: xxCursorFade 600ms ease-out forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes xxCursorFade {
+    0% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.2);
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 6. Enhanced Card Hover - Talisman border glow
+ * ════════════════════════════════════════════════════════════════ */
+
+.card,
+.product-card,
+.post-card,
+.feature-card {
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.3, 1),
+                box-shadow 0.4s,
+                border-color 0.4s;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 7. Button Click Energy Burst
+ * ════════════════════════════════════════════════════════════════ */
+
+.xx-energy-burst {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle,
+        rgba(45, 212, 160, 0.4) 0%,
+        rgba(251, 191, 36, 0.2) 40%,
+        transparent 70%);
+    animation: xxEnergyBurst 500ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+    will-change: width, height, opacity;
+}
+
+@keyframes xxEnergyBurst {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 1;
+    }
+    100% {
+        width: 120px;
+        height: 120px;
+        opacity: 0;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 8. Hover Glow Effect for Interactive Elements
+ * ════════════════════════════════════════════════════════════════ */
+
+.btn,
+.theme-toggle-btn,
+.notification-toggle,
+.filter-tag,
+.category-tag {
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.theme-toggle-btn:hover,
+.notification-toggle:hover {
+    box-shadow: 0 0 12px rgba(45, 212, 160, 0.2);
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 9. Reduced Motion
+ * ════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+    .xx-ink-splash,
+    .xx-ink-droplet,
+    .xx-cursor-trail,
+    .xx-qi-line,
+    .xx-energy-burst,
+    .xx-rune-glow {
+        display: none;
+    }
+
+    .navbar-menu a::after,
+    .footer a::after {
+        display: none;
+    }
+}
