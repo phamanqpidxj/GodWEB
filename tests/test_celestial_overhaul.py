@@ -192,12 +192,23 @@ def test_world_shift_is_disabled_under_reduced_motion():
     ink-wash, but it must respect prefers-reduced-motion."""
     source = CSS_PATH.read_text(encoding='utf-8')
     # Find a reduced-motion block that mentions the world-shift hook.
+    # Multiple `prefers-reduced-motion` queries can coexist (the perf
+    # pass added one for aura animations) so we scan ALL of them and
+    # require at least one to silence the world-shift overlay.
     assert 'prefers-reduced-motion' in source
-    # The world-shift overlay rule re-appears under the reduced-motion
-    # query with `animation: none`.
-    rm_idx = source.rfind('prefers-reduced-motion')
-    rm_tail = source[rm_idx:]
-    assert 'xx-world-shifting' in rm_tail
+    rm_idx = source.find('prefers-reduced-motion')
+    while rm_idx != -1:
+        block_end = source.find('}\n}', rm_idx)
+        if block_end == -1:
+            block_end = len(source)
+        block = source[rm_idx:block_end]
+        if 'xx-world-shifting' in block and 'animation: none' in block:
+            return
+        rm_idx = source.find('prefers-reduced-motion', rm_idx + 1)
+    raise AssertionError(
+        'No prefers-reduced-motion block disables the World Shift '
+        'overlay animation'
+    )
 
 
 def test_world_shift_is_triggered_by_main_js_toggle():
@@ -231,3 +242,203 @@ def test_light_mode_body_uses_ivory_yellow_gradient():
     assert 'var(--hc-pure-white)' in block
     assert 'var(--hc-ivory-white)' in block
     assert 'var(--hc-celestial-yellow)' in block
+
+
+# ────────────────────────────────────────────────────────────────────
+# 8. Aura overflow clipping — the rotating conic-gradient must not
+#    bleed outside the card and read as red diagonal "ghosting" bars.
+# ────────────────────────────────────────────────────────────────────
+def test_immortal_card_clips_aura_via_overflow_hidden():
+    """The rotating ``::before`` aura is a slightly oversized
+    rectangle. If the parent ``.xx-immortal-card`` doesn't clip,
+    rotation sweeps the rectangle's corners way past the card edge
+    and they read as red diagonal bars around the post (the bug the
+    user reported post-merge).
+
+    The compound ``.card.xx-immortal-card`` selector is mandatory:
+    it matches ``xianxia-theme.css``'s ``.card:has(.premium-badge)
+    { overflow: visible }`` on specificity (0,2,0) and wins by load
+    order. A plain ``.xx-immortal-card`` (0,1,0) would be silently
+    overridden back to ``visible``.
+    """
+    source = CSS_PATH.read_text(encoding='utf-8')
+    idx = source.find('.card.xx-immortal-card,\n.xx-immortal-card {')
+    assert idx != -1, (
+        'Immortal card block must use the compound selector to match '
+        'legacy `.card:has(.premium-badge)` specificity'
+    )
+    # Walk to the matching closing brace.
+    block_end = source.find('}', idx)
+    block = source[idx:block_end + 1]
+    assert 'overflow: hidden' in block, (
+        '.card.xx-immortal-card needs `overflow: hidden` so the '
+        'rotating ::before aura is clipped to the card boundary'
+    )
+
+
+def test_immortal_aura_spins_via_property_not_transform():
+    """The original keyframe rotated the entire ``::before``
+    pseudo-element. Because the card is non-square, the bounding
+    box of the rotated rectangle extended past the card and was
+    visible as red diagonal bars around each VIP post — even with
+    the mask trick that carved a ring out of the rectangle.
+
+    The fix is to keep the pseudo-element static and instead animate
+    the conic-gradient's ``from <angle>`` parameter via a ``@property``
+    custom property. The bounding box stays fixed; only the gradient
+    spins inside it.
+    """
+    source = CSS_PATH.read_text(encoding='utf-8')
+    assert "@property --xx-aura-spin" in source, (
+        '@property --xx-aura-spin is required for the smooth conic '
+        'angle animation that replaced the transform rotation'
+    )
+    # The xxImmortalAura keyframe must animate the angle, NOT
+    # transform: rotate.
+    kf_idx = source.find('@keyframes xxImmortalAura')
+    assert kf_idx != -1
+    kf_block = source[kf_idx:source.find('}', source.find('}', kf_idx) + 1) + 1]
+    assert '--xx-aura-spin' in kf_block, (
+        'xxImmortalAura must animate --xx-aura-spin (the conic-gradient '
+        'angle), not transform: rotate (which causes bleed outside the card)'
+    )
+    assert 'transform: rotate' not in kf_block, (
+        'xxImmortalAura keyframe must NOT animate transform: rotate — '
+        'that was the source of the diagonal ghosting bars'
+    )
+
+
+def test_immortal_before_uses_from_var_aura_spin():
+    """Both base and per-realm conic-gradient definitions must
+    reference ``from var(--xx-aura-spin)`` so the @property animation
+    actually drives them. A hard-coded ``from 0deg`` would render the
+    aura static."""
+    source = CSS_PATH.read_text(encoding='utf-8')
+    # Find every `conic-gradient(` inside an `xx-immortal-card::before`
+    # context. Easiest: scan the three known blocks.
+    for marker in (
+        '.xx-immortal-card::before {\n    content',  # base
+        'html.theme-dark .xx-immortal-card::before {',  # dark realm
+        'body.light-mode .xx-immortal-card::before {',  # light realm
+    ):
+        idx = source.find(marker)
+        assert idx != -1, f'Expected ::before block missing: {marker!r}'
+        block = source[idx:source.find('}', idx)]
+        assert 'from var(--xx-aura-spin)' in block, (
+            f'{marker!r} must use `from var(--xx-aura-spin)` so the '
+            f'@property-driven keyframe spins the gradient instead of '
+            f'rotating the whole pseudo-element'
+        )
+
+
+# ────────────────────────────────────────────────────────────────────
+# 9. Performance — content-visibility, reduced-motion guards,
+#    off-screen aura pausing via IntersectionObserver
+# ────────────────────────────────────────────────────────────────────
+def test_card_uses_content_visibility_auto():
+    """The blog grid can hold dozens of `.card`s, each with a
+    conic-gradient + filter on `::before`. `content-visibility: auto`
+    lets the browser skip layout + paint for off-screen cards."""
+    source = CSS_PATH.read_text(encoding='utf-8')
+    idx = source.find('content-visibility: auto')
+    assert idx != -1, (
+        'Expected `content-visibility: auto` on .card / .post-card / '
+        '.product-card so the browser can skip painting off-screen '
+        'VIP auras'
+    )
+    # contain-intrinsic-size must accompany content-visibility, or
+    # cards collapse to 0px and the layout jitters as the user scrolls.
+    assert 'contain-intrinsic-size' in source
+
+
+def test_reduced_motion_disables_immortal_aura_spin():
+    """`prefers-reduced-motion: reduce` must silence the rotating
+    aura and the pulse animations. The static colours still carry
+    the realm identity; the spin is just decoration."""
+    source = CSS_PATH.read_text(encoding='utf-8')
+    # Find a reduced-motion block that targets the immortal aura.
+    rm_idx = source.find('prefers-reduced-motion')
+    assert rm_idx != -1
+    # Scan forward — at least one reduced-motion block must mention
+    # the immortal aura selector and set `animation: none`.
+    while rm_idx != -1:
+        block_end = source.find('}\n}', rm_idx)
+        if block_end == -1:
+            block_end = len(source)
+        block = source[rm_idx:block_end]
+        if 'xx-immortal-card' in block and 'animation: none' in block:
+            return
+        rm_idx = source.find('prefers-reduced-motion', rm_idx + 1)
+    raise AssertionError(
+        'No prefers-reduced-motion block disables the .xx-immortal-card '
+        'aura animation — required for accessibility + perf on low-end '
+        'devices'
+    )
+
+
+def test_main_js_pauses_off_screen_immortal_auras():
+    """The CSS pauses aura when `.xx-aura-paused` is present.
+    `main.js` must wire up an IntersectionObserver to toggle that
+    class so off-screen cards stop driving the paint loop.
+
+    Specificity guard: the realm-scoped rules
+    (`html.theme-dark .card.xx-immortal-card::before` and
+    `body.light-mode ...`) compute to (0,3,2) and re-declare the
+    `animation:` shorthand, which silently resets `animation-play-state`
+    to `running`. The pause hook must therefore include realm-prefixed
+    variants — otherwise the IntersectionObserver fires, the class is
+    added, and yet the aura keeps painting because the cascade strips
+    `animation-play-state: paused` right back out."""
+    source = MAIN_JS_PATH.read_text(encoding='utf-8')
+    assert 'initializeImmortalAuraVisibility' in source
+    assert 'IntersectionObserver' in source
+    # The class name in JS must match the CSS hook.
+    assert 'xx-aura-paused' in source
+    css = CSS_PATH.read_text(encoding='utf-8')
+    assert 'xx-aura-paused' in css
+    assert 'animation-play-state: paused' in css
+    # Specificity guard: the pause rule MUST be scoped under every
+    # realm prefix used elsewhere in the file. If you only ship the
+    # un-prefixed selector, the realm rule wins on specificity and the
+    # perf optimisation silently no-ops.
+    assert (
+        'html.theme-dark .card.xx-immortal-card.xx-aura-paused::before'
+        in css
+    ), (
+        'pause rule must be scoped under html.theme-dark to beat the '
+        'realm-scoped aura animation shorthand'
+    )
+    assert (
+        'body.light-mode .card.xx-immortal-card.xx-aura-paused::before'
+        in css
+        or 'html.theme-light .card.xx-immortal-card.xx-aura-paused::before'
+        in css
+    ), (
+        'pause rule must be scoped under body.light-mode or '
+        'html.theme-light to beat the realm-scoped aura animation '
+        'shorthand'
+    )
+
+
+def test_floating_clouds_skip_on_narrow_viewports():
+    """The floating-cloud layer is purely decorative. Skipping it on
+    mobile-sized viewports saves measurable GPU time (six blurred
+    translucent layers) without hurting the brief's intent."""
+    source = CELESTIAL_JS_PATH.read_text(encoding='utf-8')
+    assert 'window.innerWidth < 640' in source, (
+        'xianxia-celestial.js should bail out of cloud creation on '
+        'narrow viewports'
+    )
+
+
+def test_petal_count_scales_with_viewport():
+    """Cherry-blossom petal count should scale with viewport so a
+    phone isn't paying the same per-frame compositing cost as a
+    1440p monitor."""
+    source = CELESTIAL_JS_PATH.read_text(encoding='utf-8')
+    assert 'PETAL_COUNT' in source
+    # The new logic uses Math.round(window.innerWidth / 100) clamped
+    # to [6, 20]. We check the bounds + the scaling factor.
+    assert 'window.innerWidth' in source
+    assert 'Math.max(6' in source
+    assert 'Math.min(20' in source

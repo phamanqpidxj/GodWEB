@@ -23,7 +23,12 @@
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var w = 0, h = 0;
         var petals = [];
-        var PETAL_COUNT = 20;
+        // Scale petal count to viewport so phones aren't paying the
+        // full desktop cost of compositing 20 alpha-blended sprites
+        // every frame. ~1 petal per 100px of viewport width gives a
+        // similar perceived density at any size.
+        var PETAL_COUNT = Math.max(6, Math.min(20,
+            Math.round((window.innerWidth || 1200) / 100)));
         // Enhanced color palette with more variety
         var colors = [
             '#ffb7c5', '#ffc8d6', '#ffd4e0',
@@ -165,8 +170,14 @@
         // The CSS also pins `.xx-floating-sword` and `.xx-floating-rune`
         // to `display: none` as a belt-and-braces guard.
 
-        // Create floating clouds
-        var cloudCount = 6;
+        // Create floating clouds. Skip them on narrow viewports so
+        // mobile devices aren't spending GPU cycles compositing six
+        // blurred translucent layers behind the content (the CSS
+        // already hides them, but gsap.to still drives the tween).
+        if (window.innerWidth < 640) {
+            return;
+        }
+        var cloudCount = window.innerWidth < 1024 ? 3 : 6;
         var cloudColors = [
             'rgba(45, 212, 160, 0.12)',
             'rgba(255, 255, 255, 0.06)',
