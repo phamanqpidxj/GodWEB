@@ -3,10 +3,14 @@
 {% block title %}Trang cá nhân - GodWeb{% endblock %}
 
 {% block content %}
+{% set _tier = current_user.cultivation_tier() %}
 <div class="page-header">
     <div class="container">
-        <h1><i class="fas fa-user-circle"></i> Trang cá nhân</h1>
-        <p>Quản lý thông tin tài khoản của bạn</p>
+        <h1 class="xx-tutien-heading">
+            <span class="xx-tutien-zh" lang="zh">修士牌</span>
+            <span class="xx-tutien-vi">Tu Sĩ Thẻ · Trang cá nhân</span>
+        </h1>
+        <p>Quản lý thân phận, linh thạch và hành trình tu luyện của đạo hữu</p>
     </div>
 </div>
 
@@ -47,6 +51,33 @@
 
             <!-- Main Content -->
             <div>
+                <!-- Cultivation realm card (Tu Sĩ Thẻ) -->
+                <div class="xx-tusi-card">
+                    <span class="xx-cult-badge xx-cult-{{ _tier.key }} xx-cult-badge--lg" title="{{ _tier.name_vi }}">
+                        <span class="xx-cult-glyph" aria-hidden="true">{{ _tier.glyph }}</span>
+                        <span class="xx-cult-name">{{ _tier.name_vi }}</span>
+                    </span>
+                    <div class="xx-tusi-card-body">
+                        <div class="xx-tusi-card-title">
+                            <strong>{{ _tier.name_vi }}</strong>
+                            <span lang="zh">· {{ _tier.name_zh }}</span>
+                        </div>
+                        <p class="xx-tusi-card-meta">
+                            {% if _tier.next_threshold %}
+                                {{ _tier.xp }} / {{ _tier.next_threshold }} XP · còn {{ _tier.xp_remaining }} điểm để đột phá lên <strong>{{ _tier.next_name_vi }}</strong>
+                            {% else %}
+                                {{ _tier.xp }} XP · đã đạt đỉnh phong, đạo hữu là Đại Năng tối cao
+                            {% endif %}
+                        </p>
+                        {% if _tier.next_threshold %}
+                        {% set _progress = ((_tier.xp - _tier.threshold) / (_tier.next_threshold - _tier.threshold) * 100) | round(0, 'floor') %}
+                        <div class="xx-tusi-progress" aria-label="Tiến độ tu luyện">
+                            <div class="xx-tusi-progress-bar" style="width: {{ [_progress, 100] | min }}%;"></div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <!-- Stats -->
                 <div class="stats-grid">
                     <div class="stat-card primary">

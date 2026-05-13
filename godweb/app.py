@@ -447,6 +447,14 @@ def create_app():
             columns = [column['name'] for column in inspector.get_columns('users')]
             if 'recovery_number' not in columns:
                 safe_add_column('ALTER TABLE users ADD COLUMN recovery_number VARCHAR(20)')
+            # Cultivation realm tracking — added in the Wave 1 Tu Tiên pass.
+            if 'last_login_at' not in columns:
+                safe_add_column('ALTER TABLE users ADD COLUMN last_login_at TIMESTAMP')
+            if 'login_streak' not in columns:
+                safe_add_column('ALTER TABLE users ADD COLUMN login_streak INTEGER DEFAULT 0')
+                # Backfill NULLs to 0 so the COALESCE-less XP math stays stable.
+                db.session.execute(text('UPDATE users SET login_streak = 0 WHERE login_streak IS NULL'))
+                db.session.commit()
 
         if 'products' in inspector.get_table_names():
             product_columns = [column['name'] for column in inspector.get_columns('products')]
