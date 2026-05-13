@@ -482,11 +482,29 @@ h1, h2, h3, h4, h5, h6 {
 /* Site ticker */
 .site-ticker {
     background: var(--xianxia-ink-deep);
+    border-top: 1px solid rgba(45, 212, 160, 0.10);
     border-bottom: 1px solid rgba(45, 212, 160, 0.08);
 }
 
 .site-ticker-label {
     color: var(--xianxia-gold);
+    border-right-color: rgba(45, 212, 160, 0.15);
+}
+
+.site-ticker-label i {
+    color: var(--xianxia-gold);
+}
+
+.site-ticker-item {
+    color: #e8e4d9;
+}
+
+.site-ticker-item i {
+    color: var(--xianxia-jade);
+}
+
+.site-ticker-sep {
+    color: rgba(232, 228, 217, 0.3);
 }
 
 /* Scrollbar */
