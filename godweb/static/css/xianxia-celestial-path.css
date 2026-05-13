@@ -1,0 +1,581 @@
+/* GodWeb - Celestial Path Overhaul
+ * --------------------------------------------------------------------
+ * "Dual Realms" UI/UX layer that extends the existing Xianxia theme.
+ *
+ * This stylesheet loads LAST so it can:
+ *   1) Force a silver / pale spirit-fire-blue default for text under
+ *      html.theme-dark (the "no black text on dark backgrounds" fix
+ *      called out in the FEAT-002 design brief).
+ *   2) Wrap the existing moon/sun toggle icons in a rotating Yin-Yang
+ *      (Taiji) ring without breaking the SVG-icon contract enforced by
+ *      tests/test_theme_toggle.py.
+ *   3) Provide the `.xx-mortal-card` (aged bamboo scroll) and
+ *      `.xx-immortal-card` (animated linh-khi aura + talisman badge +
+ *      hover ascend / mist) variants the brief calls for.
+ *   4) Add a silk shimmer pass over the announcement ticker.
+ * ------------------------------------------------------------------ */
+
+/* ════════════════════════════════════════════════════════════════
+ * 1. Dual Realms palette (user-supplied tokens layered on top of the
+ *    existing xianxia palette so the rest of the app keeps working).
+ * ════════════════════════════════════════════════════════════════ */
+:root {
+    /* Demonic / Ghostly Realm — dark mode anchor tones */
+    --cp-ink-obsidian: #0b0b0b;
+    --cp-soul-purple: #7c3aed;
+    --cp-crimson: #dc2626;
+    --cp-silver-white: #e8e4f0;
+    --cp-spirit-fire-blue: #cbeaff;
+    --cp-spirit-fire-blue-soft: rgba(203, 234, 255, 0.9);
+
+    /* Heavenly Realm — light mode anchor tones */
+    --cp-polished-jade: #00a86b;
+    --cp-imperial-gold: #ffd700;
+    --cp-porcelain: #fbfaf3;
+    --cp-ink-soft: #1e293b;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 2. Dark-Mode Typography Safety Net
+ *    Loads after every other stylesheet so any element that would
+ *    otherwise inherit color: #1f2937 / var(--dark-color) on a dark
+ *    surface gets force-promoted to silver-white. Specific overrides
+ *    elsewhere (premium gold, jade gradients, danger reds, etc.)
+ *    still win because they are more specific than these element-level
+ *    rules.
+ * ════════════════════════════════════════════════════════════════ */
+html.theme-dark,
+html.theme-dark body {
+    color: var(--cp-silver-white);
+}
+
+html.theme-dark h1,
+html.theme-dark h2,
+html.theme-dark h3,
+html.theme-dark h4,
+html.theme-dark h5,
+html.theme-dark h6 {
+    color: var(--cp-silver-white);
+}
+
+html.theme-dark p,
+html.theme-dark li,
+html.theme-dark dt,
+html.theme-dark dd,
+html.theme-dark label,
+html.theme-dark blockquote,
+html.theme-dark figcaption,
+html.theme-dark summary {
+    color: var(--cp-silver-white);
+}
+
+/* Spans, table cells and form controls that previously inherited a
+ * near-black color from style.css now read as Pale Spirit-Fire Blue —
+ * still legible, but distinct from headings so visual hierarchy
+ * survives. */
+html.theme-dark span,
+html.theme-dark small,
+html.theme-dark td,
+html.theme-dark th,
+html.theme-dark input,
+html.theme-dark textarea,
+html.theme-dark select {
+    color: var(--cp-spirit-fire-blue-soft);
+}
+
+/* …but explicitly-coloured tokens (jade pills, gold prices, danger
+ * badges) must keep their original colour. These selectors carry the
+ * design system's intent and override the safety net by being equally
+ * specific yet listed later. */
+html.theme-dark .card-price,
+html.theme-dark .card-price *,
+html.theme-dark .premium-badge,
+html.theme-dark .premium-badge *,
+html.theme-dark .filter-tag.active,
+html.theme-dark .btn-primary,
+html.theme-dark .btn-secondary,
+html.theme-dark .alert,
+html.theme-dark .alert *,
+html.theme-dark .badge,
+html.theme-dark .stock-badge,
+html.theme-dark .section-title h2 {
+    color: inherit;
+}
+
+/* Anchors inside dark cards: pale spirit-blue so they still read as
+ * links without falling back to body black. */
+html.theme-dark .card a:not(.btn):not(.premium-badge),
+html.theme-dark .post-card a:not(.btn):not(.premium-badge),
+html.theme-dark .product-card a:not(.btn):not(.premium-badge) {
+    color: var(--cp-spirit-fire-blue);
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 3. Yin-Yang (Taiji) Theme Toggle
+ *    The existing `.theme-icon-moon` / `.theme-icon-sun` SVGs are
+ *    preserved (the test suite asserts they live inside the toggle
+ *    button), but they are now overlaid on top of a rotating Yin-Yang
+ *    disc rendered via SVG <use>. The disc rotates 0deg→180deg when
+ *    switching realms — the moon half/sun half visually swap sides.
+ * ════════════════════════════════════════════════════════════════ */
+
+.theme-toggle-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    overflow: visible;
+    isolation: isolate;
+}
+
+.theme-toggle-btn .theme-yinyang-ring,
+#mobileThemeToggle .theme-yinyang-ring {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5em;
+    height: 1.5em;
+    vertical-align: middle;
+    flex: 0 0 auto;
+    margin-right: 0.4em;
+    transition:
+        transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1),
+        filter 0.4s ease;
+    will-change: transform;
+    filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.35));
+}
+
+.theme-toggle-btn .theme-yinyang-ring {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.theme-toggle-btn .theme-yinyang-ring svg,
+#mobileThemeToggle .theme-yinyang-ring svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Dark realm: ring at 0deg, "yang" (white) half on top so the sun
+ * icon overlaying it reads correctly.
+ * Light realm: ring rotates 180deg so the "yin" (black) half is on
+ * top, ready to host the moon. */
+html.theme-dark .theme-yinyang-ring { transform: rotate(0deg); }
+html.theme-light .theme-yinyang-ring { transform: rotate(180deg); }
+html:not(.theme-light):not(.theme-dark) .theme-yinyang-ring { transform: rotate(0deg); }
+
+/* The existing moon/sun icons sit on top of the ring. Keep their CSS
+ * visibility rules in style.css (lines 19-24) — we only re-position
+ * them so they overlay the centre of the taiji disc. */
+.theme-toggle-btn .theme-icon-moon,
+.theme-toggle-btn .theme-icon-sun {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 1em;
+    height: 1em;
+    color: #fff7c8;
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.7));
+    z-index: 1;
+    pointer-events: none;
+}
+
+#mobileThemeToggle {
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+}
+
+#mobileThemeToggle .theme-icon-moon,
+#mobileThemeToggle .theme-icon-sun {
+    position: static;
+    width: 1em;
+    height: 1em;
+    margin: 0;
+    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
+}
+
+/* When mobile toggle has the yinyang ring, the existing icon classes
+ * become inline siblings — the CSS in style.css already toggles their
+ * visibility, so we only have to make sure the layout doesn't break. */
+#mobileThemeToggle .theme-yinyang-ring + .theme-icon-moon,
+#mobileThemeToggle .theme-yinyang-ring + .theme-icon-sun {
+    display: none;
+}
+html.theme-dark #mobileThemeToggle .theme-icon-sun { display: inline-block; }
+html.theme-light #mobileThemeToggle .theme-icon-moon { display: inline-block; }
+html:not(.theme-light):not(.theme-dark) #mobileThemeToggle .theme-icon-sun { display: inline-block; }
+
+.theme-toggle-btn:hover .theme-yinyang-ring,
+#mobileThemeToggle:hover .theme-yinyang-ring {
+    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.65));
+}
+
+/* In light mode, give the toggle a soft jade halo instead of gold so
+ * it visually agrees with the Heavenly Realm palette. */
+body.light-mode .theme-toggle-btn .theme-icon-moon,
+body.light-mode #mobileThemeToggle .theme-icon-moon {
+    color: var(--cp-ink-soft);
+    filter: drop-shadow(0 0 4px rgba(0, 168, 107, 0.4));
+}
+
+body.light-mode .theme-toggle-btn .theme-yinyang-ring,
+body.light-mode #mobileThemeToggle .theme-yinyang-ring {
+    filter: drop-shadow(0 0 4px rgba(0, 168, 107, 0.35));
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 4. Mortal Posts — "Aged Bamboo Scroll"
+ *    Default card variant for non-premium blog posts. Soft drop
+ *    shadow, brushstroke top/bottom rules, and a parchment hue that
+ *    reads as bamboo without overwhelming the existing card layout.
+ * ════════════════════════════════════════════════════════════════ */
+.xx-mortal-card {
+    position: relative;
+    border: 1px solid rgba(184, 134, 11, 0.18);
+    box-shadow:
+        0 6px 20px -10px rgba(0, 0, 0, 0.55),
+        0 2px 6px -3px rgba(0, 0, 0, 0.35),
+        inset 0 0 0 1px rgba(232, 228, 217, 0.04);
+    background:
+        linear-gradient(160deg,
+            rgba(28, 26, 38, 0.94) 0%,
+            rgba(14, 14, 22, 0.96) 60%,
+            rgba(20, 18, 26, 0.96) 100%);
+}
+
+.xx-mortal-card::before,
+.xx-mortal-card::after {
+    content: "";
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(192, 139, 0, 0.35) 20%,
+        rgba(184, 134, 11, 0.5) 50%,
+        rgba(192, 139, 0, 0.35) 80%,
+        transparent);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.xx-mortal-card::before { top: 0; }
+.xx-mortal-card::after { bottom: 0; }
+
+.xx-mortal-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 28px -12px rgba(0, 0, 0, 0.6),
+        0 4px 10px -3px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(232, 228, 217, 0.06);
+    border-color: rgba(192, 139, 0, 0.35);
+}
+
+body.light-mode .xx-mortal-card {
+    background:
+        linear-gradient(160deg,
+            #fdfcf5 0%,
+            #f7f3e3 60%,
+            #f3eed7 100%);
+    border-color: rgba(184, 134, 11, 0.25);
+    box-shadow:
+        0 6px 18px -10px rgba(120, 90, 20, 0.25),
+        0 2px 6px -3px rgba(120, 90, 20, 0.18),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+body.light-mode .xx-mortal-card::before,
+body.light-mode .xx-mortal-card::after {
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(120, 90, 20, 0.35) 20%,
+        rgba(120, 90, 20, 0.55) 50%,
+        rgba(120, 90, 20, 0.35) 80%,
+        transparent);
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 5. Immortal Posts — "Linh Khí Aura + Talisman Badge"
+ *    Layered on top of the existing `.xx-vip-card` styling. The conic
+ *    gradient border simulates spiritual aura flowing around the card.
+ *    The Talisman Badge takes over from `.premium-badge` and adds the
+ *    paper-charm look with a pulsating glow + corner stamp.
+ * ════════════════════════════════════════════════════════════════ */
+.xx-immortal-card {
+    position: relative;
+    isolation: isolate;
+    border-radius: 18px;
+    border: 1px solid rgba(251, 191, 36, 0.28);
+    background:
+        linear-gradient(160deg,
+            rgba(38, 28, 56, 0.96) 0%,
+            rgba(18, 14, 30, 0.98) 55%,
+            rgba(28, 16, 42, 0.96) 100%);
+    box-shadow:
+        0 16px 42px -18px rgba(124, 58, 237, 0.45),
+        0 8px 22px -10px rgba(251, 191, 36, 0.18),
+        inset 0 0 0 1px rgba(251, 191, 36, 0.08);
+    transition:
+        transform 0.45s cubic-bezier(0.2, 0.8, 0.3, 1),
+        box-shadow 0.45s,
+        border-color 0.45s;
+}
+
+/* Spiritual aura: a conic-gradient border that slowly rotates around
+ * the card edge. The mask makes it look like a ring of qi rather than
+ * a solid filled rectangle. */
+.xx-immortal-card::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: conic-gradient(
+        from 0deg,
+        rgba(251, 191, 36, 0.75),
+        rgba(167, 139, 250, 0.55),
+        rgba(45, 212, 160, 0.45),
+        rgba(220, 38, 38, 0.45),
+        rgba(251, 191, 36, 0.75)
+    );
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: xxImmortalAura 6s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.85;
+}
+
+@keyframes xxImmortalAura {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Faint inner radial halo so the aura feels like it's emanating
+ * outward from the card content. */
+.xx-immortal-card::after {
+    content: "";
+    position: absolute;
+    inset: 6%;
+    border-radius: inherit;
+    background: radial-gradient(ellipse at 30% 20%,
+        rgba(251, 191, 36, 0.10),
+        transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.xx-immortal-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.xx-immortal-card:hover {
+    transform: translateY(-6px) scale(1.012);
+    border-color: rgba(251, 191, 36, 0.55);
+    box-shadow:
+        0 28px 60px -22px rgba(124, 58, 237, 0.55),
+        0 14px 28px -10px rgba(251, 191, 36, 0.28),
+        0 0 36px -2px rgba(251, 191, 36, 0.18),
+        inset 0 0 0 1px rgba(251, 191, 36, 0.18);
+}
+
+.xx-immortal-card:hover::before {
+    opacity: 1;
+    animation-duration: 3.5s;
+}
+
+/* Talisman Badge — paper-charm with pulsating glow. Targets
+ * `.premium-badge` whenever it lives inside an Immortal card, so the
+ * existing templates don't need to add a new class. */
+.xx-immortal-card .premium-badge {
+    position: relative;
+    padding: 6px 14px 6px 22px;
+    background:
+        linear-gradient(160deg, #fff4c4 0%, #fbbf24 55%, #c08b00 100%);
+    color: #3a1f00 !important;
+    border-radius: 4px 12px 4px 12px;
+    font-family: "Cinzel Decorative", "Ma Shan Zheng", serif;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow:
+        0 0 10px rgba(251, 191, 36, 0.55),
+        0 0 22px rgba(251, 191, 36, 0.25),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+    animation: xxTalismanPulse 2.4s ease-in-out infinite;
+}
+
+/* Red stamp seal on the left edge of the talisman */
+.xx-immortal-card .premium-badge::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: radial-gradient(circle at 35% 35%, #ef4444, #7f1d1d);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+        0 0 6px rgba(220, 38, 38, 0.4);
+}
+
+/* Faint folded-paper crease across the talisman */
+.xx-immortal-card .premium-badge::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        repeating-linear-gradient(90deg,
+            transparent 0,
+            transparent 6px,
+            rgba(120, 80, 0, 0.06) 6px,
+            rgba(120, 80, 0, 0.06) 7px);
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+@keyframes xxTalismanPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 8px rgba(251, 191, 36, 0.40),
+            0 0 16px rgba(251, 191, 36, 0.18),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.40);
+    }
+    50% {
+        box-shadow:
+            0 0 16px rgba(251, 191, 36, 0.75),
+            0 0 36px rgba(251, 191, 36, 0.45),
+            0 0 60px rgba(167, 139, 250, 0.25),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+    }
+}
+
+/* Mist that drifts upward from the bottom of the Immortal card on
+ * hover — uses CSS only so it works even if xianxia-interactions.js
+ * hasn't initialised yet. The JS module already emits richer
+ * particles for richer browsers. */
+.xx-immortal-card::before { z-index: 0; }
+
+.xx-immortal-card .xx-immortal-mist {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 40%;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 60% 60% at 20% 100%, rgba(167, 139, 250, 0.18), transparent 70%),
+        radial-gradient(ellipse 60% 60% at 80% 100%, rgba(251, 191, 36, 0.14), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.xx-immortal-card:hover .xx-immortal-mist {
+    opacity: 1;
+    animation: xxImmortalMistDrift 4s ease-in-out infinite;
+}
+
+@keyframes xxImmortalMistDrift {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.65; }
+    50% { transform: translateY(-6px) scale(1.06); opacity: 1; }
+}
+
+/* Light-mode Immortal card: keep the aura but use porcelain + gold so
+ * it reads in the Heavenly Realm. */
+body.light-mode .xx-immortal-card {
+    background:
+        linear-gradient(160deg, #ffffff 0%, #fff8de 55%, #fff2c0 100%);
+    border-color: rgba(255, 215, 0, 0.55);
+    box-shadow:
+        0 16px 38px -18px rgba(192, 139, 0, 0.35),
+        0 8px 18px -10px rgba(192, 139, 0, 0.18),
+        inset 0 0 0 1px rgba(255, 215, 0, 0.18);
+}
+
+body.light-mode .xx-immortal-card::before {
+    background: conic-gradient(
+        from 0deg,
+        rgba(255, 215, 0, 0.85),
+        rgba(124, 58, 237, 0.5),
+        rgba(0, 168, 107, 0.55),
+        rgba(220, 38, 38, 0.4),
+        rgba(255, 215, 0, 0.85)
+    );
+}
+
+body.light-mode .xx-immortal-card::after {
+    background: radial-gradient(ellipse at 30% 20%,
+        rgba(255, 215, 0, 0.18),
+        transparent 65%);
+}
+
+body.light-mode .xx-immortal-card .premium-badge {
+    color: #3a1f00 !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 6. Silk-Shimmer Announcement Ticker
+ *    A thin diagonal sheen drifts across the announcement bar every
+ *    few seconds — the "silk" motion the brief calls out. The
+ *    underlying marquee track is untouched.
+ * ════════════════════════════════════════════════════════════════ */
+.site-ticker {
+    position: relative;
+    overflow: hidden;
+}
+
+.site-ticker::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.18) 48%,
+        rgba(255, 255, 255, 0.32) 50%,
+        rgba(255, 255, 255, 0.18) 52%,
+        transparent 70%);
+    transform: translateX(-100%);
+    animation: xxSilkShimmer 6s linear infinite;
+    mix-blend-mode: screen;
+}
+
+@keyframes xxSilkShimmer {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
+}
+
+body.light-mode .site-ticker::after {
+    background: linear-gradient(115deg,
+        transparent 30%,
+        rgba(255, 248, 220, 0.45) 48%,
+        rgba(255, 248, 220, 0.7) 50%,
+        rgba(255, 248, 220, 0.45) 52%,
+        transparent 70%);
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * 7. Reduced motion respect
+ * ════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+    .theme-yinyang-ring { transition: none; }
+    .xx-immortal-card::before,
+    .xx-immortal-card .premium-badge,
+    .xx-immortal-card:hover .xx-immortal-mist,
+    .site-ticker::after {
+        animation: none;
+    }
+}

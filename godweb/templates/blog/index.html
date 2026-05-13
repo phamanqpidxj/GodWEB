@@ -43,7 +43,10 @@
         {% if posts.items %}
         <div class="grid grid-3">
             {% for post in posts.items %}
-            <div class="card" {% if post.pin_priority > 0 %}style="border: 2px solid {% if post.pin_priority == 2 %}var(--danger-color){% else %}var(--primary-color){% endif %};"{% endif %}>
+            <div class="card {% if post.is_premium %}xx-immortal-card{% else %}xx-mortal-card{% endif %}" {% if post.pin_priority > 0 %}style="border: 2px solid {% if post.pin_priority == 2 %}var(--danger-color){% else %}var(--primary-color){% endif %};"{% endif %}>
+                {% if post.is_premium %}
+                <div class="xx-immortal-mist" aria-hidden="true"></div>
+                {% endif %}
                 {% if post.pin_priority > 0 %}
                 <div class="pin-badge" style="background: {% if post.pin_priority == 2 %}var(--danger-color){% else %}var(--primary-color){% endif %};">
                     <i class="fas fa-thumbtack"></i> {% if post.pin_priority == 2 %}Admin Pin{% else %}Ghim{% endif %}

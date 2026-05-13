@@ -62,7 +62,8 @@
         {% if posts %}
         <div class="grid grid-3">
             {% for post in posts %}
-            <div class="card">
+            <div class="card {% if post.is_premium %}xx-immortal-card{% else %}xx-mortal-card{% endif %}">
+                {% if post.is_premium %}<div class="xx-immortal-mist" aria-hidden="true"></div>{% endif %}
                 {% if post.thumbnail %}
                 <img src="{{ post.thumbnail|image_url }}" alt="{{ post.title }}" class="card-image">
                 {% else %}
@@ -125,7 +126,7 @@
         {% if products %}
         <div class="grid grid-4">
             {% for product in products %}
-            <div class="card">
+            <div class="card xx-mortal-card">
                 {% if product.image %}
                 <img src="{{ product.image|image_url }}" alt="{{ product.name }}" class="card-image">
                 {% else %}
