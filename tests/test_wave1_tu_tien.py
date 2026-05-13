@@ -404,3 +404,21 @@ def test_js_audio_resumes_context_on_user_gesture():
     source = JS_PATH.read_text(encoding='utf-8')
     assert 'resumeIfSuspended' in source
     assert "ctx.state === 'suspended'" in source
+
+
+def test_js_sync_initial_aria_pressed_on_page_load():
+    """Regression: when localStorage.siteAudio is 'off', the page must
+    start with aria-pressed='false' on every .xx-audio-toggle button.
+    Previously the template hardcoded aria-pressed='true' and the JS
+    only set <html>.xx-audio-on — leaving screen readers out of sync.
+
+    The fix adds a syncInitialState() IIFE that iterates buttons and
+    calls setAttribute('aria-pressed', ...) based on the stored pref.
+    """
+    source = JS_PATH.read_text(encoding='utf-8')
+    # The IIFE must exist.
+    assert 'syncInitialState' in source
+    # It must iterate .xx-audio-toggle buttons.
+    assert "querySelectorAll('.xx-audio-toggle')" in source
+    # It must set aria-pressed with the correct boolean string.
+    assert "setAttribute('aria-pressed'" in source

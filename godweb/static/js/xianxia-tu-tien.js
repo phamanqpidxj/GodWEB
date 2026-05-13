@@ -240,12 +240,17 @@
         };
     })();
 
-    // Apply the initial state class to <html> so CSS shows the
-    // correct icon BEFORE any user interaction.
-    document.documentElement.classList.toggle(
-        'xx-audio-on',
-        GodWebAudio.isEnabled()
-    );
+    // Apply the initial state from localStorage to <html> class AND
+    // button aria-pressed attributes so CSS + screen readers see the
+    // correct state BEFORE the first user interaction.
+    (function syncInitialState() {
+        var on = GodWebAudio.isEnabled();
+        document.documentElement.classList.toggle('xx-audio-on', on);
+        var btns = document.querySelectorAll('.xx-audio-toggle');
+        for (var i = 0; i < btns.length; i++) {
+            btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+    })();
 
     // Wire the audio toggle. Uses event delegation so it works
     // for both the desktop footer button and any future mobile
