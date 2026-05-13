@@ -156,6 +156,22 @@ def test_immortal_aura_overrides_legacy_premium_pulse():
         'not the legacy xxVipAuraPulse'
     )
 
+    # In light mode (``body.light-mode``), ``xianxia-theme-light.css``
+    # re-pins ``animation: xxVipAuraPulseLight`` on the same
+    # ``::before`` pseudo-element. Our light-mode override must
+    # explicitly re-pin the rotation animation, otherwise the aura
+    # silently degrades to an opacity pulse only in the Heavenly Realm.
+    light_block_idx = source.find('body.light-mode .card.xx-immortal-card::before')
+    assert light_block_idx != -1, (
+        'light-mode aura override must use the .card.xx-immortal-card '
+        'compound selector to match legacy specificity'
+    )
+    light_block = source[light_block_idx:light_block_idx + 800]
+    assert 'xxImmortalAura' in light_block, (
+        'light-mode aura ::before block must re-declare animation: '
+        'xxImmortalAura so it does not fall back to xxVipAuraPulseLight'
+    )
+
 
 # ────────────────────────────────────────────────────────────────────
 # 4. Mortal / Immortal post cards on the blog index

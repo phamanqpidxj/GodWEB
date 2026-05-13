@@ -404,6 +404,15 @@ body.light-mode .xx-mortal-card::after {
     animation-duration: 3.5s;
 }
 
+/* Light-mode hover override — same speed-up + opacity boost as dark
+ * mode but must be re-declared because the light-mode base rule above
+ * re-pins opacity and animation. */
+body.light-mode .card.xx-immortal-card:hover::before,
+body.light-mode .xx-immortal-card:hover::before {
+    opacity: 1;
+    animation: xxImmortalAura 3.5s linear infinite;
+}
+
 /* Talisman Badge — paper-charm with pulsating glow. Targets
  * `.premium-badge` whenever it lives inside an Immortal card, so the
  * existing templates don't need to add a new class. */
@@ -522,6 +531,11 @@ body.light-mode .xx-immortal-card::before {
         rgba(220, 38, 38, 0.4),
         rgba(255, 215, 0, 0.85)
     );
+    /* Re-pin the rotation animation in light mode — the legacy
+     * `xianxia-theme-light.css` rule otherwise replaces it with the
+     * older `xxVipAuraPulseLight` opacity pulse. */
+    animation: xxImmortalAura 6s linear infinite;
+    opacity: 0.7;
 }
 
 body.light-mode .card.xx-immortal-card::after,
