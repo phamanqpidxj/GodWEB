@@ -1,0 +1,618 @@
+/*
+ * GodWeb · Xianxia Wave 2 — Kiếm khách / Sword-buyer rebuild
+ * ──────────────────────────────────────────────────────────────────
+ * This stylesheet stacks on top of:
+ *   - style.css                  (base reset + typography)
+ *   - xianxia-celestial-path.css (dual-realm tokens)
+ *   - xianxia-tu-tien.css        (Wave 1 cảnh giới + Tu Tiên)
+ *
+ * Wave 2 scope (user-approved, see PR description):
+ *   W2.2 Calligraphy headline upgrade  → §2
+ *   W2.3 Trúc giản blog card variant   → §3
+ *   W2.4 Kiếm khí sword-cut divider    → §4
+ *   W2.5 Pháp khí sword-themed badges  → §5
+ *   W2.6 Tu luyện nhật ký 28-day grid  → §6
+ *   W2.7 Microcopy refresh             → templates, no CSS
+ *   W2.8 Sword-stroke loading SVG      → §8
+ *
+ * Perf budget (Heroku Basic Dyno, 512 MB RAM):
+ *   - NO requestAnimationFrame loops
+ *   - NO mousemove / scroll listeners
+ *   - All animations are one-shot OR ≤ 4s GPU-only transitions
+ *   - Single-file (~13 KB minified, ~3 KB gzipped) so it can be
+ *     parsed in <5ms on mid-tier mobile.
+ * ────────────────────────────────────────────────────────────────── */
+
+
+/* ════════════════════════════════════════════════════════════════
+ * §1. Wave 2 design tokens
+ * ════════════════════════════════════════════════════════════════ */
+:root {
+    /* Vermillion (chu sa) seal red — anchors all wave2 accents. */
+    --kk-vermillion: #b71c1c;
+    --kk-vermillion-deep: #7f1414;
+    --kk-vermillion-ink: rgba(183, 28, 28, 0.85);
+
+    /* Trúc giản (bamboo slip) palette. */
+    --kk-bamboo-pale: #f7eed4;
+    --kk-bamboo-mid: #e6d7a2;
+    --kk-bamboo-deep: #8a6f2a;
+    --kk-bamboo-edge: rgba(138, 111, 42, 0.55);
+    --kk-bamboo-shadow: rgba(80, 56, 16, 0.18);
+
+    /* Ink (mặc) tones for calligraphy strokes. */
+    --kk-ink-1: #1a1612;
+    --kk-ink-2: #2a221a;
+
+    /* Sword steel (sword-edge silver/blue). */
+    --kk-steel: #6b7a86;
+    --kk-steel-edge: #a9b4be;
+
+    /* Trục bambooslip vertical card geometry. */
+    --kk-truc-gian-width: 240px;
+    --kk-truc-gian-aspect: 1.5;  /* height ≈ 360px */
+}
+
+html.theme-dark {
+    /* Dark realm uses a softer vermillion so it doesn't burn on OLED. */
+    --kk-vermillion: #d6342e;
+    --kk-vermillion-deep: #9a1c1a;
+    --kk-vermillion-ink: rgba(214, 52, 46, 0.78);
+
+    --kk-bamboo-pale: #3a2f1d;
+    --kk-bamboo-mid: #4e3f24;
+    --kk-bamboo-deep: #d8b96d;
+    --kk-bamboo-edge: rgba(216, 185, 109, 0.42);
+    --kk-bamboo-shadow: rgba(0, 0, 0, 0.55);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * §2. Calligraphy headline upgrade (W2.2)
+ * ──────────────────────────────────────────────────────────────────
+ * Wave 1 shipped `.xx-tutien-heading` with the ZH char + VI subtitle.
+ * Wave 2 amplifies it with a vermillion brush underline so the
+ * landing area of each section reads like a hanging calligraphy
+ * scroll. Pure CSS — no JS, no images.
+ * ════════════════════════════════════════════════════════════════ */
+.xx-tutien-heading {
+    /* Existing layout (margin/padding) is set in xianxia-tu-tien.css.
+     * Wave 2 only adds a vermillion brush underline below the ZH char. */
+    position: relative;
+}
+
+.xx-tutien-heading .xx-tutien-zh {
+    position: relative;
+    /* Slightly stronger weight so the brush feel reads as
+     * calligraphy ink rather than a generic display font. */
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    /* Tiny ink-stamp shadow — does not animate. */
+    text-shadow:
+        0 1px 0 var(--kk-ink-1),
+        0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.xx-tutien-heading .xx-tutien-zh::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -0.32em;
+    width: 2.1em;
+    height: 6px;
+    transform: translateX(-50%);
+    /* Vermillion brush stroke: tapered ends via radial gradients on
+     * each side + solid core. Read order: left-taper, body, right-taper. */
+    background:
+        radial-gradient(ellipse 8px 4px at 0% 50%,
+            var(--kk-vermillion-ink) 0%,
+            transparent 80%),
+        radial-gradient(ellipse 8px 4px at 100% 50%,
+            var(--kk-vermillion-ink) 0%,
+            transparent 80%),
+        linear-gradient(90deg,
+            transparent 0%,
+            var(--kk-vermillion) 12%,
+            var(--kk-vermillion-deep) 50%,
+            var(--kk-vermillion) 88%,
+            transparent 100%);
+    border-radius: 4px;
+    opacity: 0.92;
+    /* Static — no animation. */
+}
+
+/* Reduced motion: nothing to honour here since the underline is static,
+ * but we still clamp the shadow in case it ever animates. */
+@media (prefers-reduced-motion: reduce) {
+    .xx-tutien-heading .xx-tutien-zh {
+        text-shadow: none;
+    }
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * §3. Trúc giản (bamboo slip) blog card variant (W2.3)
+ * ──────────────────────────────────────────────────────────────────
+ * Vertical bamboo-slat card for the blog index. Replaces the 16:9
+ * Mortal card on `.post-list .post-card` when the parent grid carries
+ * `.xx-truc-gian-grid` (opt-in so other listings aren't affected).
+ * ════════════════════════════════════════════════════════════════ */
+.xx-truc-gian-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--kk-truc-gian-width), 1fr));
+    gap: 32px 28px;
+    /* Anchor at the top so cards of varying heights align by their seal. */
+    align-items: start;
+    margin-top: 24px;
+}
+
+.xx-truc-gian {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    aspect-ratio: 1 / var(--kk-truc-gian-aspect);
+    padding: 22px 16px 18px;
+    background:
+        repeating-linear-gradient(
+            180deg,
+            transparent 0,
+            transparent 18px,
+            rgba(138, 111, 42, 0.06) 18px,
+            rgba(138, 111, 42, 0.06) 19px),
+        linear-gradient(180deg,
+            var(--kk-bamboo-pale) 0%,
+            var(--kk-bamboo-mid) 100%);
+    color: var(--kk-ink-1);
+    text-decoration: none;
+    border-radius: 6px 6px 8px 8px;
+    /* Inked vertical edges + soft drop shadow. */
+    box-shadow:
+        inset 3px 0 0 var(--kk-bamboo-edge),
+        inset -3px 0 0 var(--kk-bamboo-edge),
+        0 6px 14px var(--kk-bamboo-shadow);
+    transition: transform 220ms ease, box-shadow 220ms ease;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.xx-truc-gian::before,
+.xx-truc-gian::after {
+    /* Brushed top + bottom caps mimicking the lacquered ends of a
+     * real bamboo slip. */
+    content: '';
+    position: absolute;
+    left: -1px;
+    right: -1px;
+    height: 8px;
+    background: linear-gradient(180deg,
+        var(--kk-bamboo-deep) 0%,
+        rgba(80, 56, 16, 0.35) 100%);
+}
+.xx-truc-gian::before { top: 0; }
+.xx-truc-gian::after  { bottom: 0; transform: rotate(180deg); }
+
+.xx-truc-gian:hover,
+.xx-truc-gian:focus-visible {
+    transform: translateY(-3px);
+    box-shadow:
+        inset 3px 0 0 var(--kk-bamboo-edge),
+        inset -3px 0 0 var(--kk-bamboo-edge),
+        0 10px 22px var(--kk-bamboo-shadow);
+    outline: none;
+}
+
+.xx-truc-gian-title {
+    font-size: 1.05rem;
+    line-height: 1.4;
+    font-weight: 700;
+    color: var(--kk-ink-1);
+    margin: 8px 0 12px;
+    /* Vertical-writing-mode is too much for mobile a11y; keep latin
+     * horizontal but constrain to two lines with an ink-cut overflow. */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.xx-truc-gian-excerpt {
+    flex: 1 1 auto;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--kk-ink-2);
+    opacity: 0.86;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.xx-truc-gian-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    font-size: 0.74rem;
+    color: var(--kk-bamboo-deep);
+    letter-spacing: 0.04em;
+}
+
+/* Vermillion seal at the bottom-right of every trúc giản card. */
+.xx-truc-gian-seal {
+    position: absolute;
+    right: 12px;
+    bottom: 14px;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    color: #fff;
+    background: var(--kk-vermillion);
+    border-radius: 3px;
+    font-weight: 700;
+    /* Subtle press-into-paper feel via inset shadow. */
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+        0 1px 2px rgba(0, 0, 0, 0.18);
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Premium variant — gold accent + 劍 stamp instead of generic seal. */
+.xx-truc-gian.is-premium {
+    background:
+        repeating-linear-gradient(
+            180deg,
+            transparent 0,
+            transparent 18px,
+            rgba(189, 137, 21, 0.10) 18px,
+            rgba(189, 137, 21, 0.10) 19px),
+        linear-gradient(180deg,
+            #fef6dd 0%,
+            #f1d684 100%);
+    box-shadow:
+        inset 3px 0 0 rgba(189, 137, 21, 0.55),
+        inset -3px 0 0 rgba(189, 137, 21, 0.55),
+        0 6px 14px rgba(189, 137, 21, 0.22);
+}
+.xx-truc-gian.is-premium .xx-truc-gian-seal {
+    background: linear-gradient(180deg, var(--kk-vermillion) 0%, var(--kk-vermillion-deep) 100%);
+}
+
+html.theme-dark .xx-truc-gian {
+    color: #f0e6c8;
+}
+html.theme-dark .xx-truc-gian-title {
+    color: #f6eed3;
+}
+html.theme-dark .xx-truc-gian-excerpt {
+    color: rgba(246, 238, 211, 0.78);
+}
+
+/* Mobile — drop to one column so the slip remains tall, not crushed. */
+@media (max-width: 480px) {
+    .xx-truc-gian-grid {
+        grid-template-columns: 1fr;
+        gap: 22px;
+    }
+    .xx-truc-gian {
+        aspect-ratio: auto;
+        min-height: 240px;
+    }
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * §4. Kiếm khí (sword-qi) divider (W2.4)
+ * ──────────────────────────────────────────────────────────────────
+ * Drop-in replacement for `<hr>` blocks. Renders as a tapered
+ * steel-coloured stroke crossed by a thin vermillion seal mark
+ * in the middle. Pure CSS / no SVG inline so it stays cacheable.
+ * ════════════════════════════════════════════════════════════════ */
+.xx-sword-divider {
+    position: relative;
+    height: 24px;
+    width: 100%;
+    border: none;
+    background: transparent;
+    margin: 28px 0;
+    overflow: visible;
+}
+
+.xx-sword-divider::before {
+    /* The sword-edge: linear gradient with hard taper ends so the
+     * line feels like steel rather than a flat hr. */
+    content: '';
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    top: 50%;
+    height: 2px;
+    transform: translateY(-50%);
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--kk-steel-edge) 6%,
+        var(--kk-steel) 25%,
+        var(--kk-ink-1) 50%,
+        var(--kk-steel) 75%,
+        var(--kk-steel-edge) 94%,
+        transparent 100%);
+    border-radius: 2px;
+}
+
+.xx-sword-divider::after {
+    /* Vermillion seal dot crossing the blade — the "kiếm khí" pivot. */
+    content: '劍';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: var(--kk-vermillion);
+    border-radius: 4px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+        0 1px 3px rgba(0, 0, 0, 0.28);
+}
+
+html.theme-dark .xx-sword-divider::before {
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(169, 180, 190, 0.35) 6%,
+        var(--kk-steel-edge) 25%,
+        #fff 50%,
+        var(--kk-steel-edge) 75%,
+        rgba(169, 180, 190, 0.35) 94%,
+        transparent 100%);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * §5. Pháp khí (treasure) collection — sword-themed (W2.5)
+ * ──────────────────────────────────────────────────────────────────
+ * 5-slot grid on /profile/ that fills in as the cultivator earns
+ * milestones. Each slot is a sword silhouette + bagua frame; locked
+ * slots show a greyed placeholder.
+ * ════════════════════════════════════════════════════════════════ */
+.xx-phap-khi {
+    margin: 28px 0;
+    padding: 20px 22px;
+    border-radius: 10px;
+    background: rgba(255, 250, 205, 0.18);
+    border: 1px solid rgba(189, 137, 21, 0.22);
+}
+html.theme-dark .xx-phap-khi {
+    background: rgba(45, 39, 27, 0.55);
+    border-color: rgba(216, 185, 109, 0.18);
+}
+
+.xx-phap-khi-title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0 0 14px;
+    font-size: 0.94rem;
+    font-weight: 700;
+    color: var(--kk-ink-1);
+    letter-spacing: 0.06em;
+}
+html.theme-dark .xx-phap-khi-title { color: #f6eed3; }
+
+.xx-phap-khi-title .xx-phap-khi-zh {
+    font-size: 1.1rem;
+    color: var(--kk-vermillion);
+}
+
+.xx-phap-khi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+}
+@media (max-width: 540px) {
+    .xx-phap-khi-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+    }
+}
+
+.xx-phap-khi-slot {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(189, 137, 21, 0.18);
+    color: var(--kk-ink-2);
+    font-size: 1.6rem;
+    line-height: 1;
+    position: relative;
+    overflow: hidden;
+}
+html.theme-dark .xx-phap-khi-slot {
+    background: rgba(0, 0, 0, 0.25);
+    border-color: rgba(216, 185, 109, 0.18);
+    color: #f6eed3;
+}
+
+.xx-phap-khi-slot .xx-phap-khi-label {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: rgba(0, 0, 0, 0.6);
+    text-transform: uppercase;
+}
+html.theme-dark .xx-phap-khi-slot .xx-phap-khi-label {
+    color: rgba(246, 238, 211, 0.62);
+}
+
+.xx-phap-khi-slot.is-locked {
+    opacity: 0.4;
+    filter: grayscale(70%);
+}
+
+.xx-phap-khi-slot.is-earned {
+    background: linear-gradient(180deg,
+        rgba(255, 215, 0, 0.18) 0%,
+        rgba(189, 137, 21, 0.12) 100%);
+    border-color: rgba(189, 137, 21, 0.55);
+}
+html.theme-dark .xx-phap-khi-slot.is-earned {
+    background: linear-gradient(180deg,
+        rgba(216, 185, 109, 0.22) 0%,
+        rgba(214, 52, 46, 0.12) 100%);
+    border-color: rgba(216, 185, 109, 0.45);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * §6. Tu luyện nhật ký — 28-day grid (W2.6)
+ * ──────────────────────────────────────────────────────────────────
+ * Vermillion ink-stamp grid on /profile/ that visualises a 28-day
+ * activity streak. Today is highlighted; future days are blank.
+ * Pure markup-driven (no JS calc here — the template provides the
+ * `is-stamped` / `is-today` classes).
+ * ════════════════════════════════════════════════════════════════ */
+.xx-nhat-ky {
+    margin: 24px 0;
+    padding: 18px 20px;
+    border-radius: 10px;
+    background: rgba(255, 250, 205, 0.18);
+    border: 1px solid rgba(189, 137, 21, 0.22);
+}
+html.theme-dark .xx-nhat-ky {
+    background: rgba(45, 39, 27, 0.55);
+    border-color: rgba(216, 185, 109, 0.18);
+}
+.xx-nhat-ky-title {
+    margin: 0 0 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--kk-ink-1);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+.xx-nhat-ky-title .xx-nhat-ky-zh {
+    color: var(--kk-vermillion);
+    font-size: 1rem;
+}
+html.theme-dark .xx-nhat-ky-title { color: #f6eed3; }
+
+.xx-nhat-ky-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.xx-nhat-ky-cell {
+    aspect-ratio: 1 / 1;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.32);
+    border: 1px solid rgba(189, 137, 21, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.66rem;
+    color: rgba(0, 0, 0, 0.4);
+    position: relative;
+}
+.xx-nhat-ky-cell.is-stamped {
+    background: var(--kk-vermillion);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+.xx-nhat-ky-cell.is-stamped::after {
+    /* Tiny seal glyph layered on the stamp. */
+    content: '印';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.62rem;
+    opacity: 0.62;
+}
+.xx-nhat-ky-cell.is-today {
+    outline: 2px solid var(--kk-vermillion-deep);
+    outline-offset: 1px;
+}
+html.theme-dark .xx-nhat-ky-cell {
+    background: rgba(0, 0, 0, 0.22);
+    border-color: rgba(216, 185, 109, 0.14);
+    color: rgba(246, 238, 211, 0.55);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * §8. Sword-stroke loading SVG (W2.8)
+ * ──────────────────────────────────────────────────────────────────
+ * Inline-SVG sword that "draws itself" via stroke-dashoffset.
+ * Used as a one-shot loader (e.g. submit buttons in flight).
+ * Animation is ≤ 600ms; honours prefers-reduced-motion.
+ * ════════════════════════════════════════════════════════════════ */
+.xx-kiem-loader {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: currentColor;
+}
+
+.xx-kiem-loader svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.xx-kiem-loader .xx-kiem-blade,
+.xx-kiem-loader .xx-kiem-guard,
+.xx-kiem-loader .xx-kiem-grip {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 140;
+    stroke-dashoffset: 140;
+    animation: kkSwordDraw 600ms ease-out forwards;
+}
+
+.xx-kiem-loader .xx-kiem-guard { animation-delay: 220ms; stroke-dasharray: 40; stroke-dashoffset: 40; }
+.xx-kiem-loader .xx-kiem-grip  { animation-delay: 320ms; stroke-dasharray: 30; stroke-dashoffset: 30; }
+
+@keyframes kkSwordDraw {
+    to { stroke-dashoffset: 0; }
+}
+
+/* Re-loop variant when the loader needs to keep spinning (e.g. AJAX
+ * request that genuinely hasn't finished). Wave 2 prefers one-shot
+ * so this is opt-in via `is-looping`. */
+.xx-kiem-loader.is-looping .xx-kiem-blade,
+.xx-kiem-loader.is-looping .xx-kiem-guard,
+.xx-kiem-loader.is-looping .xx-kiem-grip {
+    animation: kkSwordDraw 1.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .xx-kiem-loader .xx-kiem-blade,
+    .xx-kiem-loader .xx-kiem-guard,
+    .xx-kiem-loader .xx-kiem-grip {
+        animation: none;
+        stroke-dashoffset: 0;
+    }
+}

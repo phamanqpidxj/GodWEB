@@ -78,6 +78,50 @@
                     </div>
                 </div>
 
+                <!-- W2.4 Sword-qi divider — kiếm khí stroke -->
+                <hr class="xx-sword-divider" aria-hidden="true">
+
+                <!-- W2.5 Pháp khí collection (sword-themed) -->
+                {% set _phap_khi_items = [
+                    ('剑', 'Sơ Kiếm',   'Đăng ký',                        true),
+                    ('印', 'Đại Ấn',    'Bình luận đầu tiên',             current_user.comments | length > 0),
+                    ('丹', 'Linh Đan',  'Mua sản phẩm đầu',                current_user.orders | length > 0),
+                    ('符', 'Linh Phù',  'Mua bài Bí Kíp Các',              current_user.post_purchases | length > 0),
+                    ('神', 'Hoá Thần',  'Đạt cảnh giới Hoá Thần',          _tier.key == 'hoa_than')
+                ] %}
+                <div class="xx-phap-khi" aria-label="Pháp khí thu thập">
+                    <h3 class="xx-phap-khi-title">
+                        <span class="xx-phap-khi-zh" lang="zh">法器</span>
+                        <span>Pháp Khí Thu Thập</span>
+                    </h3>
+                    <div class="xx-phap-khi-grid">
+                        {% for glyph, name_vi, hint, earned in _phap_khi_items %}
+                        <div class="xx-phap-khi-slot {% if earned %}is-earned{% else %}is-locked{% endif %}"
+                             title="{{ name_vi }} — {{ hint }}"
+                             aria-label="{{ name_vi }}: {% if earned %}đã thu thập{% else %}chưa thu thập, cần {{ hint }}{% endif %}">
+                            <span aria-hidden="true">{{ glyph }}</span>
+                            <span class="xx-phap-khi-label">{{ name_vi }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- W2.6 Tu luyện nhật ký — 28-day streak grid -->
+                <div class="xx-nhat-ky" aria-label="Nhật ký tu luyện 28 ngày">
+                    <h3 class="xx-nhat-ky-title">
+                        <span class="xx-nhat-ky-zh" lang="zh">修炼日记</span>
+                        <span>Nhật Ký Tu Luyện · 28 ngày</span>
+                    </h3>
+                    <div class="xx-nhat-ky-grid">
+                        {% set _streak = current_user.login_streak or 0 %}
+                        {% for _day in range(1, 29) %}
+                        <div class="xx-nhat-ky-cell {% if _day <= _streak %}is-stamped{% endif %} {% if _day == _streak %}is-today{% endif %}"
+                             title="Ngày {{ _day }}{% if _day <= _streak %} · đã điểm danh{% endif %}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
                 <!-- Stats -->
                 <div class="stats-grid">
                     <div class="stat-card primary">

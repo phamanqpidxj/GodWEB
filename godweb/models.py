@@ -74,14 +74,40 @@ class User(UserMixin, db.Model):
         - post purchases ×20 (a paid read still counts as "reading")
         - comments       ×5
         - login streak   ×3 (caps natural farming)
+
+        Heroku Basic Dyno perf: uses COUNT(*) queries instead of loading
+        full collections, and memoizes the result on the instance so the
+        navbar badge + profile card don't fire it twice per page render.
         """
-        return (
-            50 * len(self.posts)
-            + 20 * len(self.post_purchases)
-            + 10 * len(self.orders)
-            + 5 * len(self.comments)
-            + 3 * (self.login_streak or 0)
-        )
+        cached = self.__dict__.get('_cultivation_xp_cached')
+        if cached is not None:
+            return cached
+        from sqlalchemy import func
+        session = db.session
+        if getattr(self, 'id', None) is None:
+            # Unsaved user (test fixtures) — fall back to len() on the in-memory
+            # collections since the rows don't have FK values yet.
+            xp = (
+                50 * len(self.posts)
+                + 20 * len(self.post_purchases)
+                + 10 * len(self.orders)
+                + 5 * len(self.comments)
+                + 3 * (self.login_streak or 0)
+            )
+        else:
+            posts_count = session.query(func.count(Post.id)).filter(Post.author_id == self.id).scalar() or 0
+            purchases_count = session.query(func.count(PostPurchase.id)).filter(PostPurchase.user_id == self.id).scalar() or 0
+            orders_count = session.query(func.count(Order.id)).filter(Order.user_id == self.id).scalar() or 0
+            comments_count = session.query(func.count(Comment.id)).filter(Comment.author_id == self.id).scalar() or 0
+            xp = (
+                50 * posts_count
+                + 20 * purchases_count
+                + 10 * orders_count
+                + 5 * comments_count
+                + 3 * (self.login_streak or 0)
+            )
+        self.__dict__['_cultivation_xp_cached'] = xp
+        return xp
 
     def cultivation_tier(self):
         """Return the user's current realm as a dict.
