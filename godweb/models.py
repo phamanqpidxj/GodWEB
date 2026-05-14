@@ -3,6 +3,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from godweb.extensions import db, login_manager
 
+# Cultivation realm thresholds — XP needed to enter each tier. Activity-based,
+# NOT spending-based: comments, post purchases, posts authored, login streak
+# and product orders all contribute. See `User.cultivation_xp` for the
+# weighting. Tiers escalate roughly 1 → 3× to keep early progress feeling
+# attainable while late tiers stay aspirational.
+CULTIVATION_TIERS = (
+    # (min_xp, key,         glyph, name_vi,      name_zh)
+    (0,       'pham_nhan',  '凡',  'Phàm Nhân',  '凡人'),
+    (50,      'luyen_khi',  '練',  'Luyện Khí',  '练气'),
+    (200,     'truc_co',    '築',  'Trúc Cơ',    '筑基'),
+    (600,     'kim_dan',    '金',  'Kim Đan',    '金丹'),
+    (1500,    'nguyen_anh', '元',  'Nguyên Anh', '元婴'),
+    (4000,    'hoa_than',   '神',  'Hoá Thần',   '化神'),
+)
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -19,6 +35,12 @@ class User(UserMixin, db.Model):
     avatar = db.Column(db.String(255), default='default.png')
     recovery_number = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # Cultivation realm tracking. `last_login_at` and `login_streak` are
+    # bumped by the auth blueprint on every successful login. Nullable so
+    # legacy rows migrate cleanly via safe_add_column without a backfill
+    # query.
+    last_login_at = db.Column(db.DateTime, nullable=True)
+    login_streak = db.Column(db.Integer, default=0)
 
     # Relationships
     posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
@@ -38,6 +60,64 @@ class User(UserMixin, db.Model):
 
     def is_admin(self):
         return self.role == 'admin'
+
+    @property
+    def cultivation_xp(self):
+        """Compute the user's cultivation XP from existing activity counters.
+
+        Activity-based by design — we deliberately do NOT factor in GodCoin
+        spending so that users who participate (read, comment, write,
+        return daily) can advance just as far as users who pay. Weights:
+
+        - posts authored ×50 (rarest, highest signal)
+        - product orders ×10
+        - post purchases ×20 (a paid read still counts as "reading")
+        - comments       ×5
+        - login streak   ×3 (caps natural farming)
+        """
+        return (
+            50 * len(self.posts)
+            + 20 * len(self.post_purchases)
+            + 10 * len(self.orders)
+            + 5 * len(self.comments)
+            + 3 * (self.login_streak or 0)
+        )
+
+    def cultivation_tier(self):
+        """Return the user's current realm as a dict.
+
+        Walks `CULTIVATION_TIERS` in order so the highest tier whose
+        threshold the user has passed is returned. Always returns a tier
+        (Phàm Nhân at minimum), never None. Includes the next-tier
+        threshold + remaining XP so templates can render a progress hint
+        without re-implementing the table.
+        """
+        xp = self.cultivation_xp
+        tier_index = 0
+        for index, (threshold, *_rest) in enumerate(CULTIVATION_TIERS):
+            if xp >= threshold:
+                tier_index = index
+        threshold, key, glyph, name_vi, name_zh = CULTIVATION_TIERS[tier_index]
+        if tier_index + 1 < len(CULTIVATION_TIERS):
+            next_threshold = CULTIVATION_TIERS[tier_index + 1][0]
+            next_name_vi = CULTIVATION_TIERS[tier_index + 1][3]
+            xp_remaining = max(0, next_threshold - xp)
+        else:
+            next_threshold = None
+            next_name_vi = None
+            xp_remaining = 0
+        return {
+            'index': tier_index,
+            'key': key,
+            'glyph': glyph,
+            'name_vi': name_vi,
+            'name_zh': name_zh,
+            'xp': xp,
+            'threshold': threshold,
+            'next_threshold': next_threshold,
+            'next_name_vi': next_name_vi,
+            'xp_remaining': xp_remaining,
+        }
 
 class Category(db.Model):
     __tablename__ = 'categories'

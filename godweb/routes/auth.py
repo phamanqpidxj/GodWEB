@@ -1,9 +1,42 @@
+from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
 from godweb.models import User
 from godweb.extensions import db
 
 auth_bp = Blueprint('auth', __name__)
+
+
+def _update_login_streak(user):
+    """Bump the user's daily login streak.
+
+    Rules:
+    - First-ever login (last_login_at is None): streak = 1.
+    - Login on a fresh day after yesterday: streak += 1.
+    - Login on the same calendar day as last_login_at: streak unchanged
+      (already counted today).
+    - Login after a gap of 2+ days: streak resets to 1.
+
+    Using UTC dates here matches the `created_at = datetime.utcnow` default
+    in `models.py`. We compare *dates* (not timestamps) so a 23-hour gap
+    that crosses midnight is correctly treated as a new day.
+    """
+    today = datetime.utcnow().date()
+    last_at = user.last_login_at
+    if last_at is None:
+        user.login_streak = 1
+    else:
+        last_date = last_at.date()
+        if last_date == today:
+            # Same-day re-login: do not double-count. Existing streak holds.
+            pass
+        elif today - last_date == timedelta(days=1):
+            user.login_streak = (user.login_streak or 0) + 1
+        else:
+            # Skipped at least one day. Reset the streak.
+            user.login_streak = 1
+    user.last_login_at = datetime.utcnow()
+    db.session.commit()
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -23,6 +56,7 @@ def login():
             if remember:
                 session.permanent = True
             login_user(user, remember=remember)
+            _update_login_streak(user)
             flash('Đăng nhập thành công!', 'success')
             next_page = request.args.get('next')
             # Refuse open-redirect attempts: only allow same-origin relative paths.

@@ -1,0 +1,640 @@
+/* ─────────────────────────────────────────────────────────────
+ * Wave 1 Tu Tiên skin — additive layer over xianxia-*.css.
+ *
+ * Sections in source order:
+ *   1. Cultivation realm badge (Phàm Nhân → Hoá Thần)
+ *   2. Vermillion stone-seal click ripple for .btn
+ *   3. Hoành phi (carved wood plaque)
+ *   4. Bia đá (stone tablet) footer treatment
+ *   5. Audio toggle button
+ *   6. Tu Tiên section heading (e.g. Bí Kíp Các)
+ *   7. Empty-state poetic microcopy
+ *
+ * Everything respects `prefers-reduced-motion` and works in both
+ * realms (theme-light / theme-dark + body.light-mode).
+ * ───────────────────────────────────────────────────────────── */
+
+
+/* ═══ 1. CULTIVATION REALM BADGE ═══
+ *
+ * Renders inline next to a username. The base markup is:
+ *   <span class="xx-cult-badge xx-cult-{key}" data-glyph="X">
+ *     <span class="xx-cult-glyph">X</span>
+ *     <span class="xx-cult-name">Phàm Nhân</span>
+ *   </span>
+ *
+ * Color tiers are intentionally non-rainbow: each is a distinct
+ * material (granite → jade → aquamarine → gold → amethyst →
+ * iridescent celestial).
+ */
+.xx-cult-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 6px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    background: rgba(15, 12, 8, 0.55);
+    color: var(--hc-celestial-yellow, #FFFACD);
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.xx-cult-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-family: "Ma Shan Zheng", "Noto Serif", serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    background: linear-gradient(140deg, #6b6b6b, #2a2a2a);
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.25),
+        0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.xx-cult-name {
+    font-family: "Cinzel", "Noto Serif", serif;
+}
+
+/* Realm-tinted variants. Higher tiers have richer gradients + a soft
+ * outer glow to read at a glance. The badge's outer border colour
+ * also shifts so the whole pill harmonises. */
+.xx-cult-pham_nhan .xx-cult-glyph {
+    background: linear-gradient(140deg, #8a8a8a, #3a3a3a);
+}
+.xx-cult-pham_nhan { border-color: rgba(180, 180, 180, 0.35); }
+
+.xx-cult-luyen_khi .xx-cult-glyph {
+    background: linear-gradient(140deg, #4fc3a1, #0f6d50);
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.3),
+        0 0 0 1px rgba(0, 0, 0, 0.3),
+        0 0 6px rgba(79, 195, 161, 0.45);
+}
+.xx-cult-luyen_khi { border-color: rgba(79, 195, 161, 0.45); }
+
+.xx-cult-truc_co .xx-cult-glyph {
+    background: linear-gradient(140deg, #58c1e8, #0e5a7a);
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.3),
+        0 0 0 1px rgba(0, 0, 0, 0.3),
+        0 0 7px rgba(88, 193, 232, 0.5);
+}
+.xx-cult-truc_co { border-color: rgba(88, 193, 232, 0.5); }
+
+.xx-cult-kim_dan .xx-cult-glyph {
+    background: linear-gradient(140deg, #fff6c4, #c08b00);
+    color: #3a2700;
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.6),
+        0 0 0 1px rgba(60, 40, 0, 0.4),
+        0 0 9px rgba(255, 215, 0, 0.55);
+}
+.xx-cult-kim_dan { border-color: rgba(255, 215, 0, 0.7); }
+
+.xx-cult-nguyen_anh .xx-cult-glyph {
+    background: linear-gradient(140deg, #c78bff, #4a1a8a);
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.3),
+        0 0 0 1px rgba(20, 0, 40, 0.5),
+        0 0 10px rgba(167, 91, 255, 0.6);
+}
+.xx-cult-nguyen_anh { border-color: rgba(167, 91, 255, 0.55); }
+
+.xx-cult-hoa_than .xx-cult-glyph {
+    background:
+        conic-gradient(
+            from 0deg,
+            #fff 0deg,
+            #ffd700 60deg,
+            #ff5e9c 130deg,
+            #5ed8ff 210deg,
+            #b388ff 290deg,
+            #fff 360deg
+        );
+    color: #2a0040;
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.7),
+        0 0 0 1px rgba(120, 60, 200, 0.5),
+        0 0 14px rgba(255, 255, 255, 0.7);
+    animation: xxHoaThanShimmer 6s linear infinite;
+}
+.xx-cult-hoa_than { border-color: rgba(255, 255, 255, 0.7); }
+
+@keyframes xxHoaThanShimmer {
+    from { filter: hue-rotate(0deg); }
+    to   { filter: hue-rotate(360deg); }
+}
+
+/* Light realm — soften badge contrast on ivory backgrounds. */
+html.theme-light .xx-cult-badge,
+body.light-mode .xx-cult-badge {
+    background: rgba(255, 250, 230, 0.85);
+    color: #6a4500;
+    border-color: rgba(176, 122, 0, 0.4);
+    text-shadow: none;
+}
+
+/* Bigger variant for the profile page header card. */
+.xx-cult-badge--lg {
+    font-size: 14px;
+    padding: 5px 14px 5px 8px;
+    gap: 10px;
+}
+.xx-cult-badge--lg .xx-cult-glyph {
+    width: 26px;
+    height: 26px;
+    font-size: 18px;
+}
+
+/* Reduced motion: kill the Hoá Thần hue cycle. */
+@media (prefers-reduced-motion: reduce) {
+    .xx-cult-hoa_than .xx-cult-glyph {
+        animation: none;
+    }
+}
+
+
+/* ═══ 2. VERMILLION STONE-SEAL CLICK RIPPLE ═══
+ *
+ * Buttons (.btn, .dropdown-toggle, .navbar-brand) get a Chinese
+ * red "印" (yìn — seal) stamp animation at the click coordinate.
+ * The stamp scales up then fades. JS adds .xx-seal-stamping for
+ * exactly one animation tick, then strips the class so a rapid
+ * second click re-fires cleanly.
+ */
+.xx-seal-stamp {
+    position: absolute;
+    pointer-events: none;
+    width: 56px;
+    height: 56px;
+    margin-left: -28px;
+    margin-top: -28px;
+    display: grid;
+    place-items: center;
+    font-family: "Ma Shan Zheng", "Noto Serif", serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    background:
+        radial-gradient(closest-side,
+            #d72638 0%,
+            #b51d2a 55%,
+            #7c0e1a 100%);
+    border: 1.5px solid rgba(255, 220, 200, 0.6);
+    border-radius: 8px;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+    box-shadow:
+        inset 0 0 6px rgba(0, 0, 0, 0.35),
+        0 0 10px rgba(215, 38, 56, 0.45);
+    opacity: 0;
+    transform: scale(0.4) rotate(-12deg);
+    z-index: 5;
+    animation: xxSealStampPress 620ms cubic-bezier(0.18, 0.7, 0.3, 1) both;
+    /* Slightly rough edges for a hand-pressed feel. */
+    clip-path: polygon(
+        4% 1%, 12% 0%, 30% 2%, 55% 0%, 72% 1%, 90% 0%, 98% 4%,
+        100% 18%, 99% 35%, 100% 55%, 99% 72%, 100% 88%, 96% 99%,
+        80% 100%, 60% 99%, 35% 100%, 18% 99%, 4% 98%,
+        1% 84%, 0% 65%, 1% 45%, 0% 22%, 2% 8%
+    );
+}
+
+@keyframes xxSealStampPress {
+    0%   { opacity: 0;    transform: scale(0.35) rotate(-12deg); }
+    18%  { opacity: 0.92; transform: scale(1.18) rotate(-3deg); }
+    35%  { opacity: 0.9;  transform: scale(0.94) rotate(-6deg); }
+    100% { opacity: 0;    transform: scale(1.05) rotate(-6deg); }
+}
+
+/* Buttons need a positioning context so the absolutely-positioned
+ * stamp lands at the click coordinate inside them. */
+.btn,
+.dropdown-toggle,
+.theme-toggle-btn,
+button.notification-toggle {
+    position: relative;
+    overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .xx-seal-stamp {
+        /* Honour the user preference — no flash animation. The class
+         * is still added/removed but the element is invisible. */
+        animation: none;
+        opacity: 0;
+    }
+}
+
+
+/* ═══ 3. HOÀNH PHI (CARVED WOOD PLAQUE) ═══
+ *
+ * Sits above the hero section heading. Decorative — purely
+ * visual identity, not navigation.
+ */
+.xx-hoanh-phi {
+    --plaque-bg-dark: linear-gradient(180deg, #3a2410, #1f120a 60%, #0d0805);
+    --plaque-bg-light: linear-gradient(180deg, #d4a05f, #a06924 60%, #6d4310);
+    --plaque-text-dark: #f3d27b;
+    --plaque-text-light: #fff8d0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    max-width: 460px;
+    margin: 0 auto 22px;
+    padding: 14px 28px;
+    background: var(--plaque-bg-dark);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 8px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 130, 0.25),
+        inset 0 -8px 18px rgba(0, 0, 0, 0.55),
+        0 8px 24px rgba(0, 0, 0, 0.45);
+    position: relative;
+    /* Wood grain texture via repeating gradient. */
+    background-image:
+        repeating-linear-gradient(180deg,
+            rgba(255, 220, 160, 0.06) 0px,
+            rgba(255, 220, 160, 0.06) 1px,
+            transparent 1px,
+            transparent 6px),
+        var(--plaque-bg-dark);
+}
+
+.xx-hoanh-phi::before,
+.xx-hoanh-phi::after {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffd700, #8a5e00 70%, #2a1900);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.xx-hoanh-phi-zh {
+    font-family: "Ma Shan Zheng", "Noto Serif", serif;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: var(--plaque-text-dark);
+    text-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.6),
+        0 0 8px rgba(255, 200, 80, 0.35);
+    /* Read like inscribed strokes, not painted. */
+    background: linear-gradient(180deg, #f3d27b, #b07a00 70%, #6a4500);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.xx-hoanh-phi-vi {
+    display: block;
+    margin-top: 6px;
+    font-family: "Cinzel", "Noto Serif", serif;
+    font-size: 12px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: rgba(243, 210, 123, 0.8);
+    text-align: center;
+}
+
+html.theme-light .xx-hoanh-phi,
+body.light-mode .xx-hoanh-phi {
+    background-image:
+        repeating-linear-gradient(180deg,
+            rgba(0, 0, 0, 0.05) 0px,
+            rgba(0, 0, 0, 0.05) 1px,
+            transparent 1px,
+            transparent 6px),
+        var(--plaque-bg-light);
+    border-color: rgba(154, 100, 30, 0.6);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 240, 200, 0.7),
+        inset 0 -8px 18px rgba(110, 70, 20, 0.45),
+        0 8px 18px rgba(120, 80, 30, 0.25);
+}
+
+html.theme-light .xx-hoanh-phi-zh,
+body.light-mode .xx-hoanh-phi-zh {
+    background: linear-gradient(180deg, #fff8d0, #c08b00 70%, #6a4500);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+html.theme-light .xx-hoanh-phi-vi,
+body.light-mode .xx-hoanh-phi-vi {
+    color: rgba(106, 69, 0, 0.85);
+}
+
+
+/* ═══ 4. BIA ĐÁ (STONE TABLET) FOOTER TREATMENT ═══
+ *
+ * Restyles .footer-bottom into a carved-granite tablet with a
+ * vermillion seal in the corner.
+ */
+.footer-bottom {
+    position: relative;
+    margin-top: 32px;
+    padding: 22px 28px;
+    background:
+        radial-gradient(at 30% 30%, rgba(255, 255, 255, 0.06), transparent 60%),
+        linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0d0d0d 100%);
+    border-top: 1px solid rgba(255, 215, 0, 0.18);
+    border-radius: 4px;
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.6),
+        inset 0 -2px 4px rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+}
+
+.footer-bottom::before {
+    /* Stone grain noise via SVG turbulence, kept lightweight. */
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.12;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/></svg>");
+    mix-blend-mode: overlay;
+}
+
+.footer-bottom::after {
+    /* Vermillion corner seal: 庚 (Canh — heavenly stem #7). */
+    content: "庚";
+    position: absolute;
+    bottom: 10px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    font-family: "Ma Shan Zheng", "Noto Serif", serif;
+    font-size: 22px;
+    color: #fff;
+    background:
+        radial-gradient(closest-side,
+            #d72638 0%,
+            #a01828 80%,
+            #5a0a15 100%);
+    border: 1px solid rgba(255, 220, 200, 0.4);
+    border-radius: 6px;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.35);
+    transform: rotate(-6deg);
+}
+
+.footer-bottom p {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    text-align: center;
+    color: rgba(255, 250, 220, 0.78);
+    font-family: "Cinzel", "Noto Serif", serif;
+    letter-spacing: 0.08em;
+    font-size: 13px;
+}
+
+html.theme-light .footer-bottom,
+body.light-mode .footer-bottom {
+    background:
+        radial-gradient(at 30% 30%, rgba(255, 255, 255, 0.5), transparent 60%),
+        linear-gradient(180deg, #d6cdb8 0%, #b3a988 50%, #8c7d5a 100%);
+    border-top-color: rgba(120, 80, 20, 0.4);
+    box-shadow:
+        inset 0 2px 4px rgba(120, 90, 40, 0.3),
+        inset 0 -2px 4px rgba(255, 255, 255, 0.3);
+}
+
+html.theme-light .footer-bottom::before,
+body.light-mode .footer-bottom::before {
+    opacity: 0.18;
+    mix-blend-mode: multiply;
+}
+
+html.theme-light .footer-bottom p,
+body.light-mode .footer-bottom p {
+    color: #3a2a10;
+}
+
+
+/* ═══ 5. AUDIO TOGGLE BUTTON (Linh Âm) ═══
+ *
+ * Compact pill-shaped toggle that sits next to social links in
+ * the footer. The icon swaps based on the .xx-audio-on / off
+ * state class added to <html> by xianxia-tu-tien.js.
+ */
+.xx-audio-toggle {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(15, 12, 8, 0.7);
+    color: var(--hc-celestial-yellow, #FFFACD);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    border-radius: 999px;
+    font-family: "Cinzel", "Noto Serif", serif;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+
+.xx-audio-toggle:hover {
+    background: rgba(35, 25, 12, 0.85);
+    border-color: rgba(255, 215, 0, 0.55);
+    transform: translateY(-1px);
+}
+
+.xx-audio-toggle .xx-audio-icon-on,
+.xx-audio-toggle .xx-audio-icon-off {
+    display: none;
+    width: 16px;
+    height: 16px;
+}
+
+html.xx-audio-on .xx-audio-toggle .xx-audio-icon-on { display: inline-block; }
+html:not(.xx-audio-on) .xx-audio-toggle .xx-audio-icon-off { display: inline-block; }
+html.xx-audio-on .xx-audio-toggle .xx-audio-label-on { display: inline; }
+html.xx-audio-on .xx-audio-toggle .xx-audio-label-off { display: none; }
+html:not(.xx-audio-on) .xx-audio-toggle .xx-audio-label-on { display: none; }
+html:not(.xx-audio-on) .xx-audio-toggle .xx-audio-label-off { display: inline; }
+
+html.theme-light .xx-audio-toggle,
+body.light-mode .xx-audio-toggle {
+    background: rgba(255, 250, 230, 0.85);
+    color: #6a4500;
+    border-color: rgba(176, 122, 0, 0.5);
+}
+
+
+/* ═══ 6. TU TIÊN SECTION HEADING ═══
+ *
+ * Used on page-header h1 to layer the Chinese characters above
+ * the Vietnamese name. Pattern:
+ *   <h1 class="xx-tutien-heading">
+ *     <span class="xx-tutien-zh">秘籍阁</span>
+ *     <span class="xx-tutien-vi">Bí Kíp Các · Blog</span>
+ *   </h1>
+ */
+.xx-tutien-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.1;
+}
+
+.xx-tutien-zh {
+    font-family: "Ma Shan Zheng", "Noto Serif", serif;
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    background: linear-gradient(180deg, #fff6c4, #ffd700 50%, #b07a00);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 18px rgba(255, 215, 0, 0.18);
+}
+
+.xx-tutien-vi {
+    font-family: "Cinzel", "Noto Serif", serif;
+    font-size: 14px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(255, 248, 200, 0.85);
+}
+
+html.theme-light .xx-tutien-zh,
+body.light-mode .xx-tutien-zh {
+    background: linear-gradient(180deg, #ffd700, #b07a00 60%, #6a4500);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 6px rgba(176, 122, 0, 0.12);
+}
+
+html.theme-light .xx-tutien-vi,
+body.light-mode .xx-tutien-vi {
+    color: #6a4500;
+}
+
+@media (max-width: 640px) {
+    .xx-tutien-zh { font-size: 30px; }
+    .xx-tutien-vi { font-size: 12px; letter-spacing: 0.24em; }
+}
+
+
+/* ═══ 7. POETIC EMPTY-STATE MICROCOPY ═══
+ *
+ * .empty-state .xx-poetic gets a slight italic + reduced opacity
+ * so the "punchline" line reads as voice-over, not header text.
+ */
+.empty-state .xx-poetic {
+    display: block;
+    margin-top: 6px;
+    font-style: italic;
+    opacity: 0.78;
+    font-size: 0.92em;
+}
+
+
+/* ═══ 8. CULTIVATION PROGRESS CARD (Tu Sĩ Thẻ) ═══
+ *
+ * Used on /profile to render the realm + XP progress bar.
+ */
+.xx-tusi-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    background:
+        linear-gradient(135deg,
+            rgba(255, 215, 0, 0.08) 0%,
+            rgba(255, 215, 0, 0) 60%),
+        rgba(15, 12, 8, 0.6);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 12px;
+}
+
+.xx-tusi-card-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.xx-tusi-card-title {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-family: "Cinzel", "Noto Serif", serif;
+    color: var(--hc-celestial-yellow, #FFFACD);
+    font-size: 16px;
+    letter-spacing: 0.06em;
+}
+
+.xx-tusi-card-title strong {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.xx-tusi-card-meta {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(255, 250, 220, 0.7);
+    letter-spacing: 0.04em;
+}
+
+.xx-tusi-progress {
+    margin-top: 8px;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.xx-tusi-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #b07a00, #ffd700, #fff6c4);
+    border-radius: 999px;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.45);
+    transition: width 600ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+html.theme-light .xx-tusi-card,
+body.light-mode .xx-tusi-card {
+    background:
+        linear-gradient(135deg,
+            rgba(255, 215, 0, 0.18) 0%,
+            rgba(255, 215, 0, 0) 60%),
+        rgba(255, 250, 230, 0.85);
+    border-color: rgba(176, 122, 0, 0.5);
+}
+
+html.theme-light .xx-tusi-card-title,
+body.light-mode .xx-tusi-card-title {
+    color: #6a4500;
+}
+
+html.theme-light .xx-tusi-card-meta,
+body.light-mode .xx-tusi-card-meta {
+    color: #8a5e00;
+}
