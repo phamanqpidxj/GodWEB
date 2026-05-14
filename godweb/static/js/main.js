@@ -69,70 +69,6 @@ function initializeScrollReveal() {
     }, 1500);
 }
 
-function initializeParallaxHero() {
-    const hero = document.querySelector('.hero');
-    if (!hero) {
-        return;
-    }
-
-    window.addEventListener('scroll', () => {
-        const offset = Math.min(window.scrollY * 0.18, 42);
-        hero.style.transform = `translateY(${offset}px)`;
-    }, { passive: true });
-}
-
-function initializeCardTilt() {
-    const cards = document.querySelectorAll('.card');
-
-    cards.forEach(card => {
-        card.addEventListener('mousemove', event => {
-            if (window.innerWidth < 992) {
-                return;
-            }
-
-            const bounds = card.getBoundingClientRect();
-            const x = event.clientX - bounds.left;
-            const y = event.clientY - bounds.top;
-            const centerX = bounds.width / 2;
-            const centerY = bounds.height / 2;
-            const rotateX = ((y - centerY) / centerY) * -4;
-            const rotateY = ((x - centerX) / centerX) * 4;
-
-            card.style.transform = `translateY(-6px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
-        });
-
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = '';
-        });
-    });
-}
-
-function initializeButtonRipple() {
-    const buttons = document.querySelectorAll('.btn');
-
-    buttons.forEach(button => {
-        button.addEventListener('click', event => {
-            const circle = document.createElement('span');
-            const rect = button.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-
-            circle.classList.add('btn-ripple');
-            circle.style.width = `${size}px`;
-            circle.style.height = `${size}px`;
-            circle.style.left = `${event.clientX - rect.left - size / 2}px`;
-            circle.style.top = `${event.clientY - rect.top - size / 2}px`;
-
-            const existingRipple = button.querySelector('.btn-ripple');
-            if (existingRipple) {
-                existingRipple.remove();
-            }
-
-            button.appendChild(circle);
-            circle.addEventListener('animationend', () => circle.remove(), { once: true });
-        });
-    });
-}
-
 function updateNotificationBadge(newCount) {
     const desktopBadge = document.getElementById('notificationBadge');
     const mobileBadge = document.getElementById('mobileNotificationCount');
@@ -383,11 +319,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         initializeScrollReveal();
-        initializeParallaxHero();
-        initializeCardTilt();
-        initializeButtonRipple();
     }
 
     initializeNotificationActions();
@@ -427,50 +361,11 @@ function _syncThemeA11yLabels(isLight) {
     }
 }
 
-// "World Shift" transition: pulse the existing #xx-mist-transition
-// overlay so flipping between the Heavenly Court and the Blood Mist
-// Underworld feels like an ink-wash dissolving the realm. The CSS
-// hook (`html.xx-world-shifting`) lives in xianxia-celestial-path.css
-// §15. Self-clears via animationend so re-toggles always re-trigger.
-function _triggerWorldShift() {
-    var root = document.documentElement;
-    if (!root) return;
-    var reduceMotion = window.matchMedia &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion) return;
-
-    if (root.classList.contains('xx-world-shifting')) {
-        root.classList.remove('xx-world-shifting');
-        /* force a reflow so the animation re-runs */
-        // eslint-disable-next-line no-unused-expressions
-        void root.offsetWidth;
-    }
-    root.classList.add('xx-world-shifting');
-    var overlay = document.getElementById('xx-mist-transition');
-    if (!overlay) {
-        window.setTimeout(function () {
-            root.classList.remove('xx-world-shifting');
-        }, 950);
-        return;
-    }
-    var clear = function () {
-        root.classList.remove('xx-world-shifting');
-        overlay.removeEventListener('animationend', clear);
-    };
-    overlay.addEventListener('animationend', clear, { once: true });
-    /* Safety net in case animationend never fires (e.g. display:none
-     * overlay in a partial template) — clears the hook after the
-     * keyframe's nominal duration. */
-    window.setTimeout(clear, 1100);
-}
-
 function toggleSiteTheme() {
     var root = document.documentElement;
     var body = document.body;
     var wasLight = root.classList.contains('theme-light');
     var isLight = !wasLight;
-
-    _triggerWorldShift();
 
     root.classList.toggle('theme-light', isLight);
     root.classList.toggle('theme-dark', !isLight);

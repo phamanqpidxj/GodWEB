@@ -4,12 +4,17 @@ import secrets
 import time
 from datetime import timedelta
 from urllib.parse import urlparse
-from flask import Flask, url_for, request, abort, redirect, session, flash
+from flask import Flask, url_for, request, abort, redirect, session, flash, g
 from flask_wtf.csrf import CSRFError
 from sqlalchemy import inspect, text, create_engine
 from flask_login import current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 from godweb.extensions import db, login_manager, csrf
+
+try:
+    from flask_compress import Compress
+except ImportError:  # pragma: no cover - graceful boot if dep not installed yet
+    Compress = None
 
 # Order rows are pruned ~once per ORDER_CLEANUP_INTERVAL_SECONDS by a
 # before_request hook. This keeps "Lịch sử đơn hàng" naturally limited to the
@@ -221,7 +226,33 @@ def create_app():
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'godweb.db')
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # Heroku Postgres Essential 0 caps connections at 20. With 1 worker x 4
+    # threads we reserve 10 slots (pool_size=5 + max_overflow=5), leaving
+    # headroom for one-off dynos / migrations.
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 5,
+        'max_overflow': 5,
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
     app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+
+    # Flask-Compress: gzip text/html, text/css, application/javascript responses.
+    # ~70% bandwidth reduction with ~5ms overhead. Skip small responses where
+    # the compression header overhead outweighs the savings.
+    app.config['COMPRESS_MIN_SIZE'] = 1024
+    app.config['COMPRESS_LEVEL'] = 6
+    app.config['COMPRESS_MIMETYPES'] = [
+        'text/html',
+        'text/css',
+        'text/xml',
+        'application/json',
+        'application/javascript',
+        'application/xml+rss',
+        'image/svg+xml',
+    ]
+    if Compress is not None:
+        Compress(app)
 
     app.config['WTF_CSRF_TIME_LIMIT'] = None
     app.config['SESSION_COOKIE_HTTPONLY'] = True
@@ -392,6 +423,18 @@ def create_app():
         if next_target and next_target.startswith('/') and not next_target.startswith('//'):
             return redirect(url_for('auth.login', next=next_target))
         return redirect(url_for('auth.login'))
+
+    @app.after_request
+    def add_static_cache_headers(response):
+        # Heroku doesn't sit a CDN in front of /static/ by default, so the
+        # browser is the only cache layer. Pair this with a cache-busting
+        # query string (e.g. ?v=<asset_version>) so deploys invalidate.
+        # Werkzeug's send_file injects 'no-cache' by default; replace the
+        # entire header so our long-lived public cache directive wins.
+        if request.path.startswith('/static/'):
+            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+            response.headers.setdefault('Vary', 'Accept-Encoding')
+        return response
 
     @app.after_request
     def add_security_headers(response):

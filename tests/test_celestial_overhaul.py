@@ -211,18 +211,26 @@ def test_world_shift_is_disabled_under_reduced_motion():
     )
 
 
-def test_world_shift_is_triggered_by_main_js_toggle():
-    """The CSS hook is fired by `toggleSiteTheme` so every realm flip
-    runs the ink-wash. We verify the call site exists and the helper
-    that adds the `xx-world-shifting` class is wired up."""
+def test_world_shift_no_longer_triggered_on_theme_toggle():
+    """Wave 2 (kiếm khách rebuild) removed the 900ms ink-wash on theme
+    toggle to make realm flips feel instant — heavier overlay paints
+    were the biggest perceived-lag complaint on Heroku Basic Dynos.
+
+    The CSS keyframe + `#xx-mist-transition` overlay are still defined
+    so future themes can re-opt-in, but ``toggleSiteTheme`` must NOT
+    add ``xx-world-shifting`` on click.
+    """
     source = MAIN_JS_PATH.read_text(encoding='utf-8')
-    assert '_triggerWorldShift' in source
-    assert "classList.add('xx-world-shifting')" in source
-    # `toggleSiteTheme` actually calls the helper.
+    assert '_triggerWorldShift' not in source, (
+        '_triggerWorldShift was removed in the Wave 2 perf pass; '
+        'realm flips are now instant. Restore the helper only if the '
+        'user explicitly re-opts into the ink-wash transition.'
+    )
+    assert "classList.add('xx-world-shifting')" not in source
     toggle_idx = source.find('function toggleSiteTheme()')
     assert toggle_idx != -1
     toggle_body = source[toggle_idx:toggle_idx + 600]
-    assert '_triggerWorldShift()' in toggle_body
+    assert 'xx-world-shifting' not in toggle_body
 
 
 # ────────────────────────────────────────────────────────────────────
