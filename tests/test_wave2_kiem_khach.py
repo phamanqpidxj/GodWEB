@@ -251,20 +251,48 @@ def test_wave2_stylesheet_respects_prefers_reduced_motion():
 # §D  Template wiring guards
 # ────────────────────────────────────────────────────────────────────
 
-def test_blog_index_uses_truc_gian_layout_not_16x9_grid():
-    """The blog index used to render a 3-column grid of 16:9
-    rectangular cards. Wave 2 swaps that for a stack of vertical
-    bamboo slips so the genre-fitting "trúc giản" metaphor reads on
-    first scroll. Test asserts both that the trúc giản markup is
-    present AND that the legacy ``grid grid-3`` wrapper is no longer
-    wrapping the post loop."""
+def test_blog_index_matches_home_featured_card_layout():
+    """User feedback after the Wave 2 rollout: the vertical bamboo-slip
+    cards on /blog/ regressed the page badly — they had no thumbnail
+    area, the cream paper background looked white-on-dark in the
+    Demonic Realm, and the gold premium gradient swallowed the body
+    copy in the Heavenly Realm. The user explicitly asked for the
+    blog list to mirror the "Bài viết nổi bật" cards on the home
+    page instead (image on top + body underneath + Mortal/Immortal
+    aura).
+
+    This test locks in that revert:
+      • the post loop must wrap in ``card xx-mortal-card`` /
+        ``card xx-immortal-card`` containers, not in ``xx-truc-gian``;
+      • premium cards must still emit the ``xx-immortal-mist`` overlay
+        and the ``premium-badge``;
+      • every card must reserve a ``card-image`` slot (either an
+        ``<img>`` when ``post.thumbnail`` is set or a
+        ``card-image-placeholder`` fallback) so the user never sees
+        the bare ink-on-paper card again.
+    """
     src = BLOG_INDEX.read_text(encoding='utf-8')
-    assert 'xx-truc-gian-grid' in src
-    assert 'xx-truc-gian-title' in src
-    assert 'xx-truc-gian-seal' in src
-    # Guard against accidental revert: the prior wrapper must be
-    # gone for the post-listing block specifically.
-    assert '<div class="grid grid-3">\n            {% for post in posts.items %}' not in src
+
+    # Home-page-style card shell. The is_premium ternary lives in
+    # Jinja so we match the conditional form here rather than the
+    # post-render output.
+    assert 'class="card {% if post.is_premium %}xx-immortal-card{% else %}xx-mortal-card{% endif %}"' in src
+
+    # Mandatory image slot — this is the regression the user filed.
+    assert 'class="card-image"' in src
+    assert 'card-image-placeholder' in src
+
+    # Immortal aura adornments preserved.
+    assert 'xx-immortal-mist' in src
+    assert 'premium-badge' in src
+
+    # Guard against accidental re-revert to the bamboo slip: the
+    # ``xx-truc-gian`` shell wrapped the post loop in Wave 2 and that
+    # is exactly what the user asked us to remove.
+    assert 'class="xx-truc-gian' not in src
+    assert 'xx-truc-gian-grid' not in src
+    assert 'xx-truc-gian-title' not in src
+    assert 'xx-truc-gian-seal' not in src
 
 
 def test_profile_renders_phap_khi_grid_and_28day_nhat_ky():
