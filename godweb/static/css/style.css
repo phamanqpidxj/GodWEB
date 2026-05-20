@@ -73,29 +73,8 @@ html.theme-light, html.theme-light body { background-color: #faf8f3; }
     --body-bg: radial-gradient(circle at top, #eef2ff 0%, #f8fafc 40%, #ffffff 100%);
 }
 
-/* Dark mode variable overrides when `body.dark-mode` is present */
-body.dark-mode {
-    --primary-color: #2dd4bf;
-    --primary-dark: #14b8a6;
-    --secondary-color: #fb923c;
-    --accent-color: #60a5fa;
-    --dark-color: #e6eef8;
-    --light-color: #0b1220;
-    --text-color: #e6eef8;
-    --text-light: #9fb0c8;
-    --border-color: rgba(255,255,255,0.06);
-    --surface-color: #0b1220;
-    --surface-muted: #071126;
-    --navbar-bg: linear-gradient(135deg, #071029 0%, #071126 60%, #041022 100%);
-    --hero-bg: radial-gradient(circle at top, rgba(45, 212, 191, 0.08), transparent 55%),
-        linear-gradient(135deg, #071029 0%, #071126 55%, #081424 100%);
-    --card-bg: linear-gradient(160deg, rgba(8, 18, 36, 0.85), rgba(10, 20, 36, 0.72));
-    --dropdown-bg: #071126;
-    --body-bg: radial-gradient(circle at top, #0b1120 0%, #0f172a 45%, #111827 100%);
-    --control-bg: rgba(255,255,255,0.04);
-    --control-border: rgba(255,255,255,0.06);
-    --control-color: #e6eef8;
-}
+/* Legacy body.dark-mode block removed: the project uses html.theme-dark /
+   body.light-mode classes. Dark is the default and lives in xianxia-theme.css. */
 
 html {
     -webkit-text-size-adjust: 100%;

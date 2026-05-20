@@ -267,7 +267,7 @@
                         <span>{{ current_user.godcoin_balance }} GC</span>
                     </div>
                     <div class="dropdown" id="userDropdown">
-                        <a href="javascript:void(0);" class="btn btn-outline dropdown-toggle" style="color: white; border-color: white;">
+                        <a href="javascript:void(0);" class="btn btn-outline dropdown-toggle">
                             <span class="xx-cult-badge xx-cult-{{ _navbar_tier.key }}" title="{{ _navbar_tier.name_vi }} · {{ _navbar_tier.xp }} XP">
                                 <span class="xx-cult-glyph" aria-hidden="true">{{ _navbar_tier.glyph }}</span>
                                 <span class="xx-cult-name">{{ _navbar_tier.name_vi }}</span>
@@ -287,7 +287,7 @@
                         </div>
                     </div>
                 {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-login-mobile" style="color: white; border-color: white;">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-login-mobile">
                         <i class="fas fa-sign-in-alt"></i> <span class="btn-text">Đăng nhập</span>
                     </a>
                     <a href="{{ url_for('auth.register') }}" class="btn btn-secondary btn-register-mobile">

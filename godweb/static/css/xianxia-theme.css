@@ -85,7 +85,15 @@ body {
 .navbar a,
 .navbar .btn-outline {
     color: var(--text-color) !important;
-    transition: color 0.3s, text-shadow 0.3s;
+    transition: color 0.3s, text-shadow 0.3s, border-color 0.3s;
+}
+
+.navbar .btn-outline {
+    border-color: rgba(232, 228, 217, 0.35) !important;
+}
+
+.navbar .btn-outline:hover {
+    border-color: var(--xianxia-jade) !important;
 }
 
 .navbar a:hover {
@@ -801,4 +809,259 @@ table tr:hover td {
         rgba(251, 191, 36, 0.3) 50%,
         rgba(45, 212, 160, 0.2) 70%,
         transparent);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Home CTA - Celestial void call-to-action
+ * ──────────────────────────────────────────────────────────────── */
+
+.home-cta {
+    background: linear-gradient(180deg, rgba(18, 18, 30, 0.85) 0%, rgba(4, 4, 8, 0.95) 100%);
+    border-top: 1px solid rgba(45, 212, 160, 0.12);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.08);
+    position: relative;
+}
+
+.home-cta::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(45, 212, 160, 0.3) 20%,
+        rgba(251, 191, 36, 0.4) 50%,
+        rgba(45, 212, 160, 0.3) 80%,
+        transparent);
+    pointer-events: none;
+}
+
+.home-cta h2 {
+    background: linear-gradient(120deg, #6ee7b7, #2dd4a0 35%, #fbbf24 70%, #fde68a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+}
+
+.home-cta p {
+    color: var(--text-light);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Auth Card - Cultivation gate styling
+ * ──────────────────────────────────────────────────────────────── */
+
+.auth-card {
+    background: linear-gradient(160deg, rgba(18, 18, 30, 0.92), rgba(8, 8, 16, 0.96));
+    border: 1px solid rgba(45, 212, 160, 0.12);
+    box-shadow:
+        0 8px 32px -16px rgba(0, 0, 0, 0.9),
+        inset 0 1px 0 rgba(45, 212, 160, 0.06);
+}
+
+.auth-card h2 {
+    color: #e8e4d9;
+    text-shadow: 0 2px 12px rgba(45, 212, 160, 0.12);
+}
+
+.auth-card .form-group label {
+    color: #e8e4d9;
+}
+
+.auth-card .form-group input {
+    background: var(--xianxia-parchment);
+    border: 1px solid rgba(45, 212, 160, 0.12);
+    color: var(--text-color);
+}
+
+.auth-card .form-group input:focus {
+    border-color: var(--xianxia-jade);
+    box-shadow: 0 0 12px rgba(45, 212, 160, 0.2);
+}
+
+.auth-card a {
+    color: var(--xianxia-jade);
+}
+
+.auth-card a:hover {
+    text-shadow: 0 0 8px rgba(45, 212, 160, 0.3);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Feature Icons - Cultivation element styling
+ * ──────────────────────────────────────────────────────────────── */
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 16px;
+    transition: transform 0.4s, box-shadow 0.4s;
+}
+
+.feature-icon.primary {
+    background: linear-gradient(135deg, rgba(45, 212, 160, 0.15), rgba(45, 212, 160, 0.05));
+    color: var(--xianxia-jade);
+    border: 1px solid rgba(45, 212, 160, 0.2);
+}
+
+.feature-icon.secondary {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
+    color: var(--xianxia-gold);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.feature-icon.success {
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(167, 139, 250, 0.05));
+    color: var(--xianxia-spirit);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1);
+}
+
+.feature-card:hover .feature-icon.primary {
+    box-shadow: 0 0 24px rgba(45, 212, 160, 0.2);
+}
+
+.feature-card:hover .feature-icon.secondary {
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.2);
+}
+
+.feature-card:hover .feature-icon.success {
+    box-shadow: 0 0 24px rgba(167, 139, 250, 0.2);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Enhanced card hover with image zoom
+ * ──────────────────────────────────────────────────────────────── */
+
+.card-image,
+img.card-image {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover .card-image,
+.card:hover img.card-image {
+    transform: scale(1.05);
+}
+
+.card-body {
+    transition: transform 0.4s ease;
+}
+
+.card:hover .card-body {
+    transform: translateY(-2px);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Hero text glow animation
+ * ──────────────────────────────────────────────────────────────── */
+
+.hero h1 {
+    animation: heroTextGlow 4s ease-in-out infinite;
+}
+
+@keyframes heroTextGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 8px rgba(45, 212, 160, 0.15));
+    }
+    50% {
+        filter: drop-shadow(0 0 20px rgba(45, 212, 160, 0.35)) drop-shadow(0 0 40px rgba(251, 191, 36, 0.15));
+    }
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Hero floating qi particles (CSS-only)
+ * ──────────────────────────────────────────────────────────────── */
+
+.hero {
+    overflow: hidden;
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(45, 212, 160, 0.4), transparent),
+        radial-gradient(1px 1px at 40% 70%, rgba(251, 191, 36, 0.3), transparent),
+        radial-gradient(1px 1px at 60% 40%, rgba(167, 139, 250, 0.3), transparent),
+        radial-gradient(1px 1px at 80% 60%, rgba(45, 212, 160, 0.4), transparent),
+        radial-gradient(1.5px 1.5px at 10% 80%, rgba(251, 191, 36, 0.3), transparent),
+        radial-gradient(1.5px 1.5px at 90% 20%, rgba(167, 139, 250, 0.3), transparent);
+    background-size: 200px 200px;
+    animation: heroParticleFloat 25s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.hero .container {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes heroParticleFloat {
+    from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+    to { background-position: -200px 200px, 200px -200px, -200px -200px, 200px 200px, -200px 200px, 200px -200px; }
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Button press feedback
+ * ──────────────────────────────────────────────────────────────── */
+
+.btn:active {
+    transform: scale(0.97);
+    transition-duration: 0.1s;
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Navbar scroll effect
+ * ──────────────────────────────────────────────────────────────── */
+
+.navbar {
+    transition: box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.navbar.navbar-scrolled {
+    box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(45, 212, 160, 0.06);
+    background: linear-gradient(180deg, rgba(4, 4, 8, 0.97) 0%, rgba(8, 8, 16, 0.94) 100%);
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Section divider glow pulse
+ * ──────────────────────────────────────────────────────────────── */
+
+.section + .section::before {
+    animation: sectionDividerGlow 3s ease-in-out infinite;
+}
+
+@keyframes sectionDividerGlow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Reduced motion — honour user preference
+ * ──────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+    .hero h1 { animation: none; }
+    .hero::after { animation: none; }
+    .section + .section::before { animation: none; }
 }
