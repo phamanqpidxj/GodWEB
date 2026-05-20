@@ -436,7 +436,8 @@ if (document.readyState === 'loading') {
 (function () {
     var navbar = document.querySelector('.navbar');
     if (!navbar) return;
-    var scrolled = false;
+    var scrolled = window.scrollY > 10;
+    navbar.classList.toggle('navbar-scrolled', scrolled);
     window.addEventListener('scroll', function () {
         var shouldBeScrolled = window.scrollY > 10;
         if (shouldBeScrolled !== scrolled) {
