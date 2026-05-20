@@ -428,3 +428,20 @@ if (document.readyState === 'loading') {
     initializeImmortalAuraVisibility();
 }
 
+// ────────────────────────────────────────────────────────────
+// Navbar scroll shadow — adds `.navbar-scrolled` when the user
+// scrolls past the first 10px so the navbar gains a stronger
+// shadow and more opaque background.
+// ────────────────────────────────────────────────────────────
+(function () {
+    var navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+    var scrolled = false;
+    window.addEventListener('scroll', function () {
+        var shouldBeScrolled = window.scrollY > 10;
+        if (shouldBeScrolled !== scrolled) {
+            scrolled = shouldBeScrolled;
+            navbar.classList.toggle('navbar-scrolled', scrolled);
+        }
+    }, { passive: true });
+})();

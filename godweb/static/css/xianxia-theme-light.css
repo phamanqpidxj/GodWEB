@@ -1038,3 +1038,163 @@ body.light-mode .brand-name {
     color: transparent;
     text-shadow: none;
 }
+
+/* ================================================================
+ * Home CTA - Bright celestial call-to-action
+ * ================================================================ */
+body.light-mode .home-cta {
+    background: linear-gradient(180deg, #f8f9fc 0%, #f1f5f9 100%);
+    border-top: 1px solid rgba(14, 165, 115, 0.12);
+    border-bottom: 1px solid rgba(14, 165, 115, 0.08);
+}
+
+body.light-mode .home-cta::before {
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(14, 165, 115, 0.15) 20%,
+        rgba(192, 139, 0, 0.2) 50%,
+        rgba(14, 165, 115, 0.15) 80%,
+        transparent);
+}
+
+body.light-mode .home-cta h2 {
+    background: linear-gradient(120deg, #088a5e, #0ea573 40%, #c08b00 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+body.light-mode .home-cta p {
+    color: #64748b;
+}
+
+/* ================================================================
+ * Auth Card - Light realm gate
+ * ================================================================ */
+body.light-mode .auth-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+body.light-mode .auth-card h2 {
+    color: #1e293b;
+    text-shadow: none;
+}
+
+body.light-mode .auth-card .form-group label {
+    color: #334155;
+}
+
+body.light-mode .auth-card .form-group input {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #1e293b;
+}
+
+body.light-mode .auth-card .form-group input:focus {
+    border-color: #0ea573;
+    box-shadow: 0 0 0 3px rgba(14, 165, 115, 0.1);
+}
+
+body.light-mode .auth-card a {
+    color: #0ea573;
+}
+
+/* ================================================================
+ * Feature Icons - Jade/gold ink on parchment
+ * ================================================================ */
+body.light-mode .feature-icon.primary {
+    background: linear-gradient(135deg, rgba(14, 165, 115, 0.1), rgba(14, 165, 115, 0.03));
+    color: #0ea573;
+    border-color: rgba(14, 165, 115, 0.2);
+}
+
+body.light-mode .feature-icon.secondary {
+    background: linear-gradient(135deg, rgba(192, 139, 0, 0.1), rgba(192, 139, 0, 0.03));
+    color: #c08b00;
+    border-color: rgba(192, 139, 0, 0.2);
+}
+
+body.light-mode .feature-icon.success {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(124, 58, 237, 0.02));
+    color: #7c3aed;
+    border-color: rgba(124, 58, 237, 0.15);
+}
+
+body.light-mode .feature-card:hover .feature-icon.primary {
+    box-shadow: 0 0 16px rgba(14, 165, 115, 0.15);
+}
+
+body.light-mode .feature-card:hover .feature-icon.secondary {
+    box-shadow: 0 0 16px rgba(192, 139, 0, 0.15);
+}
+
+body.light-mode .feature-card:hover .feature-icon.success {
+    box-shadow: 0 0 16px rgba(124, 58, 237, 0.12);
+}
+
+/* ================================================================
+ * Ticker label - Jade ink on parchment
+ * ================================================================ */
+body.light-mode .site-ticker-label {
+    background: rgba(14, 165, 115, 0.1);
+    color: #0ea573;
+    border-right-color: rgba(14, 165, 115, 0.15);
+}
+
+body.light-mode .site-ticker-label i {
+    color: #0ea573;
+}
+
+/* ================================================================
+ * Hero effects - Softer in light mode
+ * ================================================================ */
+body.light-mode .hero::after {
+    opacity: 0.25;
+}
+
+body.light-mode .hero h1 {
+    animation: heroTextGlowLight 4s ease-in-out infinite;
+}
+
+@keyframes heroTextGlowLight {
+    0%, 100% {
+        filter: drop-shadow(0 0 4px rgba(14, 165, 115, 0.1));
+    }
+    50% {
+        filter: drop-shadow(0 0 12px rgba(14, 165, 115, 0.2)) drop-shadow(0 0 24px rgba(192, 139, 0, 0.1));
+    }
+}
+
+/* ================================================================
+ * Navbar scroll - Light mode
+ * ================================================================ */
+body.light-mode .navbar.navbar-scrolled {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.98);
+}
+
+body.light-mode .navbar .btn-outline {
+    border-color: #cbd5e1 !important;
+}
+
+body.light-mode .navbar .btn-outline:hover {
+    border-color: #0ea573 !important;
+}
+
+/* ================================================================
+ * Section divider - Light mode
+ * ================================================================ */
+body.light-mode .section + .section::before {
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(14, 165, 115, 0.12) 20%,
+        rgba(192, 139, 0, 0.18) 50%,
+        rgba(14, 165, 115, 0.12) 80%,
+        transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.light-mode .hero h1 { animation: none; }
+}
